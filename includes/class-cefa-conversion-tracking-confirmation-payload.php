@@ -49,6 +49,15 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 			return $confirmation;
 		}
 
+		if ( is_array( $confirmation ) && 'page' === (string) rgar( $confirmation, 'type' ) ) {
+			$confirmation['queryString'] = self::append_tracking_query_string(
+				(string) rgar( $confirmation, 'queryString' ),
+				$token
+			);
+
+			return $confirmation;
+		}
+
 		if ( is_string( $confirmation ) ) {
 			$confirmation .= self::inline_datalayer_script( $payload );
 		}
@@ -78,6 +87,30 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		}
 
 		return $entry;
+	}
+
+	/**
+	 * Append the one-time token to Gravity Forms page confirmation query args.
+	 *
+	 * Gravity Forms page confirmations use a raw query-string value instead of
+	 * the redirect URL shape, so we preserve existing parameters and add ours.
+	 *
+	 * @param string $query_string Existing confirmation query string.
+	 * @param string $token        One-time payload token.
+	 * @return string
+	 */
+	private static function append_tracking_query_string( string $query_string, string $token ): string {
+		$query_string = ltrim( trim( $query_string ), '?' );
+		$params       = array();
+
+		if ( '' !== $query_string ) {
+			wp_parse_str( $query_string, $params );
+		}
+
+		$params['cefa_tracking']       = '1';
+		$params['cefa_tracking_token'] = $token;
+
+		return build_query( $params );
 	}
 
 	/**
