@@ -34,19 +34,21 @@
 		} catch (error) {}
 	}
 
-	function findEventIdField() {
+	function findEventIdField(scope) {
+		var root = scope || document;
+
 		for (var i = 0; i < eventFieldSelectors.length; i++) {
-			var found = document.querySelector(eventFieldSelectors[i]);
+			var found = root.querySelector(eventFieldSelectors[i]);
 			if (found) {
 				return found;
 			}
 		}
 
-		return document.querySelector('[id$="_32_4"], [name="input_32_4"], [name="input_32.4"]');
+		return root.querySelector('[id$="_32_4"], [name="input_32_4"], [name="input_32.4"]');
 	}
 
-	function ensureEventId() {
-		var field = findEventIdField();
+	function ensureEventId(scope) {
+		var field = findEventIdField(scope);
 
 		if (!field) {
 			return '';
@@ -81,12 +83,12 @@
 		}
 
 		form.setAttribute('data-cefa-conversion-tracking-attached', '1');
-		ensureEventId();
+		ensureEventId(form);
 
 		form.addEventListener(
 			'submit',
 			function () {
-				var eventId = ensureEventId();
+				var eventId = ensureEventId(form);
 
 				if (!eventId) {
 					return;
@@ -96,6 +98,37 @@
 			},
 			true
 		);
+	}
+
+	function initAjaxConfirmationTracking() {
+		var frames = document.querySelectorAll('#gform_ajax_frame_' + formId);
+
+		for (var i = 0; i < frames.length; i++) {
+			attachAjaxFrameTracking(frames[i]);
+		}
+	}
+
+	function attachAjaxFrameTracking(frame) {
+		if (!frame || frame.getAttribute('data-cefa-conversion-tracking-frame') === '1') {
+			return;
+		}
+
+		frame.setAttribute('data-cefa-conversion-tracking-frame', '1');
+		frame.addEventListener('load', function () {
+			if (ajaxFrameHasConfirmation(frame)) {
+				schedulePendingPayloadFetch();
+			}
+		});
+	}
+
+	function ajaxFrameHasConfirmation(frame) {
+		try {
+			var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+
+			return !!(doc && doc.querySelector('#gform_confirmation_wrapper_' + formId));
+		} catch (error) {
+			return false;
+		}
 	}
 
 	function getConsumedIds() {
@@ -218,6 +251,12 @@
 			.catch(cleanTrackingParams);
 	}
 
+	function schedulePendingPayloadFetch() {
+		window.setTimeout(function () {
+			fetchPayloadByEventId(getPendingEventId());
+		}, 250);
+	}
+
 	function getPendingEventId() {
 		var pending = readJson(pendingKey, null);
 
@@ -260,14 +299,28 @@
 
 	function init() {
 		initFormTracking();
+		initAjaxConfirmationTracking();
 		initThankYouTracking();
 	}
 
 	document.addEventListener('DOMContentLoaded', init);
 	document.addEventListener('gform_post_render', init);
+	document.addEventListener('gform_confirmation_loaded', function (event) {
+		if (!event.detail || Number(event.detail.formId) === formId) {
+			schedulePendingPayloadFetch();
+		}
+	});
 	document.addEventListener('gform/postRender', function (event) {
 		if (!event.detail || Number(event.detail.formId) === formId) {
 			init();
 		}
 	});
+
+	if (window.jQuery) {
+		window.jQuery(document).on('gform_confirmation_loaded', function (event, submittedFormId) {
+			if (Number(submittedFormId) === formId) {
+				schedulePendingPayloadFetch();
+			}
+		});
+	}
 })();

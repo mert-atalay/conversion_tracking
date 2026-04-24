@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6 - 2026-04-24
+
+- Scoped browser event ID reads to the submitted Form 4 instance to avoid duplicate Gravity Forms markup using the wrong hidden field.
+- Added Gravity Forms AJAX iframe confirmation handling so the confirmed payload can be fetched when the submission succeeds without a full page redirect.
+
 ## 0.1.5 - 2026-04-24
 
 - Release bump for staging replacement after confirming staging was still running the old `0.1.2` PHP build.
