@@ -26,7 +26,7 @@ final class CEFA_Conversion_Tracking {
 	public static function init(): void {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_filter( 'gform_pre_submission_4', array( 'CEFA_Conversion_Tracking_Event_ID', 'ensure_event_id_before_submission' ) );
-		add_filter( 'gform_confirmation_4', array( 'CEFA_Conversion_Tracking_Confirmation_Payload', 'prepare_confirmation_tracking' ), 10, 4 );
+		add_filter( 'gform_confirmation_4', array( 'CEFA_Conversion_Tracking_Confirmation_Payload', 'prepare_confirmation_tracking' ), 999, 4 );
 		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
 	}
 

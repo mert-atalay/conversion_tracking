@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 - 2026-04-24
+
+- Moved the Gravity Forms confirmation hook to a late priority so the tracking token is appended after School Manager confirmation query parameters.
+
 ## 0.1.1 - 2026-04-24
 
 - Added support for Gravity Forms page confirmations by appending the one-time tracking token to the page confirmation query string.
