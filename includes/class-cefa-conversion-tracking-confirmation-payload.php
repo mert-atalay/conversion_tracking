@@ -14,6 +14,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class CEFA_Conversion_Tracking_Confirmation_Payload {
 	/**
+	 * Store a server-confirmed payload as soon as Gravity Forms saves the entry.
+	 *
+	 * @param array $entry Gravity Forms entry.
+	 * @param array $form  Gravity Forms form.
+	 * @return void
+	 */
+	public static function store_after_submission_payload( array $entry, array $form ): void {
+		if ( CEFA_CONVERSION_TRACKING_FORM_ID !== (int) rgar( $form, 'id' ) ) {
+			return;
+		}
+
+		if ( 'spam' === (string) rgar( $entry, 'status' ) ) {
+			return;
+		}
+
+		$entry   = self::ensure_entry_event_id( $entry );
+		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry );
+
+		CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
+	}
+
+	/**
 	 * Prepare tokenized tracking payload for redirect or inline confirmations.
 	 *
 	 * @param string|array $confirmation Confirmation config.

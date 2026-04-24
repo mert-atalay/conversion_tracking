@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-04-24
+
+- Added a server-confirmed event ID payload fallback for thank-you flows where another plugin rewrites the confirmation query string.
+- Stored payloads after successful Form 4 submission so the browser can retrieve them by the saved `32.4` event ID.
+- Removed the plugin homepage header so WordPress does not show a "Visit plugin site" link.
+
 ## 0.1.2 - 2026-04-24
 
 - Moved the Gravity Forms confirmation hook to a late priority so the tracking token is appended after School Manager confirmation query parameters.

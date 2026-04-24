@@ -9,6 +9,7 @@
 	var queryFlag = config.queryFlag || 'cefa_tracking';
 	var queryToken = config.queryToken || 'cefa_tracking_token';
 	var restPayloadBase = config.restPayloadBase || '';
+	var restEventBase = config.restEventBase || '';
 
 	function uuid() {
 		if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -55,7 +56,21 @@
 			field.value = uuid();
 		}
 
+		writePending(field.value);
+
 		return field.value;
+	}
+
+	function writePending(eventId) {
+		if (!eventId) {
+			return;
+		}
+
+		writeJson(pendingKey, {
+			event_id: eventId,
+			form_id: String(formId),
+			ts: Date.now()
+		});
 	}
 
 	function initFormTracking() {
@@ -77,11 +92,7 @@
 					return;
 				}
 
-				writeJson(pendingKey, {
-					event_id: eventId,
-					form_id: String(formId),
-					ts: Date.now()
-				});
+				writePending(eventId);
 			},
 			true
 		);
@@ -153,6 +164,9 @@
 		window.dataLayer = window.dataLayer || [];
 		window.dataLayer.push(payload);
 		markConsumed(payload.event_id);
+		try {
+			window.sessionStorage.removeItem(pendingKey);
+		} catch (error) {}
 		cleanTrackingParams();
 	}
 
@@ -180,6 +194,47 @@
 			.catch(cleanTrackingParams);
 	}
 
+	function fetchPayloadByEventId(eventId) {
+		if (!restEventBase || !eventId) {
+			return;
+		}
+
+		window
+			.fetch(restEventBase + encodeURIComponent(eventId), {
+				credentials: 'same-origin',
+				cache: 'no-store',
+				headers: {
+					Accept: 'application/json'
+				}
+			})
+			.then(function (response) {
+				if (!response.ok) {
+					throw new Error('Tracking payload unavailable.');
+				}
+
+				return response.json();
+			})
+			.then(pushPayload)
+			.catch(cleanTrackingParams);
+	}
+
+	function getPendingEventId() {
+		var pending = readJson(pendingKey, null);
+
+		if (!pending || String(pending.form_id) !== String(formId) || !pending.event_id) {
+			return '';
+		}
+
+		if (pending.ts && Date.now() - Number(pending.ts) > 30 * 60 * 1000) {
+			try {
+				window.sessionStorage.removeItem(pendingKey);
+			} catch (error) {}
+			return '';
+		}
+
+		return String(pending.event_id);
+	}
+
 	function initThankYouTracking() {
 		var url;
 
@@ -189,18 +244,18 @@
 			return;
 		}
 
-		if (url.searchParams.get(queryFlag) !== '1') {
+		if (url.searchParams.get(queryFlag) !== '1' && url.searchParams.get('inquiry') !== 'true') {
 			return;
 		}
 
 		var token = url.searchParams.get(queryToken);
 
-		if (!token) {
-			cleanTrackingParams();
+		if (token) {
+			fetchPayload(token);
 			return;
 		}
 
-		fetchPayload(token);
+		fetchPayloadByEventId(getPendingEventId());
 	}
 
 	function init() {

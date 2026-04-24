@@ -33,6 +33,7 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 		$token = wp_generate_uuid4();
 
 		set_transient( self::TRANSIENT_PREFIX . $token, $payload, self::PAYLOAD_TTL );
+		self::store_event_token_alias( $payload, $token );
 
 		return $token;
 	}
@@ -58,8 +59,34 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 		}
 
 		delete_transient( $key );
+		self::delete_event_token_alias( $payload );
 
 		return $payload;
+	}
+
+	/**
+	 * Consume a payload by its server-confirmed event ID.
+	 *
+	 * This is a fallback for confirmation flows where another plugin rewrites
+	 * the thank-you query string after the helper token is appended.
+	 *
+	 * @param string $event_id Event ID from the submitted Form 4 hidden field.
+	 * @return array<string, mixed>|null
+	 */
+	public static function consume_payload_by_event_id( string $event_id ): ?array {
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( $event_id );
+
+		if ( '' === $event_id ) {
+			return null;
+		}
+
+		$token = get_transient( self::event_token_key( $event_id ) );
+
+		if ( ! is_string( $token ) || '' === self::normalize_token( $token ) ) {
+			return null;
+		}
+
+		return self::consume_payload( $token );
 	}
 
 	/**
@@ -76,5 +103,48 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 		}
 
 		return $token;
+	}
+
+	/**
+	 * Store event ID to token alias for thank-you fallback lookups.
+	 *
+	 * @param array<string, mixed> $payload Tracking payload.
+	 * @param string               $token   One-time token.
+	 * @return void
+	 */
+	private static function store_event_token_alias( array $payload, string $token ): void {
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) ( $payload['event_id'] ?? '' ) );
+
+		if ( '' === $event_id ) {
+			return;
+		}
+
+		set_transient( self::event_token_key( $event_id ), $token, self::PAYLOAD_TTL );
+	}
+
+	/**
+	 * Delete event ID alias after payload consumption.
+	 *
+	 * @param array<string, mixed> $payload Tracking payload.
+	 * @return void
+	 */
+	private static function delete_event_token_alias( array $payload ): void {
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) ( $payload['event_id'] ?? '' ) );
+
+		if ( '' === $event_id ) {
+			return;
+		}
+
+		delete_transient( self::event_token_key( $event_id ) );
+	}
+
+	/**
+	 * Build a bounded transient key for event ID aliases.
+	 *
+	 * @param string $event_id Event ID.
+	 * @return string
+	 */
+	private static function event_token_key( string $event_id ): string {
+		return self::TRANSIENT_PREFIX . 'event_' . hash( 'sha256', $event_id );
 	}
 }
