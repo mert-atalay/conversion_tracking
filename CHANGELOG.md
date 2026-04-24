@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4 - 2026-04-24
+
+- Removed the inline form-page success push so the final event is emitted from the thank-you page payload flow only.
+- Keeps the helper plugin from creating a pre-redirect duplicate when Gravity Forms returns an intermediate confirmation response.
+
 ## 0.1.3 - 2026-04-24
 
 - Added a server-confirmed event ID payload fallback for thank-you flows where another plugin rewrites the confirmation query string.

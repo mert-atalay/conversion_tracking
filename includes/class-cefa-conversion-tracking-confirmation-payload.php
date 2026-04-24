@@ -80,10 +80,6 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 			return $confirmation;
 		}
 
-		if ( is_string( $confirmation ) ) {
-			$confirmation .= self::inline_datalayer_script( $payload );
-		}
-
 		return $confirmation;
 	}
 
@@ -135,19 +131,4 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		return build_query( $params );
 	}
 
-	/**
-	 * Create inline script for non-redirect confirmations.
-	 *
-	 * @param array<string, mixed> $payload Tracking payload.
-	 * @return string
-	 */
-	private static function inline_datalayer_script( array $payload ): string {
-		$json = wp_json_encode( $payload );
-
-		if ( false === $json ) {
-			return '';
-		}
-
-		return wp_get_inline_script_tag( 'window.dataLayer=window.dataLayer||[];window.dataLayer.push(' . $json . ');' );
-	}
 }

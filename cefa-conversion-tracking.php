@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CEFA Conversion Tracking
  * Description: Emits one clean school_inquiry_submit dataLayer event after confirmed Gravity Form 4 success.
- * Version: 0.1.3
+ * Version: 0.1.4
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Author: CEFA
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CEFA_CONVERSION_TRACKING_VERSION', '0.1.3' );
+define( 'CEFA_CONVERSION_TRACKING_VERSION', '0.1.4' );
 define( 'CEFA_CONVERSION_TRACKING_FILE', __FILE__ );
 define( 'CEFA_CONVERSION_TRACKING_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CEFA_CONVERSION_TRACKING_URL', plugin_dir_url( __FILE__ ) );
