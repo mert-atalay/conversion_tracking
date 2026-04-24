@@ -1,0 +1,43 @@
+version: "7.0"
+decision: "hybrid_helper_plugin"
+phase: "Phase 1A"
+canonical_event: "school_inquiry_submit"
+
+owners:
+  agency_theme_school_manager:
+    - "Form 4 UI"
+    - "Field 32 custom compound behavior"
+    - "school/program/day rendering"
+    - "school locking"
+    - "KinderTales/business delivery"
+  cefa_helper_plugin:
+    - "event_id lifecycle"
+    - "clean dataLayer event"
+    - "duplicate guards"
+    - "false-positive guards"
+    - "future collector handoff"
+  cefa_gtm:
+    - "GA4 generate_lead mapping"
+    - "Google Ads conversion mapping"
+    - "Meta Lead mapping"
+    - "micro-conversion tracking"
+
+field_map:
+  form_id: 4
+  compound_field: 32
+  subfields:
+    "32.1": "selected school UUID"
+    "32.2": "program ID"
+    "32.3": "days per week"
+    "32.4": "event_id"
+    "32.5": "school slug"
+    "32.6": "school name"
+    "32.7": "program name"
+
+phase_1a_acceptance:
+  - "one successful Form 4 submission"
+  - "one school_inquiry_submit"
+  - "same event_id in dataLayer and 32.4"
+  - "clean separate parameters"
+  - "no false positives"
+  - "no duplicate fires"

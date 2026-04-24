@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  static-checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - '7.4'
+          - '8.2'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHP syntax
+        run: composer lint:php
+
+      - name: WordPress coding standards
+        run: composer phpcs
+
+      - name: JavaScript syntax
+        run: node --check assets/js/cefa-phase1a-tracking-bridge.js

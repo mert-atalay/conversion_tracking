@@ -1,0 +1,218 @@
+(function () {
+	'use strict';
+
+	var config = window.CEFAPhase1ATrackingBridge || {};
+	var formId = Number(config.formId || 4);
+	var eventFieldSelectors = config.eventFieldSelectors || [];
+	var consumedKey = config.consumedKey || 'cefa_phase1a_consumed_event_ids';
+	var pendingKey = config.pendingKey || 'cefa_phase1a_form4_pending';
+	var queryFlag = config.queryFlag || 'cefa_tracking';
+	var queryToken = config.queryToken || 'cefa_tracking_token';
+	var restPayloadBase = config.restPayloadBase || '';
+
+	function uuid() {
+		if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+			return window.crypto.randomUUID();
+		}
+
+		return 'cefa_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+	}
+
+	function readJson(key, fallback) {
+		try {
+			var raw = window.sessionStorage.getItem(key);
+			return raw ? JSON.parse(raw) : fallback;
+		} catch (error) {
+			return fallback;
+		}
+	}
+
+	function writeJson(key, value) {
+		try {
+			window.sessionStorage.setItem(key, JSON.stringify(value));
+		} catch (error) {}
+	}
+
+	function findEventIdField() {
+		for (var i = 0; i < eventFieldSelectors.length; i++) {
+			var found = document.querySelector(eventFieldSelectors[i]);
+			if (found) {
+				return found;
+			}
+		}
+
+		return document.querySelector('[id$="_32_4"], [name="input_32_4"], [name="input_32.4"]');
+	}
+
+	function ensureEventId() {
+		var field = findEventIdField();
+
+		if (!field) {
+			return '';
+		}
+
+		if (!field.value) {
+			field.value = uuid();
+		}
+
+		return field.value;
+	}
+
+	function initFormTracking() {
+		var form = document.querySelector('#gform_' + formId);
+
+		if (!form || form.getAttribute('data-cefa-phase1a-tracking-attached') === '1') {
+			return;
+		}
+
+		form.setAttribute('data-cefa-phase1a-tracking-attached', '1');
+		ensureEventId();
+
+		form.addEventListener(
+			'submit',
+			function () {
+				var eventId = ensureEventId();
+
+				if (!eventId) {
+					return;
+				}
+
+				writeJson(pendingKey, {
+					event_id: eventId,
+					form_id: String(formId),
+					ts: Date.now()
+				});
+			},
+			true
+		);
+	}
+
+	function getConsumedIds() {
+		var ids = readJson(consumedKey, []);
+		return Array.isArray(ids) ? ids : [];
+	}
+
+	function hasConsumed(eventId) {
+		return getConsumedIds().indexOf(eventId) !== -1;
+	}
+
+	function markConsumed(eventId) {
+		if (!eventId) {
+			return;
+		}
+
+		var ids = getConsumedIds();
+
+		if (ids.indexOf(eventId) === -1) {
+			ids.push(eventId);
+		}
+
+		writeJson(consumedKey, ids.slice(-20));
+	}
+
+	function dataLayerAlreadyHas(payload) {
+		if (!payload || !payload.event_id || !Array.isArray(window.dataLayer)) {
+			return false;
+		}
+
+		for (var i = 0; i < window.dataLayer.length; i++) {
+			var item = window.dataLayer[i];
+
+			if (
+				item &&
+				item.event === 'school_inquiry_submit' &&
+				item.event_id === payload.event_id
+			) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function cleanTrackingParams() {
+		try {
+			var url = new URL(window.location.href);
+			url.searchParams.delete(queryFlag);
+			url.searchParams.delete(queryToken);
+			window.history.replaceState(null, '', url.toString());
+		} catch (error) {}
+	}
+
+	function pushPayload(payload) {
+		if (!payload || payload.event !== 'school_inquiry_submit' || !payload.event_id) {
+			return;
+		}
+
+		if (hasConsumed(payload.event_id) || dataLayerAlreadyHas(payload)) {
+			cleanTrackingParams();
+			return;
+		}
+
+		payload.inquiry_success_url = window.location.href;
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push(payload);
+		markConsumed(payload.event_id);
+		cleanTrackingParams();
+	}
+
+	function fetchPayload(token) {
+		if (!restPayloadBase || !token) {
+			return;
+		}
+
+		window
+			.fetch(restPayloadBase + encodeURIComponent(token), {
+				credentials: 'same-origin',
+				cache: 'no-store',
+				headers: {
+					Accept: 'application/json'
+				}
+			})
+			.then(function (response) {
+				if (!response.ok) {
+					throw new Error('Tracking payload unavailable.');
+				}
+
+				return response.json();
+			})
+			.then(pushPayload)
+			.catch(cleanTrackingParams);
+	}
+
+	function initThankYouTracking() {
+		var url;
+
+		try {
+			url = new URL(window.location.href);
+		} catch (error) {
+			return;
+		}
+
+		if (url.searchParams.get(queryFlag) !== '1') {
+			return;
+		}
+
+		var token = url.searchParams.get(queryToken);
+
+		if (!token) {
+			cleanTrackingParams();
+			return;
+		}
+
+		fetchPayload(token);
+	}
+
+	function init() {
+		initFormTracking();
+		initThankYouTracking();
+	}
+
+	document.addEventListener('DOMContentLoaded', init);
+	document.addEventListener('gform_post_render', init);
+	document.addEventListener('gform/postRender', function (event) {
+		if (!event.detail || Number(event.detail.formId) === formId) {
+			init();
+		}
+	});
+})();
