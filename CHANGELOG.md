@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5 - 2026-04-24
+
+- Release bump for staging replacement after confirming staging was still running the old `0.1.2` PHP build.
+- Keeps the `0.1.4` behavior: no inline form-page success push; final event should come from the thank-you payload flow only.
+
 ## 0.1.4 - 2026-04-24
 
 - Removed the inline form-page success push so the final event is emitted from the thank-you page payload flow only.
