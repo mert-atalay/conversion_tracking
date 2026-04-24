@@ -2,7 +2,7 @@
 /**
  * REST route for one-time tracking payload consumption.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * REST controller.
  */
-final class CEFA_Phase1A_Tracking_Bridge_REST_Controller {
+final class CEFA_Conversion_Tracking_REST_Controller {
 	/**
 	 * Register REST routes.
 	 *
@@ -20,7 +20,7 @@ final class CEFA_Phase1A_Tracking_Bridge_REST_Controller {
 	 */
 	public static function register_routes(): void {
 		register_rest_route(
-			'cefa-phase1a/v1',
+			'cefa-conversion-tracking/v1',
 			'/tracking-payload/(?P<token>[A-Za-z0-9_-]{8,128})',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -44,12 +44,12 @@ final class CEFA_Phase1A_Tracking_Bridge_REST_Controller {
 	 */
 	public static function get_tracking_payload( WP_REST_Request $request ) {
 		$token   = (string) $request->get_param( 'token' );
-		$payload = CEFA_Phase1A_Tracking_Bridge_Duplicate_Guard::consume_payload( $token );
+		$payload = CEFA_Conversion_Tracking_Duplicate_Guard::consume_payload( $token );
 
 		if ( null === $payload ) {
 			return new WP_Error(
-				'cefa_phase1a_tracking_payload_not_found',
-				__( 'Tracking payload is unavailable or already consumed.', 'cefa-phase1a-tracking-bridge' ),
+				'cefa_conversion_tracking_payload_not_found',
+				__( 'Tracking payload is unavailable or already consumed.', 'cefa-conversion-tracking' ),
 				array( 'status' => 404 )
 			);
 		}

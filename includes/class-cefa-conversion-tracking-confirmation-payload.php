@@ -2,7 +2,7 @@
 /**
  * Gravity Forms confirmation integration.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Creates server-confirmed tracking payloads after successful submission.
  */
-final class CEFA_Phase1A_Tracking_Bridge_Confirmation_Payload {
+final class CEFA_Conversion_Tracking_Confirmation_Payload {
 	/**
 	 * Prepare tokenized tracking payload for redirect or inline confirmations.
 	 *
@@ -25,7 +25,7 @@ final class CEFA_Phase1A_Tracking_Bridge_Confirmation_Payload {
 	public static function prepare_confirmation_tracking( $confirmation, array $form, array $entry, bool $is_ajax ) {
 		unset( $is_ajax );
 
-		if ( CEFA_PHASE1A_TRACKING_BRIDGE_FORM_ID !== (int) rgar( $form, 'id' ) ) {
+		if ( CEFA_CONVERSION_TRACKING_FORM_ID !== (int) rgar( $form, 'id' ) ) {
 			return $confirmation;
 		}
 
@@ -34,8 +34,8 @@ final class CEFA_Phase1A_Tracking_Bridge_Confirmation_Payload {
 		}
 
 		$entry   = self::ensure_entry_event_id( $entry );
-		$payload = CEFA_Phase1A_Tracking_Bridge_DataLayer_Payload::from_entry( $entry );
-		$token   = CEFA_Phase1A_Tracking_Bridge_Duplicate_Guard::store_payload( $payload );
+		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry );
+		$token   = CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
 
 		if ( is_array( $confirmation ) && ! empty( $confirmation['redirect'] ) ) {
 			$confirmation['redirect'] = add_query_arg(
@@ -63,7 +63,7 @@ final class CEFA_Phase1A_Tracking_Bridge_Confirmation_Payload {
 	 * @return array
 	 */
 	private static function ensure_entry_event_id( array $entry ): array {
-		$event_id = CEFA_Phase1A_Tracking_Bridge_Event_ID::normalize_event_id( (string) rgar( $entry, '32.4' ) );
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) rgar( $entry, '32.4' ) );
 
 		if ( '' !== $event_id ) {
 			$entry['32.4'] = $event_id;

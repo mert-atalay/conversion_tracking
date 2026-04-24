@@ -2,7 +2,7 @@
 /**
  * DataLayer payload builder.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Builds clean tracking payloads from saved Gravity Forms entries.
  */
-final class CEFA_Phase1A_Tracking_Bridge_DataLayer_Payload {
+final class CEFA_Conversion_Tracking_DataLayer_Payload {
 	/**
 	 * Build the canonical Phase 1A payload.
 	 *
@@ -20,7 +20,7 @@ final class CEFA_Phase1A_Tracking_Bridge_DataLayer_Payload {
 	 * @return array<string, mixed>
 	 */
 	public static function from_entry( array $entry ): array {
-		$event_id = CEFA_Phase1A_Tracking_Bridge_Event_ID::normalize_event_id( (string) rgar( $entry, '32.4' ) );
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) rgar( $entry, '32.4' ) );
 
 		if ( '' === $event_id ) {
 			$event_id = wp_generate_uuid4();

@@ -2,7 +2,7 @@
 /**
  * Event ID handling.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Ensures Form 4 has a submission-scoped event ID.
  */
-final class CEFA_Phase1A_Tracking_Bridge_Event_ID {
+final class CEFA_Conversion_Tracking_Event_ID {
 	/**
 	 * Field 32.4 POST keys observed across Gravity Forms compound inputs.
 	 */

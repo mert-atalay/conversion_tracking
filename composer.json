@@ -1,5 +1,5 @@
 {
-  "name": "cefa/phase1a-tracking-bridge",
+  "name": "cefa/conversion-tracking",
   "description": "Lightweight CEFA Phase 1A WordPress conversion tracking bridge.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",

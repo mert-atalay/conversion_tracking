@@ -2,7 +2,7 @@
 /**
  * Duplicate guard helpers.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,11 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Stores and consumes short-lived tracking payloads.
  */
-final class CEFA_Phase1A_Tracking_Bridge_Duplicate_Guard {
+final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	/**
 	 * Transient key prefix.
 	 */
-	private const TRANSIENT_PREFIX = 'cefa_phase1a_tracking_';
+	private const TRANSIENT_PREFIX = 'cefa_conversion_tracking_';
 
 	/**
 	 * Payload lifetime in seconds.

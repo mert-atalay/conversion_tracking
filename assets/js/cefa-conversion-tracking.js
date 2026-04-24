@@ -1,11 +1,11 @@
 (function () {
 	'use strict';
 
-	var config = window.CEFAPhase1ATrackingBridge || {};
+	var config = window.CEFAConversionTracking || {};
 	var formId = Number(config.formId || 4);
 	var eventFieldSelectors = config.eventFieldSelectors || [];
-	var consumedKey = config.consumedKey || 'cefa_phase1a_consumed_event_ids';
-	var pendingKey = config.pendingKey || 'cefa_phase1a_form4_pending';
+	var consumedKey = config.consumedKey || 'cefa_conversion_tracking_consumed_event_ids';
+	var pendingKey = config.pendingKey || 'cefa_conversion_tracking_form4_pending';
 	var queryFlag = config.queryFlag || 'cefa_tracking';
 	var queryToken = config.queryToken || 'cefa_tracking_token';
 	var restPayloadBase = config.restPayloadBase || '';
@@ -61,11 +61,11 @@
 	function initFormTracking() {
 		var form = document.querySelector('#gform_' + formId);
 
-		if (!form || form.getAttribute('data-cefa-phase1a-tracking-attached') === '1') {
+		if (!form || form.getAttribute('data-cefa-conversion-tracking-attached') === '1') {
 			return;
 		}
 
-		form.setAttribute('data-cefa-phase1a-tracking-attached', '1');
+		form.setAttribute('data-cefa-conversion-tracking-attached', '1');
 		ensureEventId();
 
 		form.addEventListener(

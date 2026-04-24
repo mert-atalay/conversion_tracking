@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="CEFA Phase 1A Tracking Bridge">
-	<description>WordPress Coding Standards for the CEFA Phase 1A Tracking Bridge plugin.</description>
+<ruleset name="CEFA Conversion Tracking">
+	<description>WordPress Coding Standards for the CEFA Conversion Tracking plugin.</description>
 
 	<file>.</file>
 

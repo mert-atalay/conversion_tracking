@@ -2,7 +2,7 @@
 /**
  * Main plugin bootstrap.
  *
- * @package CEFA_Phase1A_Tracking_Bridge
+ * @package CEFA_Conversion_Tracking
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,11 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Coordinates Phase 1A tracking hooks.
  */
-final class CEFA_Phase1A_Tracking_Bridge {
+final class CEFA_Conversion_Tracking {
 	/**
 	 * REST namespace.
 	 */
-	private const REST_NAMESPACE = 'cefa-phase1a/v1';
+	private const REST_NAMESPACE = 'cefa-conversion-tracking/v1';
 
 	/**
 	 * Initialize hooks.
@@ -25,9 +25,9 @@ final class CEFA_Phase1A_Tracking_Bridge {
 	 */
 	public static function init(): void {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
-		add_filter( 'gform_pre_submission_4', array( 'CEFA_Phase1A_Tracking_Bridge_Event_ID', 'ensure_event_id_before_submission' ) );
-		add_filter( 'gform_confirmation_4', array( 'CEFA_Phase1A_Tracking_Bridge_Confirmation_Payload', 'prepare_confirmation_tracking' ), 10, 4 );
-		add_action( 'rest_api_init', array( 'CEFA_Phase1A_Tracking_Bridge_REST_Controller', 'register_routes' ) );
+		add_filter( 'gform_pre_submission_4', array( 'CEFA_Conversion_Tracking_Event_ID', 'ensure_event_id_before_submission' ) );
+		add_filter( 'gform_confirmation_4', array( 'CEFA_Conversion_Tracking_Confirmation_Payload', 'prepare_confirmation_tracking' ), 10, 4 );
+		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
 	}
 
 	/**
@@ -39,10 +39,10 @@ final class CEFA_Phase1A_Tracking_Bridge {
 	 * @return void
 	 */
 	public static function enqueue_scripts(): void {
-		$handle = 'cefa-phase1a-tracking-bridge';
-		$src    = CEFA_PHASE1A_TRACKING_BRIDGE_URL . 'assets/js/cefa-phase1a-tracking-bridge.js';
-		$path   = CEFA_PHASE1A_TRACKING_BRIDGE_DIR . 'assets/js/cefa-phase1a-tracking-bridge.js';
-		$ver    = file_exists( $path ) ? (string) filemtime( $path ) : CEFA_PHASE1A_TRACKING_BRIDGE_VERSION;
+		$handle = 'cefa-conversion-tracking';
+		$src    = CEFA_CONVERSION_TRACKING_URL . 'assets/js/cefa-conversion-tracking.js';
+		$path   = CEFA_CONVERSION_TRACKING_DIR . 'assets/js/cefa-conversion-tracking.js';
+		$ver    = file_exists( $path ) ? (string) filemtime( $path ) : CEFA_CONVERSION_TRACKING_VERSION;
 
 		wp_enqueue_script(
 			$handle,
@@ -57,9 +57,9 @@ final class CEFA_Phase1A_Tracking_Bridge {
 
 		wp_localize_script(
 			$handle,
-			'CEFAPhase1ATrackingBridge',
+			'CEFAConversionTracking',
 			array(
-				'formId'              => CEFA_PHASE1A_TRACKING_BRIDGE_FORM_ID,
+				'formId'              => CEFA_CONVERSION_TRACKING_FORM_ID,
 				'eventFieldSelectors' => array(
 					'[name="input_32_4"]',
 					'[name="input_32.4"]',
@@ -69,8 +69,8 @@ final class CEFA_Phase1A_Tracking_Bridge {
 				'restPayloadBase'     => esc_url_raw( rest_url( self::REST_NAMESPACE . '/tracking-payload/' ) ),
 				'queryFlag'           => 'cefa_tracking',
 				'queryToken'          => 'cefa_tracking_token',
-				'consumedKey'         => 'cefa_phase1a_consumed_event_ids',
-				'pendingKey'          => 'cefa_phase1a_form4_pending',
+				'consumedKey'         => 'cefa_conversion_tracking_consumed_event_ids',
+				'pendingKey'          => 'cefa_conversion_tracking_form4_pending',
 			)
 		);
 	}

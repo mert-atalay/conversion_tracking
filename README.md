@@ -1,4 +1,4 @@
-# CEFA Phase 1A Tracking Bridge
+# CEFA Conversion Tracking
 
 Lightweight WordPress plugin for CEFA parent-site conversion tracking.
 
@@ -62,11 +62,11 @@ window.dataLayer.push({
 
    ```bash
    mkdir -p dist
-   git archive --format=zip --output=dist/cefa-phase1a-tracking-bridge.zip HEAD
+   git archive --format=zip --output=dist/cefa-conversion-tracking.zip HEAD
    ```
 
 2. Upload the ZIP in WordPress Admin under `Plugins > Add New > Upload Plugin`.
-3. Activate `CEFA Phase 1A Tracking Bridge`.
+3. Activate `CEFA Conversion Tracking`.
 4. Keep the Gravity Forms Google Analytics Add-On event unmapped in GTM if this helper plugin is the final event source.
 
 ## Acceptance Tests
@@ -92,7 +92,7 @@ Run checks:
 ```bash
 composer lint:php
 composer phpcs
-node --check assets/js/cefa-phase1a-tracking-bridge.js
+node --check assets/js/cefa-conversion-tracking.js
 ```
 
 ## Phase Roadmap
