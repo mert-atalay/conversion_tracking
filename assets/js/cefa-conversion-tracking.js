@@ -10,6 +10,20 @@
 	var queryToken = config.queryToken || 'cefa_tracking_token';
 	var restPayloadBase = config.restPayloadBase || '';
 	var restEventBase = config.restEventBase || '';
+	var microConsumedKey = config.microConsumedKey || 'cefa_conversion_tracking_micro_consumed';
+	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
+	var clickDelayMs = Number(config.clickDelayMs || 0);
+	var trackedEvents = Array.isArray(config.trackedEvents)
+		? config.trackedEvents
+		: [
+				'parent_inquiry_cta_click',
+				'find_a_school_click',
+				'phone_click',
+				'email_click',
+				'form_start',
+				'form_submit_click',
+				'validation_error'
+			];
 
 	function uuid() {
 		if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -32,6 +46,366 @@
 		try {
 			window.sessionStorage.setItem(key, JSON.stringify(value));
 		} catch (error) {}
+	}
+
+	function normalizeText(value, maxLength) {
+		var length = maxLength || 180;
+
+		return String(value || '')
+			.replace(/\s+/g, ' ')
+			.trim()
+			.slice(0, length);
+	}
+
+	function parseUrl(value) {
+		try {
+			return new URL(value, window.location.href);
+		} catch (error) {
+			return null;
+		}
+	}
+
+	function currentUrl() {
+		return parseUrl(window.location.href);
+	}
+
+	function getPagePath() {
+		var url = currentUrl();
+
+		return url ? url.pathname : window.location.pathname;
+	}
+
+	function getQueryParam(name, url) {
+		var parsed = url || currentUrl();
+
+		return parsed ? normalizeText(parsed.searchParams.get(name) || '') : '';
+	}
+
+	function schoolSlugFromPath(pathname) {
+		var match = String(pathname || '').match(/^\/school\/([^/?#]+)/i);
+
+		return match ? decodeURIComponent(match[1]) : '';
+	}
+
+	function inferPageType() {
+		var path = getPagePath();
+
+		if (/^\/school\/[^/]+\/?$/i.test(path)) {
+			return 'school';
+		}
+
+		if (/^\/find-a-school\/?$/i.test(path)) {
+			return 'find_a_school';
+		}
+
+		if (/submit-an-inquiry-today|inquire-form/i.test(path)) {
+			return 'inquiry_form';
+		}
+
+		if (/thank-you/i.test(path)) {
+			return 'thank_you';
+		}
+
+		return 'parent';
+	}
+
+	function readFieldValue(root, selectors) {
+		var scope = root || document;
+
+		for (var i = 0; i < selectors.length; i++) {
+			var field = scope.querySelector(selectors[i]);
+
+			if (field && field.value) {
+				return normalizeText(field.value, 220);
+			}
+		}
+
+		return '';
+	}
+
+	function field32Value(root, subfield) {
+		return readFieldValue(root, [
+			'[name="input_32_' + subfield + '"]',
+			'[name="input_32.' + subfield + '"]',
+			'#input_' + formId + '_32_' + subfield,
+			'input[data-cefa-si-meta="' + subfield + '"]'
+		]);
+	}
+
+	function readFormContext(root) {
+		var selectedSlug = field32Value(root, '5') || getQueryParam('location');
+		var landingSlug = schoolSlugFromPath(getPagePath());
+
+		return {
+			form_id: String(formId),
+			form_family: 'parent_inquiry',
+			lead_type: 'cefa_lead',
+			lead_intent: 'inquire_now',
+			school_selected_id: field32Value(root, '1'),
+			school_selected_slug: selectedSlug,
+			school_selected_name: field32Value(root, '6'),
+			school_landing_slug: landingSlug,
+			school_match_status: landingSlug && selectedSlug ? (landingSlug === selectedSlug ? 'matched' : 'changed') : 'unknown',
+			program_id: field32Value(root, '2'),
+			program_name: field32Value(root, '7'),
+			days_per_week: field32Value(root, '3'),
+			inquiry_event_id: field32Value(root, '4') || getPendingEventId()
+		};
+	}
+
+	function compactPayload(payload) {
+		var cleaned = {};
+
+		Object.keys(payload || {}).forEach(function (key) {
+			var value = payload[key];
+
+			if (value === undefined || value === null || value === '') {
+				return;
+			}
+
+			cleaned[key] = value;
+		});
+
+		return cleaned;
+	}
+
+	function mergePayload(base, extra) {
+		Object.keys(extra || {}).forEach(function (key) {
+			if (extra[key] !== '') {
+				base[key] = extra[key];
+			}
+		});
+
+		return base;
+	}
+
+	function baseMicroPayload(eventName) {
+		return {
+			event: eventName,
+			event_id: uuid(),
+			event_scope: 'micro',
+			page_context: 'parent',
+			page_type: inferPageType(),
+			page_url: window.location.href,
+			page_path: getPagePath(),
+			tracking_source: 'helper_plugin'
+		};
+	}
+
+	function eventIsTracked(eventName) {
+		return trackedEvents.indexOf(eventName) !== -1;
+	}
+
+	function pushMicroPayload(payload) {
+		if (!payload || !eventIsTracked(payload.event)) {
+			return;
+		}
+
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push(compactPayload(payload));
+	}
+
+	function microConsumedIds() {
+		var ids = readJson(microConsumedKey, []);
+
+		return Array.isArray(ids) ? ids : [];
+	}
+
+	function markMicroConsumed(key) {
+		if (!key) {
+			return false;
+		}
+
+		var ids = microConsumedIds();
+
+		if (ids.indexOf(key) !== -1) {
+			return false;
+		}
+
+		ids.push(key);
+		writeJson(microConsumedKey, ids.slice(-50));
+
+		return true;
+	}
+
+	function inferCtaLocation(element) {
+		if (!element || !element.closest) {
+			return 'unknown';
+		}
+
+		if (element.getAttribute('data-cefa-cta-location')) {
+			return normalizeText(element.getAttribute('data-cefa-cta-location'), 80);
+		}
+
+		if (element.closest('header, [class*="header"], [class*="site-header"]')) {
+			return 'header';
+		}
+
+		if (element.closest('footer, [class*="footer"], [class*="site-footer"]')) {
+			return 'footer';
+		}
+
+		if (element.closest('nav, [class*="nav"], [class*="menu"]')) {
+			return 'navigation';
+		}
+
+		if (element.closest('[class*="hero"], [id*="hero"]')) {
+			return 'hero';
+		}
+
+		if (element.closest('main, article, section')) {
+			return 'content';
+		}
+
+		return 'unknown';
+	}
+
+	function inferClickEvent(anchor, url) {
+		var explicitEvent = anchor.getAttribute('data-cefa-event');
+
+		if (explicitEvent && eventIsTracked(explicitEvent)) {
+			return explicitEvent;
+		}
+
+		var href = String(anchor.getAttribute('href') || '');
+		var path = url ? url.pathname : href;
+
+		if (/^tel:/i.test(href)) {
+			return 'phone_click';
+		}
+
+		if (/^mailto:/i.test(href)) {
+			return 'email_click';
+		}
+
+		if (/find-a-school/i.test(path)) {
+			return 'find_a_school_click';
+		}
+
+		if (/submit-an-inquiry-today|inquire-form|inquiry/i.test(path) || /kindertales\.com/i.test(href)) {
+			return 'parent_inquiry_cta_click';
+		}
+
+		return '';
+	}
+
+	function inferCtaId(eventName, anchor) {
+		var explicitId = anchor.getAttribute('data-cefa-cta-id') || anchor.getAttribute('data-cefa-cta');
+
+		if (explicitId) {
+			return normalizeText(explicitId, 120);
+		}
+
+		return inferPageType() + '_' + eventName;
+	}
+
+	function buildClickPayload(eventName, anchor, url) {
+		var href = String(anchor.getAttribute('href') || '');
+		var text = normalizeText(anchor.innerText || anchor.textContent || anchor.getAttribute('aria-label') || anchor.title || href);
+		var payload = baseMicroPayload(eventName);
+
+		mergePayload(payload, {
+			click_url: url ? url.href : href,
+			click_text: text,
+			link_url: url ? url.href : href,
+			link_text: text,
+			link_domain: url ? url.hostname : '',
+			link_path: url ? url.pathname : '',
+			cta_id: inferCtaId(eventName, anchor),
+			cta_text: text,
+			cta_url: url ? url.href : href,
+			cta_location: inferCtaLocation(anchor),
+			lead_intent: 'parent_inquiry_cta_click' === eventName ? 'inquire_now' : ''
+		});
+
+		mergePayload(payload, readFormContext(document));
+
+		if ('parent_inquiry_cta_click' === eventName && !payload.school_selected_slug) {
+			payload.school_selected_slug = getQueryParam('location', url) || payload.school_landing_slug;
+			payload.school_match_status =
+				payload.school_landing_slug && payload.school_selected_slug
+					? payload.school_landing_slug === payload.school_selected_slug
+						? 'matched'
+						: 'changed'
+					: 'unknown';
+		}
+
+		if ('phone_click' === eventName) {
+			payload.phone_number = normalizeText(href.replace(/^tel:/i, ''), 80);
+		}
+
+		if ('email_click' === eventName) {
+			payload.email_target = normalizeText(href.replace(/^mailto:/i, '').split('?')[0], 120);
+		}
+
+		if ('find_a_school_click' === eventName) {
+			payload.lead_intent = 'find_a_school';
+		}
+
+		return payload;
+	}
+
+	function shouldDelayNavigation(event, anchor) {
+		if (!clickDelayMs || clickDelayMs < 1 || !anchor || 'A' !== anchor.tagName) {
+			return false;
+		}
+
+		if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			return false;
+		}
+
+		if (anchor.target && '_self' !== anchor.target) {
+			return false;
+		}
+
+		if (anchor.hasAttribute('download')) {
+			return false;
+		}
+
+		return !/^#|^javascript:/i.test(String(anchor.getAttribute('href') || ''));
+	}
+
+	function delayedNavigate(anchor) {
+		window.setTimeout(function () {
+			window.location.href = anchor.href;
+		}, clickDelayMs);
+	}
+
+	function initMicroClickTracking() {
+		if (document.documentElement.getAttribute('data-cefa-micro-clicks-attached') === '1') {
+			return;
+		}
+
+		document.documentElement.setAttribute('data-cefa-micro-clicks-attached', '1');
+		document.addEventListener(
+			'click',
+			function (event) {
+				var anchor = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+
+				if (!anchor) {
+					return;
+				}
+
+				var url = parseUrl(anchor.getAttribute('href') || '');
+				var eventName = inferClickEvent(anchor, url);
+
+				if (!eventName) {
+					return;
+				}
+
+				var payload = buildClickPayload(eventName, anchor, url);
+
+				if (shouldDelayNavigation(event, anchor)) {
+					event.preventDefault();
+					pushMicroPayload(payload);
+					delayedNavigate(anchor);
+					return;
+				}
+
+				pushMicroPayload(payload);
+			},
+			true
+		);
 	}
 
 	function findEventIdField(scope) {
@@ -98,6 +472,92 @@
 			},
 			true
 		);
+
+		initFormMicroTracking(form);
+	}
+
+	function formStartConsumed(form, inquiryEventId) {
+		var key = [
+			formStartKey,
+			inquiryEventId || 'no_inquiry_event',
+			window.location.pathname
+		].join(':');
+
+		return !markMicroConsumed(key);
+	}
+
+	function pushFormStart(form) {
+		var inquiryEventId = ensureEventId(form);
+
+		if (formStartConsumed(form, inquiryEventId)) {
+			return;
+		}
+
+		var payload = mergePayload(baseMicroPayload('form_start'), readFormContext(form));
+		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
+		pushMicroPayload(payload);
+	}
+
+	function pushSubmitClick(form) {
+		var inquiryEventId = ensureEventId(form);
+		var payload = mergePayload(baseMicroPayload('form_submit_click'), readFormContext(form));
+
+		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
+		pushMicroPayload(payload);
+	}
+
+	function initFormMicroTracking(form) {
+		if (!form || form.getAttribute('data-cefa-conversion-micro-attached') === '1') {
+			return;
+		}
+
+		form.setAttribute('data-cefa-conversion-micro-attached', '1');
+
+		['focusin', 'change', 'input'].forEach(function (eventName) {
+			form.addEventListener(
+				eventName,
+				function (event) {
+					if (!event.target || !event.target.matches || event.target.matches('button, [type="submit"], [type="hidden"]')) {
+						return;
+					}
+
+					pushFormStart(form);
+				},
+				true
+			);
+		});
+
+		form.addEventListener(
+			'submit',
+			function () {
+				pushSubmitClick(form);
+			},
+			true
+		);
+	}
+
+	function initValidationErrorTracking() {
+		var form = document.querySelector('#gform_' + formId);
+
+		if (!form || !form.querySelector('.gform_validation_errors, .validation_error')) {
+			return;
+		}
+
+		var errorCount = form.querySelectorAll('.gfield_error, [aria-invalid="true"]').length;
+		var key = [
+			'validation_error',
+			getPendingEventId() || window.location.pathname,
+			String(errorCount)
+		].join(':');
+
+		if (!markMicroConsumed(key)) {
+			return;
+		}
+
+		var payload = mergePayload(baseMicroPayload('validation_error'), readFormContext(form));
+		payload.validation_error_count = String(errorCount);
+		payload.inquiry_event_id = payload.inquiry_event_id || getPendingEventId();
+		pushMicroPayload(payload);
 	}
 
 	function initAjaxConfirmationTracking() {
@@ -298,8 +758,10 @@
 	}
 
 	function init() {
+		initMicroClickTracking();
 		initFormTracking();
 		initAjaxConfirmationTracking();
+		initValidationErrorTracking();
 		initThankYouTracking();
 	}
 

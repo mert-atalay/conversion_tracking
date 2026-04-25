@@ -73,6 +73,18 @@ final class CEFA_Conversion_Tracking {
 				'queryToken'          => 'cefa_tracking_token',
 				'consumedKey'         => 'cefa_conversion_tracking_consumed_event_ids',
 				'pendingKey'          => 'cefa_conversion_tracking_form4_pending',
+				'microConsumedKey'    => 'cefa_conversion_tracking_micro_consumed',
+				'formStartKey'        => 'cefa_conversion_tracking_form4_started',
+				'clickDelayMs'        => 200,
+				'trackedEvents'       => array(
+					'parent_inquiry_cta_click',
+					'find_a_school_click',
+					'phone_click',
+					'email_click',
+					'form_start',
+					'form_submit_click',
+					'validation_error',
+				),
 			)
 		);
 	}

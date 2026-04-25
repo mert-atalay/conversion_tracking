@@ -2,7 +2,7 @@
 
 Lightweight WordPress plugin for CEFA parent-site conversion tracking.
 
-This plugin emits one clean `school_inquiry_submit` `dataLayer` event after a confirmed Gravity Form 4 submission.
+This plugin emits clean CEFA parent-site `dataLayer` events for the confirmed Form 4 inquiry conversion and the Phase 1A browser micro-conversions.
 
 It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sync, tracking cookies, KinderTales, GTM, or platform tags.
 
@@ -13,6 +13,8 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
 - Prevents direct thank-you-page false positives and reload duplicates.
+- Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
+- Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
 
 ## What It Does Not Own
 
@@ -55,6 +57,44 @@ window.dataLayer.push({
   tracking_source: "helper_plugin"
 });
 ```
+
+## Micro-Conversion Events
+
+The plugin also pushes these browser-side events into `window.dataLayer`:
+
+- `parent_inquiry_cta_click`
+- `find_a_school_click`
+- `phone_click`
+- `email_click`
+- `form_start`
+- `form_submit_click`
+- `validation_error`
+
+Example micro-conversion payload:
+
+```js
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event: "parent_inquiry_cta_click",
+  event_id: "<unique micro-event ID>",
+  event_scope: "micro",
+  page_context: "parent",
+  page_type: "school",
+  page_url: window.location.href,
+  page_path: "/school/abbotsford-highstreet/",
+  tracking_source: "helper_plugin",
+  click_url: "https://cefamain.kinsta.cloud/submit-an-inquiry-today/?location=abbotsford-highstreet",
+  click_text: "Inquire Now",
+  cta_id: "school_parent_inquiry_cta_click",
+  cta_location: "hero",
+  lead_intent: "inquire_now",
+  form_id: "4",
+  form_family: "parent_inquiry",
+  school_selected_slug: "abbotsford-highstreet"
+});
+```
+
+These are diagnostic/reporting events. They should go to GA4/BigQuery reporting first and should stay out of Google Ads bidding at launch unless CEFA explicitly decides otherwise.
 
 ## Install On Staging
 

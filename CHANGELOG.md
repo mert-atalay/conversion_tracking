@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - 2026-04-25
+
+- Added plugin-owned Phase 1A micro-conversion dataLayer events.
+- Added `parent_inquiry_cta_click`, `find_a_school_click`, `phone_click`, `email_click`, `form_start`, `form_submit_click`, and `validation_error`.
+- Added structured metadata for page context, CTA context, Form 4 context, school/program/day values, and micro-event IDs.
+- Added a short navigation delay for tracked same-window CTA/link clicks so GTM has time to process the plugin dataLayer event before navigation.
+- Kept the confirmed `school_inquiry_submit` contract unchanged.
+
 ## 0.1.6 - 2026-04-24
 
 - Scoped browser event ID reads to the submitted Form 4 instance to avoid duplicate Gravity Forms markup using the wrong hidden field.
