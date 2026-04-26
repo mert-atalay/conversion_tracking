@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-04-26
+
+- Normalized micro-conversion payloads so every GTM-mapped key is explicitly reset per event.
+- Prevented stale dataLayer metadata from carrying from one micro event into the next GA4 hit.
+
 ## 0.2.0 - 2026-04-25
 
 - Added plugin-owned Phase 1A micro-conversion dataLayer events.

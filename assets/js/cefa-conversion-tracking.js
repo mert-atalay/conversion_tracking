@@ -153,20 +153,52 @@
 		};
 	}
 
-	function compactPayload(payload) {
-		var cleaned = {};
+	function normalizedMicroPayload(payload) {
+		var keys = [
+			'event_scope',
+			'page_context',
+			'page_type',
+			'page_url',
+			'page_path',
+			'tracking_source',
+			'click_url',
+			'click_text',
+			'link_url',
+			'link_text',
+			'link_domain',
+			'link_path',
+			'cta_id',
+			'cta_text',
+			'cta_url',
+			'cta_location',
+			'lead_type',
+			'lead_intent',
+			'form_id',
+			'form_family',
+			'school_selected_id',
+			'school_selected_slug',
+			'school_selected_name',
+			'school_landing_id',
+			'school_landing_slug',
+			'school_match_status',
+			'program_id',
+			'program_name',
+			'days_per_week',
+			'inquiry_event_id',
+			'phone_number',
+			'email_target',
+			'validation_error_count'
+		];
+		var normalized = {
+			event: payload.event,
+			event_id: payload.event_id || uuid()
+		};
 
-		Object.keys(payload || {}).forEach(function (key) {
-			var value = payload[key];
-
-			if (value === undefined || value === null || value === '') {
-				return;
-			}
-
-			cleaned[key] = value;
+		keys.forEach(function (key) {
+			normalized[key] = payload[key] === undefined || payload[key] === null ? '' : payload[key];
 		});
 
-		return cleaned;
+		return normalized;
 	}
 
 	function mergePayload(base, extra) {
@@ -202,7 +234,7 @@
 		}
 
 		window.dataLayer = window.dataLayer || [];
-		window.dataLayer.push(compactPayload(payload));
+		window.dataLayer.push(normalizedMicroPayload(payload));
 	}
 
 	function microConsumedIds() {
