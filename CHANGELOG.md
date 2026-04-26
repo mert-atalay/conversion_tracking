@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 - 2026-04-26
+
+- Added submit-button click tracking so Gravity Forms iframe/AJAX submissions emit `form_submit_click`.
+- Added Gravity Forms rerender and mutation handling so validation messages emit `validation_error`.
+
 ## 0.2.1 - 2026-04-26
 
 - Normalized micro-conversion payloads so every GTM-mapped key is explicitly reset per event.

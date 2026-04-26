@@ -13,6 +13,8 @@
 	var microConsumedKey = config.microConsumedKey || 'cefa_conversion_tracking_micro_consumed';
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
 	var clickDelayMs = Number(config.clickDelayMs || 0);
+	var lastSubmitAttemptAt = 0;
+	var validationObserverStarted = false;
 	var trackedEvents = Array.isArray(config.trackedEvents)
 		? config.trackedEvents
 		: [
@@ -531,6 +533,14 @@
 	}
 
 	function pushSubmitClick(form) {
+		var now = Date.now();
+
+		if (now - lastSubmitAttemptAt < 750) {
+			return;
+		}
+
+		lastSubmitAttemptAt = now;
+
 		var inquiryEventId = ensureEventId(form);
 		var payload = mergePayload(baseMicroPayload('form_submit_click'), readFormContext(form));
 
@@ -558,6 +568,24 @@
 				true
 			);
 		});
+
+		form.addEventListener(
+			'click',
+			function (event) {
+				var target = event.target;
+
+				if (
+					!target ||
+					!target.matches ||
+					!target.matches('button[type="submit"], input[type="submit"], #gform_submit_button_' + formId)
+				) {
+					return;
+				}
+
+				pushSubmitClick(form);
+			},
+			true
+		);
 
 		form.addEventListener(
 			'submit',
@@ -590,6 +618,27 @@
 		payload.validation_error_count = String(errorCount);
 		payload.inquiry_event_id = payload.inquiry_event_id || getPendingEventId();
 		pushMicroPayload(payload);
+	}
+
+	function scheduleValidationErrorTracking() {
+		window.setTimeout(initValidationErrorTracking, 250);
+	}
+
+	function initValidationObserver() {
+		if (validationObserverStarted || !window.MutationObserver || !document.body) {
+			return;
+		}
+
+		validationObserverStarted = true;
+
+		new window.MutationObserver(function () {
+			if (document.querySelector('#gform_' + formId + ' .gform_validation_errors, #gform_' + formId + ' .validation_error')) {
+				scheduleValidationErrorTracking();
+			}
+		}).observe(document.body, {
+			childList: true,
+			subtree: true
+		});
 	}
 
 	function initAjaxConfirmationTracking() {
@@ -793,12 +842,16 @@
 		initMicroClickTracking();
 		initFormTracking();
 		initAjaxConfirmationTracking();
+		initValidationObserver();
 		initValidationErrorTracking();
 		initThankYouTracking();
 	}
 
 	document.addEventListener('DOMContentLoaded', init);
-	document.addEventListener('gform_post_render', init);
+	document.addEventListener('gform_post_render', function () {
+		init();
+		scheduleValidationErrorTracking();
+	});
 	document.addEventListener('gform_confirmation_loaded', function (event) {
 		if (!event.detail || Number(event.detail.formId) === formId) {
 			schedulePendingPayloadFetch();
@@ -807,10 +860,18 @@
 	document.addEventListener('gform/postRender', function (event) {
 		if (!event.detail || Number(event.detail.formId) === formId) {
 			init();
+			scheduleValidationErrorTracking();
 		}
 	});
 
 	if (window.jQuery) {
+		window.jQuery(document).on('gform_post_render gform_post_rendered', function (event, renderedFormId) {
+			if (Number(renderedFormId) === formId) {
+				init();
+				scheduleValidationErrorTracking();
+			}
+		});
+
 		window.jQuery(document).on('gform_confirmation_loaded', function (event, submittedFormId) {
 			if (Number(submittedFormId) === formId) {
 				schedulePendingPayloadFetch();
