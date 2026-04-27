@@ -2,9 +2,9 @@
 
 Lightweight WordPress plugin for CEFA parent-site conversion tracking.
 
-This plugin emits clean CEFA parent-site `dataLayer` events for the confirmed Form 4 inquiry conversion and the Phase 1A browser micro-conversions.
+This plugin emits clean CEFA parent-site `dataLayer` events for the confirmed Form 4 inquiry conversion, Phase 1A browser micro-conversions, and Phase 1B attribution persistence.
 
-It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sync, tracking cookies, KinderTales, GTM, or platform tags.
+It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sync, KinderTales, GTM, or platform tags.
 
 ## What It Owns
 
@@ -14,6 +14,8 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
 - Prevents direct thank-you-page false positives and reload duplicates.
 - Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
+- Stores first-touch and last-touch attribution in the same first-party cookie pattern used by the old parent site.
+- Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
 
 ## What It Does Not Own
@@ -23,7 +25,7 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - Field 32 structure.
 - School locking.
 - Location sync.
-- Attribution cookies.
+- School Manager location cookies/session state.
 - KinderTales/business submission delivery.
 - GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
 
@@ -51,6 +53,18 @@ window.dataLayer.push({
   program_id: "<32.2>",
   program_name: "<32.7>",
   days_per_week: "<32.3>",
+  utm_source: "<35>",
+  utm_medium: "<36>",
+  utm_campaign: "<37>",
+  utm_term: "<38>",
+  utm_content: "<39>",
+  gclid: "<40>",
+  gbraid: "<41>",
+  wbraid: "<42>",
+  fbclid: "<43>",
+  msclkid: "<44>",
+  first_landing_page: "<45>",
+  first_referrer: "<46>",
   inquiry_success: true,
   inquiry_success_url: window.location.href,
   page_context: "parent",
@@ -96,6 +110,17 @@ window.dataLayer.push({
 
 These are diagnostic/reporting events. They should go to GA4/BigQuery reporting first and should stay out of Google Ads bidding at launch unless CEFA explicitly decides otherwise.
 
+## Attribution Persistence
+
+The plugin ports the old parent-site attribution-cookie logic into the CEFA-owned tracking bridge:
+
+- `cefa_first_landing_page` and `cefa_first_referrer` are set once for 90 days.
+- `cefa_last_utm_source`, `cefa_last_utm_medium`, `cefa_last_utm_campaign`, `cefa_last_utm_term`, and `cefa_last_utm_content` update only when matching URL parameters are present.
+- `cefa_last_gclid`, `cefa_last_gbraid`, `cefa_last_wbraid`, `cefa_last_fbclid`, and `cefa_last_msclkid` update only when matching click-ID parameters are present.
+- The browser writes the values into new Form 4 fields `35` through `46` when the fields are empty.
+- A server-side `gform_pre_submission_4` fallback backfills the same fields from cookies before Gravity Forms saves the entry.
+- Fields `33` and `34` are intentionally not modified because the redesign uses them for location/location-title values.
+
 ## Install On Staging
 
 1. Create a ZIP:
@@ -114,6 +139,7 @@ These are diagnostic/reporting events. They should go to GA4/BigQuery reporting 
 - Successful Form 4 submission creates a Gravity Forms entry and exactly one `school_inquiry_submit` in `dataLayer`.
 - `dataLayer.event_id` equals entry field `32.4`.
 - Fields `32.1` through `32.7` appear as clean separate parameters.
+- Attribution fields `35` through `46` are saved as clean separate values when UTM/click-ID parameters are present.
 - Invalid form submission fires no final conversion event.
 - Direct `/thank-you/?location=<slug>&inquiry=true` visit without a plugin token fires no final conversion event.
 - Thank-you page reload does not fire a second conversion.
@@ -138,5 +164,5 @@ node --check assets/js/cefa-conversion-tracking.js
 ## Phase Roadmap
 
 - Phase 1A: clean browser/form event identity and staging signoff.
-- Phase 1B: collector audit path and Meta CAPI using shared `event_id`.
+- Phase 1B: attribution hardening, collector audit path, and Meta CAPI using shared `event_id`.
 - Phase 2: custom-domain sGTM, broader server-side routing, and BigQuery reporting.

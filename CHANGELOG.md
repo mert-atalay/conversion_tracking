@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 - 2026-04-27
+
+- Ported the old parent-site attribution-cookie pattern into the CEFA-owned tracking bridge.
+- Added 90-day first-party cookies and localStorage mirrors for first landing page, first referrer, last UTM values, and click IDs.
+- Added browser writeback for Form 4 attribution fields `35` through `46`.
+- Added server-side `gform_pre_submission_4` fallback writeback from cookies for the same attribution fields.
+- Added attribution fields to the confirmed `school_inquiry_submit` dataLayer payload.
+
 ## 0.2.7 - 2026-04-26
 
 - Increased Form 4 diagnostic micro-event delays so GTM receives helper-plugin form events after Gravity Forms validation and automatic form measurement handlers settle.

@@ -25,6 +25,7 @@ final class CEFA_Conversion_Tracking {
 	 */
 	public static function init(): void {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
+		add_action( 'gform_pre_submission_4', array( 'CEFA_Conversion_Tracking_Attribution', 'backfill_posted_fields' ), 5 );
 		add_filter( 'gform_pre_submission_4', array( 'CEFA_Conversion_Tracking_Event_ID', 'ensure_event_id_before_submission' ) );
 		add_action( 'gform_after_submission_4', array( 'CEFA_Conversion_Tracking_Confirmation_Payload', 'store_after_submission_payload' ), 20, 2 );
 		add_filter( 'gform_confirmation_4', array( 'CEFA_Conversion_Tracking_Confirmation_Payload', 'prepare_confirmation_tracking' ), 999, 4 );
@@ -42,8 +43,7 @@ final class CEFA_Conversion_Tracking {
 	public static function enqueue_scripts(): void {
 		$handle = 'cefa-conversion-tracking';
 		$src    = CEFA_CONVERSION_TRACKING_URL . 'assets/js/cefa-conversion-tracking.js';
-		$path   = CEFA_CONVERSION_TRACKING_DIR . 'assets/js/cefa-conversion-tracking.js';
-		$ver    = file_exists( $path ) ? (string) filemtime( $path ) : CEFA_CONVERSION_TRACKING_VERSION;
+		$ver    = CEFA_CONVERSION_TRACKING_VERSION;
 
 		wp_enqueue_script(
 			$handle,
@@ -76,6 +76,7 @@ final class CEFA_Conversion_Tracking {
 				'microConsumedKey'    => 'cefa_conversion_tracking_micro_consumed',
 				'formStartKey'        => 'cefa_conversion_tracking_form4_started',
 				'clickDelayMs'        => 200,
+				'attributionCookieDays' => 90,
 				'trackedEvents'       => array(
 					'parent_inquiry_cta_click',
 					'find_a_school_click',
