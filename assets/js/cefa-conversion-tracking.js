@@ -664,7 +664,7 @@
 
 		var payload = mergePayload(baseMicroPayload('form_start'), readFormContext(form));
 		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
-		pushMicroPayload(payload, 350);
+		pushMicroPayload(payload, 1500);
 	}
 
 	function pushSubmitClick(form) {
@@ -680,7 +680,7 @@
 		var payload = mergePayload(baseMicroPayload('form_submit_click'), readFormContext(form));
 
 		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
-		pushMicroPayload(payload, 350);
+		pushMicroPayload(payload, 1750);
 	}
 
 	function initFormMicroTracking(form) {
@@ -761,7 +761,7 @@
 	}
 
 	function scheduleValidationErrorTracking() {
-		window.setTimeout(initValidationErrorTracking, 1250);
+		window.setTimeout(initValidationErrorTracking, 3000);
 	}
 
 	function initValidationObserver() {

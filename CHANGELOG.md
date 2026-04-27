@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7 - 2026-04-26
+
+- Increased Form 4 diagnostic micro-event delays so GTM receives helper-plugin form events after Gravity Forms validation and automatic form measurement handlers settle.
+
 ## 0.2.6 - 2026-04-26
 
 - Synced Form 4 tracking-only Field 32 hidden values for selected program name and days per week before dataLayer reads and submission.
