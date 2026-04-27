@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.6 - 2026-04-26
+
+- Synced Form 4 tracking-only Field 32 hidden values for selected program name and days per week before dataLayer reads and submission.
+
+## 0.2.5 - 2026-04-26
+
+- Delayed Form 4 micro-event pushes slightly so structured helper-plugin events fire after Gravity Forms and browser form-measurement handlers settle.
+
+## 0.2.4 - 2026-04-26
+
+- Fixed validation-error tracking for Gravity Forms layouts where the validation summary renders outside the `<form>` while invalid fields remain inside Form 4.
+
+## 0.2.3 - 2026-04-26
+
+- Made Form 4 tracking attach to all duplicate Gravity Forms instances rendered on the page.
+- Fixed validation-error tracking to read from the form instance that actually contains Gravity Forms validation messages.
+
 ## 0.2.2 - 2026-04-26
 
 - Added submit-button click tracking so Gravity Forms iframe/AJAX submissions emit `form_submit_click`.

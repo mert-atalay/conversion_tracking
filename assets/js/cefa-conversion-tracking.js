@@ -125,6 +125,20 @@
 		return '';
 	}
 
+	function findField(root, selectors) {
+		var scope = root || document;
+
+		for (var i = 0; i < selectors.length; i++) {
+			var field = scope.querySelector(selectors[i]);
+
+			if (field) {
+				return field;
+			}
+		}
+
+		return null;
+	}
+
 	function field32Value(root, subfield) {
 		return readFieldValue(root, [
 			'[name="input_32_' + subfield + '"]',
@@ -134,7 +148,68 @@
 		]);
 	}
 
+	function field32Field(root, subfield) {
+		return findField(root, [
+			'[name="input_32_' + subfield + '"]',
+			'[name="input_32.' + subfield + '"]',
+			'#input_' + formId + '_32_' + subfield,
+			'input[data-cefa-si-meta="' + subfield + '"]'
+		]);
+	}
+
+	function trackingFormFrom(root) {
+		if (root && root.matches && root.matches('form#gform_' + formId)) {
+			return root;
+		}
+
+		if (root && root.closest) {
+			return root.closest('form#gform_' + formId);
+		}
+
+		if (root && root.querySelector) {
+			return root.querySelector('form#gform_' + formId);
+		}
+
+		return null;
+	}
+
+	function selectedOptionText(select) {
+		var option = select && select.selectedOptions && select.selectedOptions[0];
+
+		return option ? normalizeText(option.textContent || '', 220) : '';
+	}
+
+	function syncFormTrackingFields(root) {
+		var form = trackingFormFrom(root);
+
+		if (!form) {
+			return;
+		}
+
+		var programSelect = field32Field(form, '2');
+		var programNameField = field32Field(form, '7');
+		var programName = programSelect && programSelect.value ? selectedOptionText(programSelect) : '';
+
+		if (programNameField && programName) {
+			programNameField.value = programName;
+		}
+
+		var daysField = field32Field(form, '3');
+		var checkedDays = Array.prototype.slice
+			.call(form.querySelectorAll('input[id^="input_' + formId + '_32_3_"][type="checkbox"]:checked'))
+			.map(function (field) {
+				return normalizeText(field.value, 80);
+			})
+			.filter(Boolean);
+
+		if (daysField && checkedDays.length) {
+			daysField.value = checkedDays.join('|');
+		}
+	}
+
 	function readFormContext(root) {
+		syncFormTrackingFields(root);
+
 		var selectedSlug = field32Value(root, '5') || getQueryParam('location');
 		var landingSlug = schoolSlugFromPath(getPagePath());
 
@@ -230,13 +305,22 @@
 		return trackedEvents.indexOf(eventName) !== -1;
 	}
 
-	function pushMicroPayload(payload) {
+	function pushMicroPayload(payload, delayMs) {
 		if (!payload || !eventIsTracked(payload.event)) {
 			return;
 		}
 
-		window.dataLayer = window.dataLayer || [];
-		window.dataLayer.push(normalizedMicroPayload(payload));
+		function push() {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push(normalizedMicroPayload(payload));
+		}
+
+		if (delayMs && delayMs > 0) {
+			window.setTimeout(push, delayMs);
+			return;
+		}
+
+		push();
 	}
 
 	function microConsumedIds() {
@@ -483,31 +567,82 @@
 		});
 	}
 
-	function initFormTracking() {
-		var form = document.querySelector('#gform_' + formId);
+	function getFormInstances() {
+		return Array.prototype.slice.call(document.querySelectorAll('form#gform_' + formId));
+	}
 
-		if (!form || form.getAttribute('data-cefa-conversion-tracking-attached') === '1') {
+	function isRendered(element) {
+		return !!(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
+	}
+
+	function getPrimaryForm() {
+		var forms = getFormInstances();
+
+		for (var i = 0; i < forms.length; i++) {
+			if (isRendered(forms[i])) {
+				return forms[i];
+			}
+		}
+
+		return forms[0] || null;
+	}
+
+	function getValidationForm() {
+		var forms = getFormInstances();
+
+		for (var i = 0; i < forms.length; i++) {
+			if (forms[i].querySelector('.gform_validation_errors, .validation_error, .gfield_error, [aria-invalid="true"]')) {
+				return forms[i];
+			}
+		}
+
+		var validationNode = document.querySelector('.gform_validation_errors, .validation_error');
+
+		return validationNode && validationNode.closest ? validationNode.closest('form') || getPrimaryForm() : getPrimaryForm();
+	}
+
+	function hasValidationErrorState(form) {
+		if (!form) {
+			return false;
+		}
+
+		return !!(
+			form.querySelector('.gform_validation_errors, .validation_error, .gfield_error, [aria-invalid="true"]') ||
+			document.querySelector('#gform_' + formId + '_validation_container, .gform_validation_errors')
+		);
+	}
+
+	function initFormTracking() {
+		var forms = getFormInstances();
+
+		if (!forms.length) {
 			return;
 		}
 
-		form.setAttribute('data-cefa-conversion-tracking-attached', '1');
-		ensureEventId(form);
+		forms.forEach(function (form) {
+			if (!form || form.getAttribute('data-cefa-conversion-tracking-attached') === '1') {
+				return;
+			}
 
-		form.addEventListener(
-			'submit',
-			function () {
-				var eventId = ensureEventId(form);
+			form.setAttribute('data-cefa-conversion-tracking-attached', '1');
+			ensureEventId(form);
 
-				if (!eventId) {
-					return;
-				}
+			form.addEventListener(
+				'submit',
+				function () {
+					var eventId = ensureEventId(form);
 
-				writePending(eventId);
-			},
-			true
-		);
+					if (!eventId) {
+						return;
+					}
 
-		initFormMicroTracking(form);
+					writePending(eventId);
+				},
+				true
+			);
+
+			initFormMicroTracking(form);
+		});
 	}
 
 	function formStartConsumed(form, inquiryEventId) {
@@ -529,7 +664,7 @@
 
 		var payload = mergePayload(baseMicroPayload('form_start'), readFormContext(form));
 		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
-		pushMicroPayload(payload);
+		pushMicroPayload(payload, 350);
 	}
 
 	function pushSubmitClick(form) {
@@ -545,7 +680,7 @@
 		var payload = mergePayload(baseMicroPayload('form_submit_click'), readFormContext(form));
 
 		payload.inquiry_event_id = inquiryEventId || payload.inquiry_event_id;
-		pushMicroPayload(payload);
+		pushMicroPayload(payload, 350);
 	}
 
 	function initFormMicroTracking(form) {
@@ -597,13 +732,18 @@
 	}
 
 	function initValidationErrorTracking() {
-		var form = document.querySelector('#gform_' + formId);
+		var form = getValidationForm();
 
-		if (!form || !form.querySelector('.gform_validation_errors, .validation_error')) {
+		if (!hasValidationErrorState(form)) {
 			return;
 		}
 
 		var errorCount = form.querySelectorAll('.gfield_error, [aria-invalid="true"]').length;
+
+		if (errorCount < 1) {
+			return;
+		}
+
 		var key = [
 			'validation_error',
 			getPendingEventId() || window.location.pathname,
@@ -621,7 +761,7 @@
 	}
 
 	function scheduleValidationErrorTracking() {
-		window.setTimeout(initValidationErrorTracking, 250);
+		window.setTimeout(initValidationErrorTracking, 1250);
 	}
 
 	function initValidationObserver() {
@@ -632,7 +772,11 @@
 		validationObserverStarted = true;
 
 		new window.MutationObserver(function () {
-			if (document.querySelector('#gform_' + formId + ' .gform_validation_errors, #gform_' + formId + ' .validation_error')) {
+			if (
+				document.querySelector(
+					'#gform_' + formId + '_validation_container, form#gform_' + formId + ' .gform_validation_errors, form#gform_' + formId + ' .validation_error, form#gform_' + formId + ' .gfield_error'
+				)
+			) {
 				scheduleValidationErrorTracking();
 			}
 		}).observe(document.body, {

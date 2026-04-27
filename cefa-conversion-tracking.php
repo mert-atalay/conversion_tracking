@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CEFA Conversion Tracking
  * Description: Emits clean CEFA parent-site conversion and micro-conversion dataLayer events.
- * Version: 0.2.2
+ * Version: 0.2.6
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Author: CEFA
