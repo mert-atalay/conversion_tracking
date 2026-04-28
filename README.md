@@ -149,6 +149,7 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 
 - [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
 - [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)
+- [GPT Pro review handoff for franchise Meta transition](docs/gpt-pro-review-franchise-meta-transition-2026-04-28.md)
 
 ## Development
 

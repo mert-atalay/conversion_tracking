@@ -5,6 +5,7 @@
 - Added parent production cutover checklist with the current GA4 custom-dimension and key-event state.
 - Added cross-property measurement boundary notes for parent, franchise Canada, and franchise USA.
 - Documented franchise Canada subdomain GTM containment risk and Meta dataset separation recommendation.
+- Added GPT Pro review handoff covering parent implementation state, franchise rollout, and Meta learning-loss questions.
 
 ## 0.3.0 - 2026-04-27
 
