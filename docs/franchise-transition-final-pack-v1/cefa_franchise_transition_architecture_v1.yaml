@@ -1,0 +1,67 @@
+version: "1.0"
+date: "2026-04-28"
+project: "CEFA franchise transition tracking strategy"
+
+surfaces:
+  parent:
+    staging: "https://cefamain.kinsta.cloud"
+    production: "https://cefa.ca"
+    role: "parent enrollment"
+    event: "school_inquiry_submit"
+    status: "staging helper-plugin contract completed"
+  franchise_ca:
+    staging: "https://cefafranchise.kinsta.cloud"
+    production: "https://franchise.cefa.ca"
+    role: "B2B franchise Canada"
+    primary_events:
+      - "franchise_inquiry_submit"
+      - "real_estate_site_submit"
+    meta_strategy: "shared dataset temporarily, separate dataset later"
+  franchise_us:
+    staging: "https://cefafranusdev.wpenginepowered.com"
+    production: "https://www.franchisecefa.com"
+    role: "B2B franchise USA"
+    primary_events:
+      - "franchise_inquiry_submit"
+      - "real_estate_site_submit"
+    meta_strategy: "separate dataset by default"
+
+gtm:
+  recommendation: "separate containers per site family where practical"
+  fallback: "strict hostname containment"
+  host_guards_required: true
+  staging_hosts:
+    - "cefamain.kinsta.cloud"
+    - "cefafranchise.kinsta.cloud"
+    - "cefafranusdev.wpenginepowered.com"
+  production_hosts:
+    - "cefa.ca"
+    - "www.cefa.ca"
+    - "franchise.cefa.ca"
+    - "franchisecefa.com"
+    - "www.franchisecefa.com"
+
+meta:
+  canada_franchise_transition:
+    phase_a: "keep shared dataset temporarily"
+    phase_b: "add clean parameters and custom conversions"
+    phase_c: "test separate Canada franchise dataset in parallel"
+    phase_d: "gradually migrate campaigns"
+  usa_franchise_transition:
+    default: "separate dataset before serious optimization"
+
+capi:
+  phase: "1B"
+  parent: "parent dataset"
+  franchise_ca: "currently optimized dataset during transition"
+  franchise_us: "USA dataset"
+
+sgtm:
+  phase: "2"
+  reason: "not required for franchise separation; useful later for durable server-side routing"
+
+helper_plugin:
+  recommendation: "shared configurable codebase, separate site config"
+  parent_module: true
+  franchise_module: true
+  avoid_parent_school_logic_on_franchise: true

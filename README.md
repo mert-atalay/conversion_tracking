@@ -150,6 +150,8 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 - [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
 - [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)
 - [GPT Pro review handoff for franchise Meta transition](docs/gpt-pro-review-franchise-meta-transition-2026-04-28.md)
+- [Reviewed franchise transition plan](docs/franchise-transition-reviewed-plan-2026-04-28.md)
+- [GPT Pro franchise transition final pack](docs/franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
 
 ## Development
 
@@ -172,5 +174,5 @@ node --check assets/js/cefa-conversion-tracking.js
 - Phase 1A: clean browser/form event identity and staging signoff.
 - Phase 1B: attribution hardening, collector audit path, and Meta CAPI using shared `event_id`.
 - Phase 2: custom-domain sGTM, broader server-side routing, and BigQuery reporting.
-- Franchise Canada: audit and implement after parent stabilization, with subdomain GTM containment.
-- Franchise USA: audit and implement after franchise Canada, with separate destination boundaries.
+- Franchise Canada: audit after parent stabilization, contain GTM by hostname, stabilize active Meta campaigns inside the current shared dataset if needed, then test and migrate to a separate franchise Canada dataset.
+- Franchise USA: audit separately and use separate destination boundaries by default before serious production optimization.

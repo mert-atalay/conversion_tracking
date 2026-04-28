@@ -6,6 +6,7 @@
 - Added cross-property measurement boundary notes for parent, franchise Canada, and franchise USA.
 - Documented franchise Canada subdomain GTM containment risk and Meta dataset separation recommendation.
 - Added GPT Pro review handoff covering parent implementation state, franchise rollout, and Meta learning-loss questions.
+- Added GPT Pro franchise transition final pack and reviewed plan adopting the phased Canada Meta transition, USA separation default, GTM containment, and CAPI/sGTM sequencing.
 
 ## 0.3.0 - 2026-04-27
 

@@ -19,6 +19,7 @@ This document keeps parent, franchise Canada, and franchise USA tracking decisio
 - Parent, franchise Canada, and franchise USA should ultimately keep separate Meta datasets or pixels.
 - Google Ads and Meta optimization events should not mix parent enrollment leads with franchise development leads.
 - Shared code patterns are acceptable, but event contracts and destination mappings must stay property-specific.
+- Website events should stay neutral and GTM should map them to GA4, Google Ads, Meta, and later CAPI/sGTM destinations.
 
 ## Franchise Canada Subdomain Caution
 
@@ -47,17 +48,19 @@ Current known risk:
 
 Recommendation:
 
-- Separate USA definitely before serious production optimization.
-- Prefer separating franchise Canada from parent as well, because the business funnel is different: parent enrollment vs franchise development.
-- If there is concern about losing Meta learning, do not switch optimization abruptly. Run a transition period where the current dataset remains stable while the separate franchise dataset is prepared, tested, and validated.
+- Separate USA by default before serious production optimization.
+- Prefer separating franchise Canada from parent as the target architecture, because the business funnel is different: parent enrollment vs franchise development.
+- If Canada franchise live campaigns currently rely on the shared dataset, do not switch optimization abruptly. Use a transition period where the current dataset remains stable while the separate franchise dataset is prepared, tested, and validated.
 - Do not optimize franchise campaigns against the parent enrollment lead event unless that is an intentional short-term compromise.
 
 Practical transition model:
 
-- Phase A: keep current shared dataset only for continuity while auditing live events and campaign dependencies.
-- Phase B: create/prepare separate franchise Canada and USA datasets, with clean event names and test events.
-- Phase C: move new franchise optimization to the separated dataset once event quality is proven.
-- Phase D: keep historical shared-dataset reporting available, but stop treating it as the clean future architecture.
+- Phase A: keep current shared Canada dataset only for continuity while auditing live events and campaign dependencies.
+- Phase B: add clean franchise parameters such as `site_context`, `business_unit`, `market`, `country`, `lead_type`, `form_family`, `event_id`, and `event_source_url`.
+- Phase C: create shared-dataset custom conversions for `Franchise Canada Lead` and `Franchise Canada Site Submission`.
+- Phase D: create/prepare separate franchise Canada and USA datasets with clean test events.
+- Phase E: move new or duplicated franchise optimization to the separated dataset once event quality is proven.
+- Phase F: keep historical shared-dataset reporting available, but stop treating it as the clean future architecture.
 
 Why not keep everything shared forever:
 
@@ -85,5 +88,7 @@ Ask GPT Pro only if we want a deeper transition strategy for:
 - [ ] Identify all franchise USA forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Confirm GA4 property IDs for franchise Canada and franchise USA.
 - [ ] Confirm Meta datasets/pixels currently used by parent, franchise Canada, and franchise USA.
-- [ ] Decide whether Canada franchise gets a new dataset immediately or after a short transition period.
+- [ ] Confirm whether active Canada franchise campaigns are optimizing against the shared parent/franchise dataset.
+- [ ] Keep Canada franchise on the shared dataset only as a controlled transition if active campaigns depend on it.
+- [ ] Create franchise Canada custom conversions inside the shared dataset using franchise-specific parameters before campaign migration.
 - [ ] Separate USA dataset/pixel before serious USA production optimization.
