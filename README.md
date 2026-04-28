@@ -145,6 +145,11 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 - Thank-you page reload does not fire a second conversion.
 - GA add-on / GTM POC events are not mapped as duplicate final conversions.
 
+## Operational Docs
+
+- [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
+- [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)
+
 ## Development
 
 Install dev dependencies:
@@ -166,3 +171,5 @@ node --check assets/js/cefa-conversion-tracking.js
 - Phase 1A: clean browser/form event identity and staging signoff.
 - Phase 1B: attribution hardening, collector audit path, and Meta CAPI using shared `event_id`.
 - Phase 2: custom-domain sGTM, broader server-side routing, and BigQuery reporting.
+- Franchise Canada: audit and implement after parent stabilization, with subdomain GTM containment.
+- Franchise USA: audit and implement after franchise Canada, with separate destination boundaries.

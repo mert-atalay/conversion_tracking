@@ -13,6 +13,8 @@ The plugin must remain a tracking bridge only.
 
 ## Files
 
+- `../parent-production-cutover-checklist.md`
+- `../cross-property-measurement-boundaries.md`
 - `plugin-vs-theme-decision.md`
 - `gravity-forms-add-on-decision.md`
 - `event-flow-and-lifecycle.md`

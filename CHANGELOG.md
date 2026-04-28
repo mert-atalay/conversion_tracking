@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Added parent production cutover checklist with the current GA4 custom-dimension and key-event state.
+- Added cross-property measurement boundary notes for parent, franchise Canada, and franchise USA.
+- Documented franchise Canada subdomain GTM containment risk and Meta dataset separation recommendation.
+
 ## 0.3.0 - 2026-04-27
 
 - Ported the old parent-site attribution-cookie pattern into the CEFA-owned tracking bridge.
