@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added hostname-scoped configuration for parent and Franchise Canada tracking contracts.
+- Added Franchise Canada Form 1 `franchise_inquiry_submit` and Form 2 `real_estate_site_submit` confirmed-success payloads.
+- Added Gravity Forms entry-meta event ID storage for supported forms without a dedicated event ID field.
+- Kept Franchise Canada GAConnector fields `14` through `30` as read-only attribution inputs for now.
 - Added parent production cutover checklist with the current GA4 custom-dimension and key-event state.
 - Added cross-property measurement boundary notes for parent, franchise Canada, and franchise USA.
 - Documented franchise Canada subdomain GTM containment risk and Meta dataset separation recommendation.

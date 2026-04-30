@@ -1,21 +1,25 @@
 # CEFA Conversion Tracking
 
-Lightweight WordPress plugin for CEFA parent-site conversion tracking.
+Lightweight WordPress plugin for CEFA conversion tracking.
 
-This plugin emits clean CEFA parent-site `dataLayer` events for the confirmed Form 4 inquiry conversion, Phase 1A browser micro-conversions, and Phase 1B attribution persistence.
+This plugin emits clean CEFA `dataLayer` events for confirmed inquiry conversions, Phase 1A browser micro-conversions, and attribution handoff.
 
-It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sync, KinderTales, GTM, or platform tags.
+It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Field 32 UI, location sync, KinderTales, GAConnector, GTM, or platform tags.
 
 ## What It Owns
 
 - Ensures Form 4 field `32.4` has a unique submission-scoped `event_id`.
+- Supports Franchise Canada Form 1 and Form 2 with event IDs stored as Gravity Forms entry meta.
 - Uses the saved Gravity Forms entry as the source of truth.
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
+- Pushes one clean `franchise_inquiry_submit` event for Franchise Canada Form 1.
+- Pushes one clean `real_estate_site_submit` event for Franchise Canada Form 2.
 - Prevents direct thank-you-page false positives and reload duplicates.
 - Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
 - Stores first-touch and last-touch attribution in the same first-party cookie pattern used by the old parent site.
 - Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
+- Reads Franchise Canada GAConnector hidden fields `14` through `30` when present; it does not overwrite them.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
 
 ## What It Does Not Own
@@ -27,6 +31,8 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - Location sync.
 - School Manager location cookies/session state.
 - KinderTales/business submission delivery.
+- CEFA Franchise API delivery.
+- GAConnector attribution capture on franchise forms.
 - GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
 
 ## Required Runtime
@@ -35,8 +41,11 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - PHP `7.4+`.
 - Gravity Forms with Form ID `4`.
 - CEFA School Manager continuing to populate Form 4 field `32.*` values.
+- Franchise Canada forms require Gravity Forms Form `1` / Franchise Inquiry and Form `2` / Site Inquiry.
 
 ## DataLayer Contract
+
+### Parent Form 4
 
 ```js
 window.dataLayer = window.dataLayer || [];
@@ -68,6 +77,93 @@ window.dataLayer.push({
   inquiry_success: true,
   inquiry_success_url: window.location.href,
   page_context: "parent",
+  tracking_source: "helper_plugin"
+});
+```
+
+### Franchise Canada Form 1
+
+```js
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event: "franchise_inquiry_submit",
+  event_id: "<stored in Gravity Forms entry meta>",
+  event_scope: "primary",
+  site_context: "franchise_ca",
+  business_unit: "franchise",
+  market: "canada",
+  country: "CA",
+  form_id: "1",
+  form_family: "franchise_inquiry",
+  lead_type: "franchise_lead",
+  lead_intent: "franchise_inquiry",
+  location_interest: "<field 32>",
+  investment_range: "<field 7>",
+  opening_timeline: "<field 10>",
+  school_count_goal: "<field 11>",
+  ownership_structure: "<field 12>",
+  lc_source: "<field 14>",
+  lc_medium: "<field 15>",
+  lc_campaign: "<field 16>",
+  lc_content: "<field 17>",
+  lc_term: "<field 18>",
+  lc_channel: "<field 19>",
+  lc_landing: "<field 20>",
+  lc_referrer: "<field 21>",
+  fc_source: "<field 22>",
+  fc_medium: "<field 23>",
+  fc_campaign: "<field 24>",
+  fc_content: "<field 25>",
+  fc_term: "<field 26>",
+  fc_channel: "<field 27>",
+  fc_referrer: "<field 28>",
+  gclid: "<field 29>",
+  ga_client_id: "<field 30>",
+  inquiry_success: true,
+  inquiry_success_url: window.location.href,
+  tracking_source: "helper_plugin"
+});
+```
+
+### Franchise Canada Form 2
+
+```js
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event: "real_estate_site_submit",
+  event_id: "<stored in Gravity Forms entry meta>",
+  event_scope: "primary",
+  site_context: "franchise_ca",
+  business_unit: "franchise",
+  market: "canada",
+  country: "CA",
+  form_id: "2",
+  form_family: "site_inquiry",
+  lead_type: "real_estate_lead",
+  lead_intent: "submit_a_site",
+  site_offered_by: "<field 39>",
+  property_square_footage_range: "<field 34>",
+  outdoor_space_range: "<field 35>",
+  availability_timeline: "<field 36>",
+  lc_source: "<field 14>",
+  lc_medium: "<field 15>",
+  lc_campaign: "<field 16>",
+  lc_content: "<field 17>",
+  lc_term: "<field 18>",
+  lc_channel: "<field 19>",
+  lc_landing: "<field 20>",
+  lc_referrer: "<field 21>",
+  fc_source: "<field 22>",
+  fc_medium: "<field 23>",
+  fc_campaign: "<field 24>",
+  fc_content: "<field 25>",
+  fc_term: "<field 26>",
+  fc_channel: "<field 27>",
+  fc_referrer: "<field 28>",
+  gclid: "<field 29>",
+  ga_client_id: "<field 30>",
+  inquiry_success: true,
+  inquiry_success_url: window.location.href,
   tracking_source: "helper_plugin"
 });
 ```
@@ -120,6 +216,12 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 - The browser writes the values into new Form 4 fields `35` through `46` when the fields are empty.
 - A server-side `gform_pre_submission_4` fallback backfills the same fields from cookies before Gravity Forms saves the entry.
 - Fields `33` and `34` are intentionally not modified because the redesign uses them for location/location-title values.
+
+For Franchise Canada, the plugin keeps GAConnector as the attribution source for now:
+
+- It reads existing hidden fields `14` through `30`.
+- It does not overwrite GAConnector-populated values.
+- If those fields remain empty after real submission testing, a later version can add a narrow missing-value backfill.
 
 ## Install On Staging
 

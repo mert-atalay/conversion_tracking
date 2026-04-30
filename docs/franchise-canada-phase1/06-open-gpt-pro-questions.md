@@ -22,7 +22,7 @@ GAConnector is also active through the current runtime. The forms already have h
 
 2. Given GAConnector is active but full hidden-field population is not yet proven, should the helper plugin only read saved fields `14` through `30`, or should it also backfill missing attribution values from URL parameters and approved first-party/GAConnector cookies?
 
-3. For event identity, should the plugin add explicit hidden `ct_event_id` fields to Form `1` and Form `2`, or is Gravity Forms entry meta sufficient for Phase 1 browser/server parity?
+3. The plugin currently stores Franchise Canada event IDs in Gravity Forms entry meta to avoid changing Form `1` and Form `2`. Is that sufficient for Phase 1 browser/server parity, or should dedicated hidden `ct_event_id` fields be added before launch?
 
 4. Should Form `1` and Form `2` both map to GA4 `generate_lead` with different metadata, or should Form `2` also keep a distinct GA4 event name for real-estate/site-submission reporting?
 

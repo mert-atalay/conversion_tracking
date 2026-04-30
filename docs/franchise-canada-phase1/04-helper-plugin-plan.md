@@ -12,6 +12,14 @@ Reason:
 - GTM alone cannot reliably prove a confirmed successful Gravity Forms submission, share the same event identity with the saved entry, prevent direct thank-you false positives, and expose clean saved form metadata.
 - The parent Phase 1A pattern already solved this with a narrow helper-plugin bridge.
 
+Implementation status:
+
+- Plugin version `0.4.0` adds hostname-scoped Franchise Canada support.
+- Form `1` emits `franchise_inquiry_submit` after confirmed success.
+- Form `2` emits `real_estate_site_submit` after confirmed success.
+- Event IDs are stored as Gravity Forms entry meta because the current franchise forms do not have a dedicated event ID field.
+- GAConnector fields `14` through `30` are read into the payload when present and are not overwritten.
+
 ## Plugin Boundary
 
 The plugin may own:
@@ -66,10 +74,11 @@ Preferred:
 - Populate it before Gravity Forms saves the entry.
 - Use the same value in the final dataLayer payload.
 
-Fallback if no hidden field is approved:
+Current Franchise Canada implementation:
 
 - Store the event ID as Gravity Forms entry meta and in the one-time success payload.
-- This is acceptable for browser/entry debugging, but less ideal for external webhook/server-side matching.
+- This avoids changing the current form structure while still preserving a submission-scoped browser/server event ID.
+- A dedicated hidden field can be added later if external webhook/server-side matching needs the ID in normal field exports.
 
 Do not use selected location, page slug, form ID, email, phone, or any CRM ID as `event_id`.
 

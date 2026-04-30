@@ -3,6 +3,9 @@
 
 	var config = window.CEFAConversionTracking || {};
 	var formId = Number(config.formId || 4);
+	var finalEvents = Array.isArray(config.finalEvents) && config.finalEvents.length
+		? config.finalEvents
+		: ['school_inquiry_submit'];
 	var eventFieldSelectors = config.eventFieldSelectors || [];
 	var consumedKey = config.consumedKey || 'cefa_conversion_tracking_consumed_event_ids';
 	var pendingKey = config.pendingKey || 'cefa_conversion_tracking_form4_pending';
@@ -1030,7 +1033,7 @@
 
 			if (
 				item &&
-				item.event === 'school_inquiry_submit' &&
+				item.event === payload.event &&
 				item.event_id === payload.event_id
 			) {
 				return true;
@@ -1038,6 +1041,15 @@
 		}
 
 		return false;
+	}
+
+	function payloadIsFinalEvent(payload) {
+		return !!(
+			payload &&
+			payload.event &&
+			payload.event_id &&
+			finalEvents.indexOf(payload.event) !== -1
+		);
 	}
 
 	function cleanTrackingParams() {
@@ -1050,7 +1062,7 @@
 	}
 
 	function pushPayload(payload) {
-		if (!payload || payload.event !== 'school_inquiry_submit' || !payload.event_id) {
+		if (!payloadIsFinalEvent(payload)) {
 			return;
 		}
 

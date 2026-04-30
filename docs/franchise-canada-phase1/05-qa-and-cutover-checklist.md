@@ -25,6 +25,10 @@ Last updated: 2026-04-30
 
 ## Helper Plugin QA
 
+- [x] Plugin code supports Franchise Canada hostnames `cefafranchise.kinsta.cloud` and `franchise.cefa.ca`.
+- [x] Plugin code supports Form `1` and Form `2` confirmed-success payload contracts.
+- [x] Plugin code reads GAConnector fields `14` through `30` and does not overwrite them.
+- [ ] Upload and activate plugin version `0.4.0` on Franchise Canada staging.
 - [ ] Form 1 success emits exactly one `franchise_inquiry_submit`.
 - [ ] Form 2 success emits exactly one `real_estate_site_submit`.
 - [ ] Form 1 event has `site_context: franchise_ca`.
@@ -32,7 +36,7 @@ Last updated: 2026-04-30
 - [ ] Form 1 event has `event_id`.
 - [ ] Form 2 event has `event_id`.
 - [ ] Event IDs are unique per successful submission.
-- [ ] Event IDs are available in Gravity Forms entry field or entry meta.
+- [ ] Event IDs are available in Gravity Forms entry meta.
 - [ ] Existing GAConnector attribution values are preserved when populated.
 - [ ] Empty attribution fields are not silently treated as verified tracking success.
 - [ ] Direct Form 1 thank-you page visit fires no primary event.

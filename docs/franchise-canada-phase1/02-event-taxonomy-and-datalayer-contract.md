@@ -27,7 +27,7 @@ Required payload:
 window.dataLayer = window.dataLayer || [];
 window.dataLayer.push({
   event: "franchise_inquiry_submit",
-  event_id: "<unique per successful submission>",
+  event_id: "<unique per successful submission, stored in Gravity Forms entry meta>",
   event_scope: "primary",
   site_context: "franchise_ca",
   business_unit: "franchise",
@@ -68,7 +68,7 @@ Required payload:
 window.dataLayer = window.dataLayer || [];
 window.dataLayer.push({
   event: "real_estate_site_submit",
-  event_id: "<unique per successful submission>",
+  event_id: "<unique per successful submission, stored in Gravity Forms entry meta>",
   event_scope: "primary",
   site_context: "franchise_ca",
   business_unit: "franchise",

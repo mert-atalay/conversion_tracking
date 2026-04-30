@@ -1,6 +1,6 @@
 # Franchise Canada GTM Build Plan
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 ## Current Container
 
@@ -34,6 +34,13 @@ Page Hostname equals franchise.cefa.ca
 ```
 
 Do not create broad all-pages platform tags without hostname filters while staging and live old site share `GTM-TPJGHFS`.
+
+The plugin source events for this build are:
+
+- `franchise_inquiry_submit` from Franchise Canada Form `1`.
+- `real_estate_site_submit` from Franchise Canada Form `2`.
+
+GTM should use those custom events as the final success triggers. Do not use a thank-you pageview as the final conversion trigger except as a temporary diagnostic fallback.
 
 ## Variables To Create
 
@@ -156,7 +163,7 @@ Do not copy:
 - old path-specific triggers such as `own-a-cefa`
 - broad click-text triggers without hostname and URL containment
 - old schema/SEO injections
-- unmanaged attribution cookie Custom HTML if the helper plugin owns attribution
+- unmanaged attribution cookie Custom HTML that conflicts with GAConnector or the helper plugin
 
 ## Build Gate
 
@@ -168,4 +175,3 @@ Before publishing:
 - Confirm old live host `franchise.cefa.ca` is not affected during staging tests.
 - Confirm Meta dataset strategy before mapping Meta `Lead`.
 - Confirm Google Ads conversion labels before mapping Ads conversions.
-
