@@ -1,6 +1,6 @@
 # Franchise Canada Event Taxonomy And DataLayer Contracts
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 ## Naming Rule
 
@@ -94,6 +94,13 @@ window.dataLayer.push({
 ## Attribution Parameters
 
 Where present, include these values from the existing hidden fields in Form `1` and Form `2`.
+
+Current attribution source rule:
+
+- GAConnector is already active and should remain the first attribution source if it writes clean values into the Gravity Forms entries.
+- The helper plugin should not create a competing attribution model unless CEFA approves a narrow fallback.
+- Before final mapping, verify saved entry values for fields `14` through `30`; the runtime check proved `gclid` population but did not prove `lc_*`, `fc_*`, or `GA_Client_ID` population.
+- If those values remain empty after real submissions, add a documented fallback decision before enabling paid-platform conversion mapping.
 
 Last click fields:
 
@@ -194,4 +201,3 @@ Do not pass these values to dataLayer, GA4, Google Ads, Meta, or GTM variables:
 - free-text availability details
 
 Use non-PII categorical fields only.
-

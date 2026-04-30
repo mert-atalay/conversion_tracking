@@ -1,6 +1,6 @@
 # Franchise Canada QA And Cutover Checklist
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 ## Before GTM Build
 
@@ -13,6 +13,12 @@ Last updated: 2026-04-29
 - [x] Confirm Form 1 confirmation page.
 - [x] Confirm Form 2 confirmation page.
 - [x] Confirm existing attribution hidden fields `14` through `30`.
+- [x] Confirm GAConnector scripts/cookies load on staging runtime.
+- [x] Confirm `gclid` can populate hidden field `29` in runtime tests.
+- [ ] Confirm real Form 1 entry saves clean fields `14` through `30`.
+- [ ] Confirm real Form 2 entry saves clean fields `14` through `30`.
+- [ ] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
+- [ ] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
 - [ ] Confirm Meta dataset decision for Canada transition.
 - [ ] Confirm Google Ads conversion action labels.
 - [ ] Confirm whether staging should keep `GTM-TPJGHFS` or switch to a clean staging container.
@@ -27,6 +33,8 @@ Last updated: 2026-04-29
 - [ ] Form 2 event has `event_id`.
 - [ ] Event IDs are unique per successful submission.
 - [ ] Event IDs are available in Gravity Forms entry field or entry meta.
+- [ ] Existing GAConnector attribution values are preserved when populated.
+- [ ] Empty attribution fields are not silently treated as verified tracking success.
 - [ ] Direct Form 1 thank-you page visit fires no primary event.
 - [ ] Direct Form 2 thank-you page visit fires no primary event.
 - [ ] Thank-you page reload fires no duplicate event.
@@ -56,4 +64,3 @@ Last updated: 2026-04-29
 - [ ] Confirm Google Ads only receives approved final conversion events.
 - [ ] Confirm Meta only receives approved final conversion events.
 - [ ] Confirm custom conversions separate franchise Canada from parent and USA.
-

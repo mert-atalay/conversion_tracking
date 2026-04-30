@@ -1,6 +1,6 @@
 # Franchise Canada Current Audit
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 ## Verified Access
 
@@ -226,7 +226,29 @@ Confirmation:
 
 - Type: message
 
+## GAConnector Runtime Check
+
+GAConnector is already part of the current Canada franchise runtime through GTM.
+
+Verified on staging runtime:
+
+- GAConnector scripts loaded from `tracker.gaconnector.com` and `tc.gaconnector.com`.
+- GAConnector cookies were created, including page visit/session-style cookies and a GA client ID cookie.
+- Gravity Forms hidden fields `14` through `30` exist on Form `1` and Form `2`.
+- With test URL parameters, the visible DOM showed `gclid` populating field `29`.
+
+Not yet proven:
+
+- The runtime DOM test did not show `lc_*`, `fc_*`, or `GA_Client_ID` hidden field values populated before submission.
+- The test did not yet prove that fields `14` through `30` are saved cleanly in a real Gravity Forms entry after successful submission.
+
+Interpretation:
+
+- GAConnector should be treated as an existing attribution layer, not replaced blindly.
+- The helper plugin should read the saved hidden-field values when present.
+- If real entry tests show attribution fields are empty or inconsistent, CEFA should decide whether the helper plugin should backfill only the missing attribution fields from URL parameters and approved first-party/GAConnector cookies.
+- The final dataLayer success event should still come from a confirmed-success bridge, not from GAConnector or a thank-you pageview alone.
+
 ## Current Gap
 
 The new Canada staging site can be tracked with GTM clicks and thank-you pageviews, but that would not meet the final event identity plan. For final lead tracking, we still need one confirmed-success browser event per successful form submission, with a submission-scoped `event_id`, clean metadata, attribution fields, and duplicate/false-positive guards.
-

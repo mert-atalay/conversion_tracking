@@ -1,6 +1,6 @@
 # Franchise Canada Helper Plugin Plan
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 ## Decision
 
@@ -21,7 +21,8 @@ The plugin may own:
 - one final dataLayer event per confirmed successful submission
 - duplicate guards
 - direct thank-you false-positive guards
-- attribution cookie persistence and hidden-field population if current hidden fields are not already populated reliably
+- reading existing attribution hidden fields populated by GAConnector or Gravity Forms
+- optional missing-value backfill from approved URL parameters and first-party/GAConnector cookies only if real entry tests prove GAConnector is not populating reliably
 - non-PII dataLayer payload assembly
 
 The plugin must not own:
@@ -32,6 +33,7 @@ The plugin must not own:
 - Synuma/SiteZeus routing
 - email notifications
 - page/component rendering
+- GAConnector replacement or broad attribution-system rewrite
 - GA4, Google Ads, Meta, CAPI, collector, or sGTM outbound delivery in Phase 1
 
 ## Forms To Support
@@ -83,12 +85,32 @@ Use Gravity Forms hooks:
 Expected flow:
 
 1. Generate `event_id` if missing.
-2. Ensure attribution fields are present or backfilled from first-party cookies.
-3. After confirmed submission, build payload from the saved entry.
-4. Store payload in a short-lived transient keyed by a one-time token.
-5. Add token to the confirmation page URL or pass it through a safe handoff method.
-6. Frontend JS consumes token once and pushes the final dataLayer event.
-7. Duplicate guard blocks reloads and repeated token reads.
+2. Read attribution fields from the saved Gravity Forms entry.
+3. If approved and needed, backfill only missing attribution fields from URL parameters and approved first-party/GAConnector cookies before save.
+4. After confirmed submission, build payload from the saved entry.
+5. Store payload in a short-lived transient keyed by a one-time token.
+6. Add token to the confirmation page URL or pass it through a safe handoff method.
+7. Frontend JS consumes token once and pushes the final dataLayer event.
+8. Duplicate guard blocks reloads and repeated token reads.
+
+## GAConnector Compatibility
+
+Do not remove or bypass GAConnector in the first Canada franchise build.
+
+The plugin should work with the current hidden fields:
+
+- `14` through `21`: last-click attribution
+- `22` through `28`: first-click attribution
+- `29`: `gclid`
+- `30`: `GA_Client_ID`
+
+The current runtime check confirms GAConnector scripts/cookies exist and `gclid` can populate field `29`, but it has not proven saved-entry population for all attribution fields. Therefore, the implementation should:
+
+- preserve the existing fields and field IDs
+- read saved entry values first
+- push only non-PII attribution values to dataLayer
+- log or expose debug evidence for empty attribution fields during staging QA
+- avoid creating a second attribution source unless CEFA approves a targeted fallback
 
 ## Franchise Module Configuration
 
@@ -131,4 +153,4 @@ Suggested config shape:
 - Invalid form submissions do not fire a primary event.
 - PII is not pushed into dataLayer.
 - Attribution values are included only from approved hidden fields/cookies.
-
+- GAConnector-populated hidden fields are preserved and not overwritten when populated.
