@@ -17,6 +17,8 @@ Scope:
 
 ## Current Decision
 
+The website is now apparently in content freeze. Treat this folder as the implementation plan and prior evidence, but re-audit the frozen site before deploying the plugin or configuring GTM/GA4.
+
 Start Canada franchise as an audit-first Phase 1 build, not a blind copy of the old GTM container.
 
 Use the old Canada GTM container as a reference only. The old container already contains useful IDs and micro-conversion examples, but it is built around old paths, old Elementor form selectors, and thank-you/pageview logic. The new staging site uses Gravity Forms and different page paths.
@@ -40,3 +42,4 @@ For Phase 1 browser tracking:
 - [Helper plugin plan](./04-helper-plugin-plan.md)
 - [QA and cutover checklist](./05-qa-and-cutover-checklist.md)
 - [Open GPT Pro questions](./06-open-gpt-pro-questions.md)
+- [Content freeze reset note](./07-content-freeze-reset-note-2026-04-30.md)
