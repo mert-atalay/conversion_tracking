@@ -249,6 +249,7 @@ For Franchise Canada, the plugin keeps GAConnector as the attribution source for
 
 ## Operational Docs
 
+- [Live migration read-only audit, 2026-04-30](docs/live-migration-readonly-audit-2026-04-30.md)
 - [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
 - [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)
 - [Franchise Canada Phase 1 tracking plan](docs/franchise-canada-phase1/README.md)

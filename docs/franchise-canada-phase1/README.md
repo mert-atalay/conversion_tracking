@@ -6,20 +6,32 @@ This folder is the working implementation package for the new Canada franchise w
 
 Scope:
 - Current/live Canada franchise property: `https://franchise.cefa.ca`
-- New Canada franchise staging property: `https://cefafranchise.kinsta.cloud`
+- Former Canada franchise staging property: `https://cefafranchise.kinsta.cloud`
 - GTM account: `6004334435`
 - Current Canada franchise GTM container: `GTM-TPJGHFS` / container `48104535`
 - GA4 property: `259747921` / `CEFA Franchise`
-- Primary website forms on staging:
+- Primary website forms:
   - Gravity Forms Form `1` / `Franchise Inquiry`
   - Gravity Forms Form `2` / `Site Inquiry`
   - Gravity Forms Form `3` / `Newsletter`
 
 ## Current Decision
 
-The website is now apparently in content freeze. Treat this folder as the implementation plan and prior evidence, but re-audit the frozen site before deploying the plugin or configuring GTM/GA4.
+The website is now live on the original domain. Treat this folder as the implementation plan and prior evidence, but use the live-domain audit as the current status checkpoint before deploying the plugin or configuring GTM/GA4.
 
 Start Canada franchise as an audit-first Phase 1 build, not a blind copy of the old GTM container.
+
+Latest live-domain checkpoint:
+
+- [Live migration read-only audit, 2026-04-30](../live-migration-readonly-audit-2026-04-30.md)
+
+Current read-only result:
+
+- Forms `1` and `2` are visible on the expected live paths.
+- `GTM-TPJGHFS` is visible.
+- GAConnector scripts and hidden fields `14` through `30` are visible.
+- The CEFA helper-plugin success bridge is not publicly visible on `franchise.cefa.ca`.
+- Do not map final GA4, Ads, or Meta conversions until controlled Form `1` and Form `2` submissions prove the confirmed-success dataLayer events and saved-entry attribution.
 
 Use the old Canada GTM container as a reference only. The old container already contains useful IDs and micro-conversion examples, but it is built around old paths, old Elementor form selectors, and thank-you/pageview logic. The new staging site uses Gravity Forms and different page paths.
 
