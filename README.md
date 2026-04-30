@@ -35,6 +35,13 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - GAConnector attribution capture on franchise forms.
 - GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
 
+## Current Live-Domain Audit Status
+
+- Parent `cefa.ca` passed the 2026-04-30 controlled browser-side submit test: one Form 4 success produced one `school_inquiry_submit`, the browser `event_id` matched field `32.4`, and GA4/Google Ads/Meta requests fired from the helper-plugin event.
+- Franchise Canada `franchise.cefa.ca` Forms 1 and 2 submit, but the helper bridge is not active on the live domain yet; no `franchise_inquiry_submit` or `real_estate_site_submit` was visible.
+- Franchise USA `franchisecefa.com` now shows separate public GTM/GA4 IDs, but still lacks the helper bridge and target dataLayer events.
+- Current detailed review: `docs/live-domain-controlled-submit-review-2026-04-30.md`.
+
 ## Required Runtime
 
 - WordPress `6.3+`.

@@ -2,6 +2,8 @@
 
 Last updated: 2026-04-30
 
+Status note: this file records the first no-submit migration audit. It is superseded for current signoff by the controlled submission review at `docs/live-domain-controlled-submit-review-2026-04-30.md`.
+
 ## Scope
 
 The new CEFA websites are now live on their original domains while migration work is still in progress.
