@@ -21,7 +21,9 @@ Evidence methods:
 - Public page source and rendered DOM inspection.
 - Public GTM snippet/container-string inspection where available.
 
-Authenticated GA4 reads were attempted but were not available in this session because local Google Application Default Credentials require reauthentication. Authenticated GTM, GA4, Ads, and Meta admin checks therefore remain pending.
+Authenticated GA4 reads initially failed because local Google Application Default Credentials required reauthentication. ADC was refreshed later on 2026-04-30 with `analytics.readonly`, `analytics.edit`, and `cloud-platform` scopes, and GA4 MCP reads now work.
+
+Authenticated GTM, Ads platform, and Meta admin checks remain pending. The GA4 MCP read path is now available.
 
 Because no forms were submitted, confirmed-success dataLayer events, Gravity Forms entries, GA4 receipt, Google Ads receipt, Meta receipt, and CRM delivery remain pending validation.
 
@@ -59,6 +61,10 @@ Because no forms were submitted, confirmed-success dataLayer events, Gravity For
   - Fields `35` through `46`: attribution fields
 - A URL with UTM parameters populated Form 4 attribution fields in the rendered DOM.
 - Direct visit to the thank-you URL did not expose a `school_inquiry_submit` event in the browser dataLayer during the read-only check.
+- Authenticated GA4 read access confirms parent property:
+  - `properties/267558140` / `Main Site - GA4`
+- Authenticated GA4 read access confirms the parent GA4 property is linked to Google Ads customer:
+  - `4159217891`
 
 ### Parent Risks And Open Items
 
@@ -94,6 +100,10 @@ Parent Canada is the most intact property after migration. It is not fully signe
   - `tc.gaconnector.com/gaconnector.js`
 - GAConnector cookies were set from UTM test URLs.
 - Hidden GAConnector-style fields `14` through `30` are present on Forms `1` and `2`.
+- Authenticated GA4 read access confirms Canada franchise property:
+  - `properties/259747921` / `CEFA Franchise`
+- Authenticated GA4 read access confirms the Canada franchise GA4 property is linked to Google Ads customer:
+  - `3820636025`
 
 ### Franchise Canada Gaps
 
@@ -130,10 +140,16 @@ Franchise Canada has the live form surfaces and legacy tracking stack in place, 
 - Public thank-you pages are directly visitable:
   - `/inquiry-thank-you/`
   - `/site-thank-you/`
+- Authenticated GA4 read access confirms a separate USA franchise property exists:
+  - `properties/519783092` / `CEFA Franchise - USA.`
+- Authenticated GA4 read access confirms the USA franchise GA4 property is linked to Google Ads customers:
+  - `3820636025`
+  - `4159217891`
 
 ### Franchise USA Gaps
 
 - USA currently appears to be using the same visible GTM and GA4 stack as Franchise Canada.
+- This mismatch is now stronger: GA4 admin shows a separate USA property exists, but the public USA site still visibly loads the Canada franchise measurement ID `G-6EMKPZD7RD`.
 - No separate USA helper-plugin surface was visible.
 - No visible `franchise_inquiry_submit`, `real_estate_site_submit`, event ID, or helper-plugin dataLayer bridge was found.
 - The shared container surface includes Canada/dev references and old-style selectors that may not match the live Gravity Forms markup.

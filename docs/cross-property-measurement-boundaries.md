@@ -105,4 +105,5 @@ Key updates from the first live-domain check:
 - Parent old `/inquire-form/` route now returns `404`; action plans should use the new live inquiry path.
 - Franchise Canada exposes Forms `1` and `2`, `GTM-TPJGHFS`, GAConnector scripts, and hidden fields `14` through `30`, but the helper-plugin success events are not publicly visible.
 - Franchise USA currently appears to use `GTM-TPJGHFS` and `G-6EMKPZD7RD`, matching the Canada franchise stack rather than a clearly separated USA boundary.
+- Local ADC was refreshed after the read-only audit, and GA4 MCP read access now confirms a separate USA property exists: `properties/519783092` / `CEFA Franchise - USA.` The public USA site still needs verification/correction because it visibly loads the Canada franchise measurement ID.
 - No final Ads or Meta mapping should be treated as ready until controlled submissions and destination checks are completed.
