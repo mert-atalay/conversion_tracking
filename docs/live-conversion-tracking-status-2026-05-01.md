@@ -17,7 +17,7 @@ Checked properties:
 | Property | Website-side source | GTM/platform mapping | Status |
 | --- | --- | --- | --- |
 | `cefa.ca` | CEFA Conversion Tracking plugin | Active through `GTM-NZ6N7WNC` | Parent Phase 1A website/GTM path is working. |
-| `franchise.cefa.ca` | WPCode fallback bridge | Pending final mapping | Forms 1 and 2 now push confirmed-success dataLayer events. |
+| `franchise.cefa.ca` | WPCode fallback bridge + GAConnector selector map | Active through `GTM-TPJGHFS` Version `52` | Canada Phase 1 website/GTM path is working for Forms 1 and 2. |
 | `franchisecefa.com` | WPCode fallback bridge | Pending final mapping | Forms 1 and 2 now push confirmed-success dataLayer events. |
 
 ## Parent Canada Current State
@@ -83,28 +83,50 @@ Runtime:
 
 - Domain: `franchise.cefa.ca`
 - GTM: `GTM-TPJGHFS`
+- Published GTM version: `52` / `CEFA Franchise Canada Phase 1 helper-event mapping - 2026-05-01`
 - GA4 property: `259747921` / `CEFA Franchise`
 - Linked Google Ads customer: `3820636025`
+- Meta pixel/dataset kept on the existing shared franchise pixel: `918227085392601`
+- LinkedIn partner ID kept as `4536524`
+
+GTM implementation:
+
+- Raw helper events remain `franchise_inquiry_submit` and `real_estate_site_submit`.
+- GTM adds a short delayed dispatch event before firing platform tags:
+  - `cefa_franchise_inquiry_dispatch`
+  - `cefa_real_estate_site_dispatch`
+- The dispatch layer prevents lost destination hits when the confirmed helper event arrives before destination libraries are fully ready.
+- Existing destination IDs were preserved instead of creating new platform learning surfaces.
+- GAConnector tag `GA Connector - CRM` was updated to map GAConnector cookie values into Gravity Forms hidden fields `14` through `30` for Form `1` and Form `2`.
 
 Form 1 / Franchise Inquiry:
 
-- Final event: `franchise_inquiry_submit`
-- Gravity Forms entry: `35`
-- Event ID: `ed620971-0ae8-4632-abbc-00876e4b941e`
+- Final website event: `franchise_inquiry_submit`
+- Dispatch event for destination tags: `cefa_franchise_inquiry_dispatch`
+- Latest validated event ID: `77b52ed9-2ffe-42ef-b98a-293c27ed4d13`
 - Event ID storage: Gravity Forms entry meta `cefa_conversion_tracking_event_id`
 - Payload context: `site_context=franchise_ca`, `market=canada`, `country=CA`, `form_id=1`, `form_family=franchise_inquiry`, `lead_type=franchise_lead`
 - Confirmed non-PII lead metadata included location interest/name, investment range, opening timeline, school count goal, and ownership structure.
+- Confirmed attribution fields saved/pushed cleanly: `lc_source`, `lc_medium`, `lc_campaign`, `lc_content`, `lc_term`, `lc_channel`, `lc_landing`, `lc_referrer`, `fc_source`, `fc_medium`, `fc_campaign`, `fc_content`, `fc_term`, `fc_channel`, `fc_referrer`, `gclid`, and `ga_client_id`.
+- Confirmed GA4/Google measurement hit for `generate_lead`.
+- Confirmed Google Ads conversion hit for conversion ID `11088792613`, label `MfYYCITslY4YEKWYxqcp`.
+- Confirmed Meta custom event `Fr Inquiry Submit` on pixel `918227085392601` with matching `event_id`.
+- Confirmed LinkedIn conversion ID `11308340` with matching `event_id`.
 - Direct payload request after browser consumption returned `404`.
 - Thank-you reload did not push another final event.
 
 Form 2 / Submit a Site:
 
-- Final event: `real_estate_site_submit`
-- Gravity Forms entry: `36`
-- Event ID: `a56031fb-1893-42af-8c92-fee89bad793e`
+- Final website event: `real_estate_site_submit`
+- Dispatch event for destination tags: `cefa_real_estate_site_dispatch`
+- Latest validated event ID: `5462203a-7857-4de0-93b9-fa83a5b61b94`
 - Event ID storage: Gravity Forms entry meta `cefa_conversion_tracking_event_id`
 - Payload context: `site_context=franchise_ca`, `market=canada`, `country=CA`, `form_id=2`, `form_family=site_inquiry`, `lead_type=real_estate_lead`
 - Confirmed non-PII site metadata included site offered by, square-footage range, outdoor-space range, and availability timeline.
+- Confirmed GA4 `generate_lead` hit with site-submission metadata.
+- Confirmed Google Ads conversion hits for conversion ID `11088792613`, label `vq7GCIrslY4YEKWYxqcp`, and conversion ID `802334988`, label `lZGsCLenuvgCEIzSyv4C`.
+- Confirmed Meta custom event `Fr Site Form Submit` on pixel `918227085392601` with matching `event_id`.
+- Confirmed LinkedIn conversion ID `11308348` with matching `event_id`.
 - Direct payload request after browser consumption returned `404`.
 
 ## Franchise USA Evidence
@@ -159,23 +181,23 @@ Franchise USA `519783092`:
 
 ## What Is Still Pending
 
-The franchise website-side event source is working, but final platform mapping is not complete yet.
+Franchise Canada Phase 1 browser/platform mapping is now working from live browser evidence. Remaining items are admin/reporting cleanup and the USA build.
 
 Pending work:
 
-- Build or update GTM triggers for `franchise_inquiry_submit` and `real_estate_site_submit`.
-- Hostname-scope Canada tags to `franchise.cefa.ca`.
+- Register GA4 custom dimensions for the new franchise payloads in the Canada GA4 property.
+- Confirm the new events appear in GA4 reports/realtime after processing delay.
+- Confirm Google Ads conversion action primary/secondary settings before bidding decisions.
+- Confirm Meta Events Manager receives the events and create/adjust franchise-specific custom conversions inside the current shared dataset.
 - Hostname-scope USA tags to `franchisecefa.com` and `www.franchisecefa.com`.
-- Register GA4 custom dimensions for the new franchise payloads.
-- Map primary events to GA4 `generate_lead` or an approved split reporting model.
-- Confirm Google Ads conversion labels before enabling bidding conversions.
-- Confirm Meta dataset and custom conversion transition before sending final Meta `Lead` events.
-- Confirm LinkedIn and other B2B destinations after Google/Meta boundaries are stable.
+- Build USA GTM destination mappings after Canada signoff.
 - Disable or demote legacy thank-you/pageview/form-auto triggers so they cannot duplicate final conversions.
-- Decide whether to supplement GAConnector because prior live browser submissions saved fields `14` through `30` blank.
+- Monitor GTM cache propagation; clean contexts loaded Version `52` correctly.
 
 ## Current Interpretation
 
 Parent Canada is complete enough to keep live and monitor.
 
-Franchise Canada and Franchise USA now have the required confirmed-success website-side dataLayer source. They are ready for GTM/GA4/Ads/Meta configuration, but they should not be called platform-complete until destination mappings, custom dimensions, and duplicate-source suppression are finished and retested.
+Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, and live destination hits are verified. It still needs GA4 custom dimensions and platform UI confirmation before reporting signoff.
+
+Franchise USA still has the confirmed-success website-side dataLayer source, but destination mappings, custom dimensions, and duplicate-source suppression still need to be built and retested.

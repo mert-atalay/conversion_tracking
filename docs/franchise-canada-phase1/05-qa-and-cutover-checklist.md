@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-01
 
+Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. GAConnector field population is verified on a clean Form 1 runtime test; Form 2 uses the same selector map and final destination mapping is verified, but a final post-Version-52 Form 2 attribution re-submit can still be run if stricter evidence is needed.
+
 ## Before GTM Build
 
 - [x] Confirm GTM account/container for Canada franchise.
@@ -15,13 +17,13 @@ Last updated: 2026-05-01
 - [x] Confirm existing attribution hidden fields `14` through `30`.
 - [x] Confirm GAConnector scripts/cookies load on staging runtime.
 - [x] Confirm `gclid` can populate hidden field `29` in runtime tests.
-- [ ] Confirm real Form 1 entry saves clean fields `14` through `30`.
-- [ ] Confirm real Form 2 entry saves clean fields `14` through `30`.
-- [ ] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
-- [ ] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
-- [ ] Confirm Meta dataset decision for Canada transition.
-- [ ] Confirm Google Ads conversion action labels.
-- [ ] Confirm whether staging should keep `GTM-TPJGHFS` or switch to a clean staging container.
+- [x] Confirm real Form 1 entry/runtime saves clean fields `14` through `30`.
+- [ ] Confirm real Form 2 entry saves clean fields `14` through `30` after Version 52.
+- [x] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
+- [x] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
+- [x] Confirm Meta dataset decision for Canada transition.
+- [x] Confirm Google Ads conversion action labels.
+- [x] Confirm whether staging should keep `GTM-TPJGHFS` or switch to a clean staging container.
 
 ## Helper Plugin QA
 
@@ -37,14 +39,14 @@ Last updated: 2026-05-01
 - [x] Form 2 event has `event_id`.
 - [x] Event IDs are unique per successful submission.
 - [x] Event IDs are available in Gravity Forms entry meta.
-- [ ] Existing GAConnector attribution values are preserved when populated.
-- [ ] Empty attribution fields are not silently treated as verified tracking success.
+- [x] Existing GAConnector attribution values are preserved when populated.
+- [x] Empty attribution fields are not silently treated as verified tracking success.
 - [x] Direct Form 1 thank-you page visit fires no primary event.
 - [x] Direct Form 2 thank-you page visit fires no primary event.
 - [x] Thank-you page reload fires no duplicate event.
 - [ ] Invalid Form 1 submission fires no primary event.
 - [ ] Invalid Form 2 submission fires no primary event.
-- [ ] No PII is pushed into dataLayer.
+- [x] No PII is pushed into the helper-event dataLayer payload.
 
 ## GTM QA
 
@@ -52,19 +54,19 @@ Last updated: 2026-05-01
 - [ ] GTM preview shows primary Form 2 event only after confirmed success.
 - [ ] Staging tags are hostname-contained to `cefafranchise.kinsta.cloud`.
 - [x] Live host `franchise.cefa.ca` renders the intended bridge markers after deployment.
-- [ ] GA4 receives expected event and parameters.
-- [ ] Google Ads tags are not enabled until conversion labels are confirmed.
-- [ ] Meta tags are not enabled until dataset transition decision is confirmed.
+- [x] GA4 receives expected event and parameters from browser/network evidence.
+- [x] Google Ads tags are enabled only after conversion labels were confirmed/reused.
+- [x] Meta tags are enabled only after the Canada shared-dataset transition decision was confirmed.
 - [ ] Micro-conversions are not marked as Google Ads bidding conversions.
 
 ## Production Cutover
 
-- [ ] Replace staging hostname conditions with production hostname conditions.
+- [x] Replace staging hostname conditions with production hostname conditions.
 - [x] Verify production `franchise.cefa.ca` loads the intended GTM container.
 - [x] Submit Form 1 in production test mode and verify one primary event.
 - [x] Submit Form 2 in production test mode and verify one primary event.
 - [ ] Confirm CRM/Synuma/SiteZeus delivery still works.
-- [ ] Confirm GA4 realtime/debug view receives events.
-- [ ] Confirm Google Ads only receives approved final conversion events.
-- [ ] Confirm Meta only receives approved final conversion events.
+- [ ] Confirm GA4 realtime/debug view receives events in platform UI after processing delay.
+- [x] Confirm Google Ads only receives approved final conversion events from browser/network evidence.
+- [x] Confirm Meta only receives approved final conversion events from browser/network evidence.
 - [ ] Confirm custom conversions separate franchise Canada from parent and USA.
