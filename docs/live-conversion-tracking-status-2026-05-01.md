@@ -185,6 +185,7 @@ Franchise Canada Phase 1 browser/platform mapping is now working from live brows
 
 Pending work:
 
+- Evaluate GA4 Measurement Protocol as a Phase 1B audit-only server-side event, not as a duplicate `generate_lead` source.
 - Register GA4 custom dimensions for the new franchise payloads in the Canada GA4 property.
 - Confirm the new events appear in GA4 reports/realtime after processing delay.
 - Confirm Google Ads conversion action primary/secondary settings before bidding decisions.
@@ -201,3 +202,5 @@ Parent Canada is complete enough to keep live and monitor.
 Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, and live destination hits are verified. It still needs GA4 custom dimensions and platform UI confirmation before reporting signoff.
 
 Franchise USA still has the confirmed-success website-side dataLayer source, but destination mappings, custom dimensions, and duplicate-source suppression still need to be built and retested.
+
+Measurement Protocol remains a Phase 1B strengthening layer. If tested through the Gravity Forms Google Analytics Add-On, it should first send an audit-only event such as `school_inquiry_submit_server_audit` with the same `event_id`, not a second GA4 `generate_lead`.
