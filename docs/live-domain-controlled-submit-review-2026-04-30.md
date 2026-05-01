@@ -21,14 +21,15 @@ Evidence used:
 - Browser network request inspection for GA4, Google Ads, Meta, LinkedIn, GAConnector, and helper-plugin requests.
 - GA4 MCP realtime/admin reads.
 - Public DOM/form field inspection.
+- Follow-up live WordPress saved-entry verification, documented in `docs/live-form-crm-integrity-review-2026-04-30.md`.
 
-WordPress entry verification is still pending because the active local MCP list for this session did not expose `wordpress_franchise_http` or `wordpress_franchise_usa_http`; only the parent `wordpress_http` style server was visible. The live browser tests below are still enough to decide what needs changing before final conversion mapping.
+Follow-up saved-entry verification was completed after direct live WordPress MCP endpoint checks. Use `docs/live-form-crm-integrity-review-2026-04-30.md` as the current source for form/CRM integrity findings.
 
 ## Executive Status
 
 | Property | Submit result | Current status | Main decision |
 | --- | --- | --- | --- |
-| `cefa.ca` | Form 4 submit passed | Parent browser-side contract is working on live domain | Keep parent helper plugin active; verify saved entry/backend delivery before final signoff. |
+| `cefa.ca` | Form 4 submit passed | Parent browser-side contract and saved GF fields are working on live domain | Keep parent helper plugin active; verify KinderTales/business delivery before final signoff. |
 | `franchise.cefa.ca` | Forms 1 and 2 submit, but final bridge missing | Not ready for final conversion mapping | Activate/deploy the franchise helper bridge or equivalent confirmed-success dataLayer event before GTM/Ads/Meta final mapping. |
 | `franchisecefa.com` | Forms 1 and 2 submit, but final bridge missing | Measurement boundary improved, but event contract missing | Extend helper bridge to USA and configure USA GA4/GTM/custom dimensions before optimization. |
 
@@ -90,8 +91,8 @@ Parent Canada passes the Phase 1A browser-side contract.
 
 Remaining parent items before production signoff:
 
-- Verify the saved Gravity Forms entry fields `32.*` and `35-46` when backend read access is allowed.
-- Verify KinderTales/business delivery path, not only browser/destination tags.
+- Saved Gravity Forms entry fields `32.*` and `35-46` were verified in the follow-up form/CRM review.
+- Verify KinderTales/business delivery path, not only browser/destination tags or saved GF fields.
 - Keep the helper plugin active and prevent any Gravity Forms GA Add-On or old thank-you trigger from becoming a second final conversion source.
 - Clean up legacy-style reporting parameters later; current GTM still sends some `event_title` and `event_label` parameters on non-primary events, but the core submit event is already metadata-based.
 
@@ -292,7 +293,7 @@ Required changes once backend changes are allowed:
 - Franchise Canada and USA do not expose submission-scoped `event_id` values to browser dataLayer.
 - Franchise Canada and USA do not currently provide clean metadata-rich final events for GTM.
 - Franchise Canada and USA still rely on pageview/form-auto-event behavior that can be useful diagnostically but is not enough for final Ads/Meta conversion truth.
-- Saved Gravity Forms entry verification remains pending for GAConnector fields and event ID storage.
+- Follow-up saved-entry verification found franchise GAConnector fields `14-30` blank in live browser submissions and two Synuma lead-ID gaps; see `docs/live-form-crm-integrity-review-2026-04-30.md`.
 
 ### Do Not Do
 
@@ -308,7 +309,7 @@ Required changes once backend changes are allowed:
 
 - Keep `CEFA Conversion Tracking` active.
 - Keep GTM mapping from `school_inquiry_submit` to GA4 `generate_lead`, Ads, and Meta.
-- Verify Gravity Forms saved entry and backend delivery when backend read is allowed.
+- Gravity Forms saved entry values are verified; still verify KinderTales/business delivery if separate from GF.
 - Confirm old Gravity Forms GA Add-On/temporary triggers are not mapped as duplicate final conversions.
 - Update docs that the live parent route is `/submit-an-inquiry-today/`, not `/inquire-form/`.
 
