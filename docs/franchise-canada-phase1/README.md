@@ -32,7 +32,10 @@ Current live result:
 - GAConnector scripts and hidden fields `14` through `30` are visible.
 - The WPCode fallback bridge is visible on the Form `1` and Form `2` paths.
 - Controlled Form `1` and Form `2` submissions proved the confirmed-success dataLayer events and `event_id` entry-meta join.
-- Do not map final GA4, Ads, or Meta conversions until GTM triggers, GA4 custom dimensions, Ads labels, Meta dataset strategy, and duplicate-source cleanup are configured and retested.
+- GTM Version `52` maps the helper events through dispatch events to GA4, Google Ads, Meta, and LinkedIn destinations with existing IDs.
+- GA4 Data API has reported at least one processed `generate_lead` on host `franchise.cefa.ca`, but the new helper payload custom dimensions are still not registered.
+- Google Ads primary/secondary status needs an explicit media-owner decision before bidding signoff; reporting evidence shows `fr_application_submit` is primary while `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` are secondary.
+- Meta Events Manager custom conversions still need direct UI/API confirmation inside the current shared dataset.
 
 Use the old Canada GTM container as a reference only. The old container already contains useful IDs and micro-conversion examples, but it is built around old paths, old Elementor form selectors, and thank-you/pageview logic. The new staging site uses Gravity Forms and different page paths.
 

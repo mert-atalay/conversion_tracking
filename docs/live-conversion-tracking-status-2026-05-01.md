@@ -18,7 +18,7 @@ Checked properties:
 | --- | --- | --- | --- |
 | `cefa.ca` | CEFA Conversion Tracking plugin | Active through `GTM-NZ6N7WNC` | Parent Phase 1A website/GTM path is working. |
 | `franchise.cefa.ca` | WPCode fallback bridge + GAConnector selector map | Active through `GTM-TPJGHFS` Version `52` | Canada Phase 1 website/GTM path is working for Forms 1 and 2. |
-| `franchisecefa.com` | WPCode fallback bridge | Pending final mapping | Forms 1 and 2 now push confirmed-success dataLayer events. |
+| `franchisecefa.com` | WPCode fallback bridge | `GTM-5LZMHBZL` Version `15` GA4 helper-event mapping | Forms 1 and 2 push confirmed-success dataLayer events; GA4 mapping is live, while Ads/Meta final mapping is still blocked pending USA-specific confirmation. |
 
 ## Parent Canada Current State
 
@@ -135,6 +135,7 @@ Runtime:
 
 - Domain: `franchisecefa.com`
 - GTM: `GTM-5LZMHBZL`
+- Published GTM version: `15` / `CEFA Franchise USA Phase 1 helper-event GA4 mapping - 2026-05-01`
 - GA4 property: `519783092` / `CEFA Franchise - USA.`
 - Linked Google Ads customers: `3820636025`, `4159217891`
 - GA4 currency currently: `CAD`
@@ -160,6 +161,28 @@ Form 2 / Submit a Site:
 - Confirmed non-PII site metadata included site offered by, square-footage range, outdoor-space range, and availability timeline.
 - Direct payload request after browser consumption returned `404`.
 
+GTM Version 15 implementation:
+
+- The live USA container now contains hostname/context-scoped helper triggers for `franchise_inquiry_submit` and `real_estate_site_submit`.
+- The helper triggers require `Page Hostname` to match `franchisecefa.com` or `www.franchisecefa.com`, `site_context=franchise_us`, and `market=usa`.
+- GTM creates delayed dispatch events before destination firing:
+  - `cefa_franchise_us_inquiry_dispatch`
+  - `cefa_franchise_us_site_dispatch`
+- Active destination mapping added:
+  - `CEFA - GA4 - Franchise USA - generate_lead - inquiry`
+  - `CEFA - GA4 - Franchise USA - generate_lead - site`
+- The active GA4 mapping sends only non-PII helper payload fields to `G-YL1KQPWV0M`.
+- Legacy USA final conversion tags from the old Elementor/form-submit path were paused to avoid duplicate final conversions:
+  - `Franchisor_GA4_Fr Application Submit_ollo`
+  - `Franchisor_GA4_Fr Site Form Submit_ollo`
+  - `Franchisor_GAds_Fr Application Submit_ollo`
+  - `Franchisor_GAds_Fr Site Form Submit_ollo`
+  - `Franchisor_FB_Fr Application Submit_ollo`
+  - `Franchisor_FB_Site Form Submit_ollo`
+  - `cHTML - Fr Apply Success Listener (USA)_ollo`
+- USA Google Ads and Meta final helper-event tags were not activated because USA-specific conversion action labels and Meta dataset/pixel ownership are not yet verified.
+- Live `gtm.js` render check confirms the published container includes `franchise_inquiry_submit`, `real_estate_site_submit`, `cefa_franchise_us_inquiry_dispatch`, `cefa_franchise_us_site_dispatch`, and `G-YL1KQPWV0M`.
+
 ## GA4 Admin Status
 
 Parent `267558140`:
@@ -172,6 +195,10 @@ Franchise Canada `259747921`:
 - Property exists and is linked to Google Ads customer `3820636025`.
 - Custom dimensions are still mostly legacy/reporting fields such as `event_title`, `event_label`, `preferred_location`, `applicant_capital`, page/click fields, and video fields.
 - The new helper-plugin franchise parameters are not fully registered yet.
+- GA4 Data API processing check for `2026-04-30` through `2026-05-01` returned one processed `generate_lead` row on host `franchise.cefa.ca`.
+- A same-day `2026-05-01` report and realtime check returned no active `generate_lead` rows at the time of verification.
+- Direct GA4 Admin API custom-dimension write was attempted with local ADC but blocked by `ACCESS_TOKEN_SCOPE_INSUFFICIENT`; registration still needs a reauth with Analytics edit scope or GA4 UI/API access that can create custom dimensions.
+- Recommended Canada custom-dimension registration should prioritize low-cardinality helper fields such as `site_context`, `business_unit`, `market`, `country`, `form_id`, `form_family`, `lead_type`, `lead_intent`, `tracking_source`, key Form 1/Form 2 metadata, and low-cardinality GAConnector source/medium/campaign/channel fields. Do not burn GA4 custom-dimension quota on high-cardinality `event_id`, click IDs, full URLs, landing URLs, referrers, or GA client IDs.
 
 Franchise USA `519783092`:
 
@@ -179,28 +206,59 @@ Franchise USA `519783092`:
 - No custom dimensions or custom metrics are currently registered.
 - Currency is currently `CAD`; confirm whether that should remain or change before production reporting signoff.
 
+## Google Ads Admin Status
+
+Supermetrics reporting access confirmed Google Ads account `3820636025` / `CEFA Franchisor`.
+
+Conversion action primary/secondary review for `2025-05-01` through `2026-05-01`:
+
+| Conversion action | Tracker ID | Category | Primary for goal | All conversions |
+| --- | --- | --- | --- | --- |
+| `fr_application_submit` | `6472168961` | Submit lead form | `true` | `96` |
+| `generate_lead (GA4)` | `6480960234` | Submit lead form | `false` | `82.51` |
+| `fr_site_form_submit` | `6472168970` | Submit lead form | `false` | `3` |
+| `fr_inquiry_submit` | `6472168964` | Submit lead form | `false` | `0` |
+| `Application Submit (USA)` | `7482298930` | Submit lead form | `true` | `0` |
+| `CEFA Franchise - USA. (web) generate_lead` | `7499744287` | Submit lead form | `false` | `0` |
+| `CEFA Franchise - USA. (web) ads_conversion_submit_lead_form` | `7482257746` | Submit lead form | `false` | `0` |
+
+Interpretation:
+
+- Canada browser evidence confirms Ads tags fired, but the relevant `fr_inquiry_submit`, `fr_site_form_submit`, and imported GA4 `generate_lead` conversion actions are secondary at the time of verification.
+- `fr_application_submit` is primary and has historical volume, but it is not the same as the new Form 1 helper event name.
+- Do not change bidding/primary settings from this repository evidence alone. Before any live Ads setting edit, confirm the intended bidding action with the media owner and Ads UI/API, then document the exact old to new change.
+- USA Ads final helper-event mapping was not activated because the correct USA-specific labels for Form 1 and Form 2 are not yet verified.
+
+## Meta Admin Status
+
+- Canada browser/network evidence confirms Meta received `Fr Inquiry Submit` and `Fr Site Form Submit` on pixel/dataset `918227085392601` with matching event IDs during controlled tests.
+- Meta Events Manager UI/API custom-conversion status was not verified in this pass. Supermetrics reporting/account discovery does not expose Events Manager custom conversion definitions through the available endpoint.
+- Franchise Canada custom conversions inside the current shared dataset remain pending until Events Manager is checked directly.
+- Franchise USA final Meta tags remain blocked. The live USA container still has the existing shared-pixel base pageview tag, but final USA lead/site-submit events were not newly mapped to the shared dataset because USA should stay separated unless a live campaign dependency is explicitly confirmed.
+
 ## What Is Still Pending
 
-Franchise Canada Phase 1 browser/platform mapping is now working from live browser evidence. Remaining items are admin/reporting cleanup and the USA build.
+Franchise Canada Phase 1 browser/platform mapping is now working from live browser evidence. Remaining items are admin/reporting cleanup, explicit Meta custom-conversion confirmation, and Google Ads primary/secondary decisioning. Franchise USA now has a live GA4 helper-event mapping, but Ads/Meta final mappings remain blocked.
 
 Pending work:
 
 - Evaluate GA4 Measurement Protocol as a Phase 1B audit-only server-side event, not as a duplicate `generate_lead` source.
 - Register GA4 custom dimensions for the new franchise payloads in the Canada GA4 property.
-- Confirm the new events appear in GA4 reports/realtime after processing delay.
-- Confirm Google Ads conversion action primary/secondary settings before bidding decisions.
-- Confirm Meta Events Manager receives the events and create/adjust franchise-specific custom conversions inside the current shared dataset.
-- Hostname-scope USA tags to `franchisecefa.com` and `www.franchisecefa.com`.
-- Build USA GTM destination mappings after Canada signoff.
-- Disable or demote legacy thank-you/pageview/form-auto triggers so they cannot duplicate final conversions.
-- Monitor GTM cache propagation; clean contexts loaded Version `52` correctly.
+- Confirm Form 1 and Form 2 helper-event parameters in GA4 reports after custom dimensions are registered and processing completes.
+- Decide whether current Google Ads primary/secondary settings are correct for Canada reporting and bidding. Do not change primary status without explicit media-owner approval.
+- Confirm Meta Events Manager receives the Canada events and create/adjust franchise-specific custom conversions inside the current shared dataset.
+- Register USA GA4 custom dimensions after confirming whether USA reporting should use the same low-cardinality helper dimensions as Canada.
+- Run controlled USA Form 1 and Form 2 submissions after GTM Version `15` propagation and verify GA4 `generate_lead` receipt.
+- Confirm USA-specific Google Ads conversion action labels before activating Ads final helper-event tags.
+- Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
+- Monitor GTM cache propagation; clean Canada contexts loaded Version `52`, and clean USA contexts load Version `15`.
 
 ## Current Interpretation
 
 Parent Canada is complete enough to keep live and monitor.
 
-Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, and live destination hits are verified. It still needs GA4 custom dimensions and platform UI confirmation before reporting signoff.
+Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, live destination hits, and one processed GA4 `generate_lead` report row are verified. It still needs GA4 custom dimensions, Meta custom-conversion confirmation, and a Google Ads primary/secondary decision before reporting signoff.
 
-Franchise USA still has the confirmed-success website-side dataLayer source, but destination mappings, custom dimensions, and duplicate-source suppression still need to be built and retested.
+Franchise USA now has the confirmed-success website-side dataLayer source plus a live GTM Version `15` GA4 helper-event mapping. Ads/Meta final mapping remains intentionally blocked pending USA-specific platform confirmation, and controlled post-Version-15 form submissions still need to verify GA4 receipt.
 
 Measurement Protocol remains a Phase 1B strengthening layer. If tested through the Gravity Forms Google Analytics Add-On, it should first send an audit-only event such as `school_inquiry_submit_server_audit` with the same `event_id`, not a second GA4 `generate_lead`.
