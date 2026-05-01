@@ -1,6 +1,6 @@
 <?php
 /**
- * Attribution capture and Form 4 writeback.
+ * Attribution capture and optional form writeback.
  *
  * @package CEFA_Conversion_Tracking
  */
@@ -10,11 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Backfills the redesign Form 4 attribution fields from first-party cookies.
+ * Backfills approved attribution fields from first-party cookies.
  */
 final class CEFA_Conversion_Tracking_Attribution {
 	/**
-	 * New staging Form 4 attribution map.
+	 * Parent Form 4 attribution map.
 	 */
 	private const COOKIE_TO_FIELD = array(
 		'cefa_last_utm_source'      => '35',
@@ -42,10 +42,19 @@ final class CEFA_Conversion_Tracking_Attribution {
 	/**
 	 * Fill missing attribution POST fields before Gravity Forms saves the entry.
 	 *
+	 * @param array<string, mixed> $form_config Active form configuration.
 	 * @return void
 	 */
-	public static function backfill_posted_fields(): void {
-		foreach ( self::COOKIE_TO_FIELD as $cookie_name => $field_id ) {
+	public static function backfill_posted_fields( array $form_config = array() ): void {
+		if ( isset( $form_config['attribution_backfill'] ) && ! $form_config['attribution_backfill'] ) {
+			return;
+		}
+
+		$cookie_to_field = is_array( $form_config['cookie_to_field'] ?? null )
+			? $form_config['cookie_to_field']
+			: self::COOKIE_TO_FIELD;
+
+		foreach ( $cookie_to_field as $cookie_name => $field_id ) {
 			$post_key = 'input_' . $field_id;
 
 			if ( ! self::should_write_post_field( $post_key ) ) {

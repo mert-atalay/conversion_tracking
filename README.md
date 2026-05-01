@@ -1,22 +1,29 @@
 # CEFA Conversion Tracking
 
-Lightweight WordPress plugin for CEFA parent-site conversion tracking.
+Lightweight WordPress plugin for CEFA conversion tracking.
 
-This plugin emits clean CEFA parent-site `dataLayer` events for the confirmed Form 4 inquiry conversion, Phase 1A browser micro-conversions, and Phase 1B attribution persistence.
+This plugin emits clean CEFA `dataLayer` events for confirmed inquiry conversions, Phase 1A browser micro-conversions, and attribution handoff.
 
-It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sync, KinderTales, GTM, or platform tags.
+It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Field 32 UI, location sync, KinderTales, GAConnector, GTM, or platform tags.
 
 ## What It Owns
 
 - Ensures Form 4 field `32.4` has a unique submission-scoped `event_id`.
+- Supports Franchise Canada Form 1 and Form 2 with event IDs stored as Gravity Forms entry meta.
+- Supports Franchise USA Form 1 and Form 2 with the same event contracts, separated by `site_context=franchise_us`, `market=usa`, and `country=US`.
 - Uses the saved Gravity Forms entry as the source of truth.
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
+- Pushes one clean `franchise_inquiry_submit` event for Franchise Canada Form 1.
+- Pushes one clean `real_estate_site_submit` event for Franchise Canada Form 2.
 - Prevents direct thank-you-page false positives and reload duplicates.
 - Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
 - Stores first-touch and last-touch attribution in the same first-party cookie pattern used by the old parent site.
 - Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
+- Reads Franchise Canada GAConnector hidden fields `14` through `30` when present; it does not overwrite them.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
+- Reads Form 4 school/program/day values for tracking, but does not overwrite School Manager business fields `32.1`, `32.2`, `32.3`, `32.5`, `32.6`, or `32.7`.
+- Provides `snippets/franchise-wpcode-bridge.php` as a temporary WPCode deployment fallback for live franchise hosts when normal plugin-file deployment is blocked.
 
 ## What It Does Not Own
 
@@ -27,7 +34,18 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - Location sync.
 - School Manager location cookies/session state.
 - KinderTales/business submission delivery.
+- CEFA Franchise API delivery.
+- GAConnector attribution capture on franchise forms.
 - GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
+
+## Current Live-Domain Audit Status
+
+- Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
+- Franchise Canada `franchise.cefa.ca` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, GAConnector hidden-field writeback, and live GTM destination mapping through `GTM-TPJGHFS`.
+- Franchise USA `franchisecefa.com` now renders the WPCode fallback bridge, has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, and has live GTM Version `15` GA4 helper-event mapping through `GTM-5LZMHBZL`.
+- Franchise Canada and Franchise USA now have GA4 custom dimensions registered for the low-cardinality helper payload fields. Canada still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision. USA still needs post-Version-15 controlled GA4 receipt testing plus USA-specific Google Ads and Meta final mapping confirmation.
+- Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
+- Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
 
 ## Required Runtime
 
@@ -35,8 +53,11 @@ It does not replace Gravity Forms, CEFA School Manager, Field 32 UI, location sy
 - PHP `7.4+`.
 - Gravity Forms with Form ID `4`.
 - CEFA School Manager continuing to populate Form 4 field `32.*` values.
+- Franchise Canada forms require Gravity Forms Form `1` / Franchise Inquiry and Form `2` / Site Inquiry.
 
 ## DataLayer Contract
+
+### Parent Form 4
 
 ```js
 window.dataLayer = window.dataLayer || [];
@@ -68,6 +89,93 @@ window.dataLayer.push({
   inquiry_success: true,
   inquiry_success_url: window.location.href,
   page_context: "parent",
+  tracking_source: "helper_plugin"
+});
+```
+
+### Franchise Canada Form 1
+
+```js
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event: "franchise_inquiry_submit",
+  event_id: "<stored in Gravity Forms entry meta>",
+  event_scope: "primary",
+  site_context: "franchise_ca",
+  business_unit: "franchise",
+  market: "canada",
+  country: "CA",
+  form_id: "1",
+  form_family: "franchise_inquiry",
+  lead_type: "franchise_lead",
+  lead_intent: "franchise_inquiry",
+  location_interest: "<field 32>",
+  investment_range: "<field 7>",
+  opening_timeline: "<field 10>",
+  school_count_goal: "<field 11>",
+  ownership_structure: "<field 12>",
+  lc_source: "<field 14>",
+  lc_medium: "<field 15>",
+  lc_campaign: "<field 16>",
+  lc_content: "<field 17>",
+  lc_term: "<field 18>",
+  lc_channel: "<field 19>",
+  lc_landing: "<field 20>",
+  lc_referrer: "<field 21>",
+  fc_source: "<field 22>",
+  fc_medium: "<field 23>",
+  fc_campaign: "<field 24>",
+  fc_content: "<field 25>",
+  fc_term: "<field 26>",
+  fc_channel: "<field 27>",
+  fc_referrer: "<field 28>",
+  gclid: "<field 29>",
+  ga_client_id: "<field 30>",
+  inquiry_success: true,
+  inquiry_success_url: window.location.href,
+  tracking_source: "helper_plugin"
+});
+```
+
+### Franchise Canada Form 2
+
+```js
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event: "real_estate_site_submit",
+  event_id: "<stored in Gravity Forms entry meta>",
+  event_scope: "primary",
+  site_context: "franchise_ca",
+  business_unit: "franchise",
+  market: "canada",
+  country: "CA",
+  form_id: "2",
+  form_family: "site_inquiry",
+  lead_type: "real_estate_lead",
+  lead_intent: "submit_a_site",
+  site_offered_by: "<field 39>",
+  property_square_footage_range: "<field 34>",
+  outdoor_space_range: "<field 35>",
+  availability_timeline: "<field 36>",
+  lc_source: "<field 14>",
+  lc_medium: "<field 15>",
+  lc_campaign: "<field 16>",
+  lc_content: "<field 17>",
+  lc_term: "<field 18>",
+  lc_channel: "<field 19>",
+  lc_landing: "<field 20>",
+  lc_referrer: "<field 21>",
+  fc_source: "<field 22>",
+  fc_medium: "<field 23>",
+  fc_campaign: "<field 24>",
+  fc_content: "<field 25>",
+  fc_term: "<field 26>",
+  fc_channel: "<field 27>",
+  fc_referrer: "<field 28>",
+  gclid: "<field 29>",
+  ga_client_id: "<field 30>",
+  inquiry_success: true,
+  inquiry_success_url: window.location.href,
   tracking_source: "helper_plugin"
 });
 ```
@@ -120,6 +228,20 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 - The browser writes the values into new Form 4 fields `35` through `46` when the fields are empty.
 - A server-side `gform_pre_submission_4` fallback backfills the same fields from cookies before Gravity Forms saves the entry.
 - Fields `33` and `34` are intentionally not modified because the redesign uses them for location/location-title values.
+- Field `32.3` days per week is intentionally not modified. School Manager owns that submitted value for KinderTales; this plugin only reads it and normalizes pipe-delimited legacy values in the dataLayer payload.
+
+For Franchise Canada, the plugin keeps GAConnector as the attribution source for now:
+
+- It reads existing hidden fields `14` through `30`.
+- It does not overwrite GAConnector-populated values.
+- If those fields remain empty after real submission testing, a later version can add a narrow missing-value backfill.
+
+For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the current temporary runtime bridge:
+
+- It stores `event_id` in Gravity Forms entry meta.
+- It emits `franchise_inquiry_submit` and `real_estate_site_submit` only after confirmed success.
+- It fetches the thank-you payload with `POST` and `cache: no-store`.
+- It does not change GAConnector attribution fields or CRM delivery.
 
 ## Install On Staging
 
@@ -147,8 +269,10 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 
 ## Operational Docs
 
+- [Live migration read-only audit, 2026-04-30](docs/live-migration-readonly-audit-2026-04-30.md)
 - [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
 - [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)
+- [Franchise Canada Phase 1 tracking plan](docs/franchise-canada-phase1/README.md)
 - [GPT Pro review handoff for franchise Meta transition](docs/gpt-pro-review-franchise-meta-transition-2026-04-28.md)
 - [Reviewed franchise transition plan](docs/franchise-transition-reviewed-plan-2026-04-28.md)
 - [GPT Pro franchise transition final pack](docs/franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)

@@ -70,7 +70,7 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	 * This is a fallback for confirmation flows where another plugin rewrites
 	 * the thank-you query string after the helper token is appended.
 	 *
-	 * @param string $event_id Event ID from the submitted Form 4 hidden field.
+	 * @param string $event_id Event ID from the submitted form field or entry meta.
 	 * @return array<string, mixed>|null
 	 */
 	public static function consume_payload_by_event_id( string $event_id ): ?array {

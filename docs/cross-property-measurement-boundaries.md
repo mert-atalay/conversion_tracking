@@ -1,6 +1,6 @@
 # Cross-Property Measurement Boundaries
 
-Last updated: 2026-04-28
+Last updated: 2026-04-30
 
 This document keeps parent, franchise Canada, and franchise USA tracking decisions separated while allowing shared implementation patterns.
 
@@ -82,8 +82,10 @@ Ask GPT Pro only if we want a deeper transition strategy for:
 
 ## Next Franchise Work
 
-- [ ] Audit live `franchise.cefa.ca` GTM container and destination IDs.
-- [ ] Audit live `www.franchisecefa.com` GTM container and destination IDs.
+- [x] Run first read-only public audit after the new sites moved to live domains.
+- [ ] Confirm whether USA should be documented and configured against apex `franchisecefa.com`, `www.franchisecefa.com`, or both.
+- [ ] Audit live `franchise.cefa.ca` GTM container and destination IDs with authenticated GTM access before making changes.
+- [ ] Audit live `franchisecefa.com` GTM container and destination IDs with authenticated GTM access before making changes.
 - [ ] Identify all franchise Canada forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Identify all franchise USA forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Confirm GA4 property IDs for franchise Canada and franchise USA.
@@ -92,3 +94,16 @@ Ask GPT Pro only if we want a deeper transition strategy for:
 - [ ] Keep Canada franchise on the shared dataset only as a controlled transition if active campaigns depend on it.
 - [ ] Create franchise Canada custom conversions inside the shared dataset using franchise-specific parameters before campaign migration.
 - [ ] Separate USA dataset/pixel before serious USA production optimization.
+
+## 2026-04-30 Live Migration Read-Only Status
+
+See [Live migration read-only audit, 2026-04-30](./live-migration-readonly-audit-2026-04-30.md).
+
+Key updates from the first live-domain check:
+
+- Parent `cefa.ca` still exposes the helper plugin and Form 4 on `/submit-an-inquiry-today/`.
+- Parent old `/inquire-form/` route now returns `404`; action plans should use the new live inquiry path.
+- Franchise Canada exposes Forms `1` and `2`, `GTM-TPJGHFS`, GAConnector scripts, and hidden fields `14` through `30`, but the helper-plugin success events are not publicly visible.
+- Franchise USA currently appears to use `GTM-TPJGHFS` and `G-6EMKPZD7RD`, matching the Canada franchise stack rather than a clearly separated USA boundary.
+- Local ADC was refreshed after the read-only audit, and GA4 MCP read access now confirms a separate USA property exists: `properties/519783092` / `CEFA Franchise - USA.` The public USA site still needs verification/correction because it visibly loads the Canada franchise measurement ID.
+- No final Ads or Meta mapping should be treated as ready until controlled submissions and destination checks are completed.

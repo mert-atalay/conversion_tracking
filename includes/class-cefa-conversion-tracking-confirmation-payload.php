@@ -21,7 +21,9 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 	 * @return void
 	 */
 	public static function store_after_submission_payload( array $entry, array $form ): void {
-		if ( CEFA_CONVERSION_TRACKING_FORM_ID !== (int) rgar( $form, 'id' ) ) {
+		$form_config = CEFA_Conversion_Tracking_Config::form_config( (int) rgar( $form, 'id' ) );
+
+		if ( empty( $form_config ) ) {
 			return;
 		}
 
@@ -29,8 +31,8 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 			return;
 		}
 
-		$entry   = self::ensure_entry_event_id( $entry );
-		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry );
+		$entry   = CEFA_Conversion_Tracking_Event_ID::ensure_entry_event_id( $entry, $form_config );
+		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry, $form_config );
 
 		CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
 	}
@@ -47,7 +49,9 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 	public static function prepare_confirmation_tracking( $confirmation, array $form, array $entry, bool $is_ajax ) {
 		unset( $is_ajax );
 
-		if ( CEFA_CONVERSION_TRACKING_FORM_ID !== (int) rgar( $form, 'id' ) ) {
+		$form_config = CEFA_Conversion_Tracking_Config::form_config( (int) rgar( $form, 'id' ) );
+
+		if ( empty( $form_config ) ) {
 			return $confirmation;
 		}
 
@@ -55,8 +59,8 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 			return $confirmation;
 		}
 
-		$entry   = self::ensure_entry_event_id( $entry );
-		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry );
+		$entry   = CEFA_Conversion_Tracking_Event_ID::ensure_entry_event_id( $entry, $form_config );
+		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry, $form_config );
 		$token   = CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
 
 		if ( is_array( $confirmation ) && ! empty( $confirmation['redirect'] ) ) {
@@ -81,30 +85,6 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		}
 
 		return $confirmation;
-	}
-
-	/**
-	 * Ensure the saved entry has the same event ID used by the payload.
-	 *
-	 * @param array $entry Gravity Forms entry.
-	 * @return array
-	 */
-	private static function ensure_entry_event_id( array $entry ): array {
-		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) rgar( $entry, '32.4' ) );
-
-		if ( '' !== $event_id ) {
-			$entry['32.4'] = $event_id;
-			return $entry;
-		}
-
-		$event_id      = wp_generate_uuid4();
-		$entry['32.4'] = $event_id;
-
-		if ( class_exists( 'GFAPI' ) && ! empty( $entry['id'] ) ) {
-			GFAPI::update_entry_field( (int) $entry['id'], '32.4', $event_id );
-		}
-
-		return $entry;
 	}
 
 	/**

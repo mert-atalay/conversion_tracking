@@ -3,6 +3,9 @@
 
 	var config = window.CEFAConversionTracking || {};
 	var formId = Number(config.formId || 4);
+	var finalEvents = Array.isArray(config.finalEvents) && config.finalEvents.length
+		? config.finalEvents
+		: ['school_inquiry_submit'];
 	var eventFieldSelectors = config.eventFieldSelectors || [];
 	var consumedKey = config.consumedKey || 'cefa_conversion_tracking_consumed_event_ids';
 	var pendingKey = config.pendingKey || 'cefa_conversion_tracking_form4_pending';
@@ -356,6 +359,27 @@
 		return option ? normalizeText(option.textContent || '', 220) : '';
 	}
 
+	function readCheckedDays(root) {
+		var form = trackingFormFrom(root);
+
+		if (!form) {
+			return '';
+		}
+
+		var checkedDays = Array.prototype.slice
+			.call(form.querySelectorAll('input[id^="input_' + formId + '_32_3_"][type="checkbox"]:checked'))
+			.map(function (field) {
+				return normalizeText(field.value, 80);
+			})
+			.filter(Boolean);
+
+		return checkedDays.join(',');
+	}
+
+	function normalizeDays(value) {
+		return normalizeText(String(value || '').replace(/\s*\|\s*/g, ','), 220);
+	}
+
 	function syncFormTrackingFields(root) {
 		var form = trackingFormFrom(root);
 
@@ -364,26 +388,6 @@
 		}
 
 		syncAttributionFields(form);
-
-		var programSelect = field32Field(form, '2');
-		var programNameField = field32Field(form, '7');
-		var programName = programSelect && programSelect.value ? selectedOptionText(programSelect) : '';
-
-		if (programNameField && programName) {
-			programNameField.value = programName;
-		}
-
-		var daysField = field32Field(form, '3');
-		var checkedDays = Array.prototype.slice
-			.call(form.querySelectorAll('input[id^="input_' + formId + '_32_3_"][type="checkbox"]:checked'))
-			.map(function (field) {
-				return normalizeText(field.value, 80);
-			})
-			.filter(Boolean);
-
-		if (daysField && checkedDays.length) {
-			daysField.value = checkedDays.join('|');
-		}
 	}
 
 	function readFormContext(root) {
@@ -391,6 +395,8 @@
 
 		var selectedSlug = field32Value(root, '5') || getQueryParam('location');
 		var landingSlug = schoolSlugFromPath(getPagePath());
+		var programSelect = field32Field(root, '2');
+		var daysValue = normalizeDays(field32Value(root, '3') || readCheckedDays(root));
 
 		return {
 			form_id: String(formId),
@@ -403,8 +409,8 @@
 			school_landing_slug: landingSlug,
 			school_match_status: landingSlug && selectedSlug ? (landingSlug === selectedSlug ? 'matched' : 'changed') : 'unknown',
 			program_id: field32Value(root, '2'),
-			program_name: field32Value(root, '7'),
-			days_per_week: field32Value(root, '3'),
+			program_name: field32Value(root, '7') || selectedOptionText(programSelect),
+			days_per_week: daysValue,
 			inquiry_event_id: field32Value(root, '4') || getPendingEventId()
 		};
 	}
@@ -1030,7 +1036,7 @@
 
 			if (
 				item &&
-				item.event === 'school_inquiry_submit' &&
+				item.event === payload.event &&
 				item.event_id === payload.event_id
 			) {
 				return true;
@@ -1038,6 +1044,15 @@
 		}
 
 		return false;
+	}
+
+	function payloadIsFinalEvent(payload) {
+		return !!(
+			payload &&
+			payload.event &&
+			payload.event_id &&
+			finalEvents.indexOf(payload.event) !== -1
+		);
 	}
 
 	function cleanTrackingParams() {
@@ -1050,7 +1065,7 @@
 	}
 
 	function pushPayload(payload) {
-		if (!payload || payload.event !== 'school_inquiry_submit' || !payload.event_id) {
+		if (!payloadIsFinalEvent(payload)) {
 			return;
 		}
 
