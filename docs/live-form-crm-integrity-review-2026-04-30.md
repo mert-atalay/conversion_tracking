@@ -1,6 +1,6 @@
 # Live Form And CRM Integrity Review
 
-Last updated: 2026-04-30
+Last updated: 2026-05-01
 
 ## Scope
 
@@ -26,11 +26,11 @@ Evidence used:
 
 | Property | Form | Visible form | Saved entry | CRM/bridge proof | Status |
 | --- | --- | --- | --- | --- | --- |
-| `cefa.ca` | Parent Form `4` | Pass | Pass, entry `89` | Field `32.*` and attribution fields saved; KinderTales downstream not verified here | Form structure and CRM attributes intact at GF level |
-| `franchise.cefa.ca` | Franchise Inquiry Form `1` | Pass | Pass, entry `30` | No `cefa_synuma_lead_id` found | Needs CRM bridge investigation |
+| `cefa.ca` | Parent Form `4` | Pass | Pass, entries `89` and latest `91` | Field `32.*` and attribution fields save; latest real entry had `32.3` days blank | Mostly intact; check days-per-week requirement |
+| `franchise.cefa.ca` | Franchise Inquiry Form `1` | Pass | Pass, entry `30` | `cefa_synuma_lead_id=07d5a7dd-53ca-408b-8242-b43d0007710f` after delayed recheck | Working, delayed CRM meta write observed |
 | `franchise.cefa.ca` | Submit a Site Form `2` | Pass | Pass, entry `33` | `cefa_synuma_lead_id=1c1c5f8a-0e20-430e-8408-b43c0189b628` | Working |
 | `franchisecefa.com` | Franchise Inquiry Form `1` | Pass, but mixed CA/US location options | Pass, entry `26` | `cefa_synuma_lead_id=290d4025-f0d0-4426-89bd-b43c018b497d` | Working, with location-list issue |
-| `franchisecefa.com` | Submit a Site Form `2` | Pass | Pass, entry `27` | No `cefa_synuma_lead_id` found | Needs CRM bridge investigation |
+| `franchisecefa.com` | Submit a Site Form `2` | Pass | Pass, entry `27` | `cefa_synuma_lead_id=83da4043-c001-4a99-9269-b43d00077c56` after delayed recheck | Working, delayed CRM meta write observed |
 
 ## Parent Canada: `cefa.ca`
 
@@ -72,11 +72,17 @@ Confirmed attribution fields:
 - `45` first_landing_page: full landing URL with UTM/GCLID
 - `46` first_referrer: `direct`
 
+2026-05-01 quick recheck:
+
+- Latest live entry `91` saved school UUID, program ID, event ID, slug, school name, program name, and attribution values.
+- Latest live entry `91` had `32.3` days per week blank.
+
 Parent verdict:
 
 - The parent form is intact at the visible form and saved Gravity Forms level.
 - The agreed school/program/day CRM attributes are saving cleanly.
 - Attribution persistence is saving correctly into fields `35-46` for this test.
+- Days per week should be checked because latest live entry `91` had `32.3` blank.
 - This review did not verify KinderTales or downstream business delivery outside WordPress/GF.
 
 ## Franchise Canada: `franchise.cefa.ca`
@@ -110,12 +116,13 @@ Live Gravity Forms entry:
 
 CRM bridge proof:
 
-- No `cefa_synuma_lead_id` entry meta was found after waiting and rechecking.
+- Initial check did not find `cefa_synuma_lead_id`.
+- 2026-05-01 quick recheck found `cefa_synuma_lead_id=07d5a7dd-53ca-408b-8242-b43d0007710f`.
 
 Verdict:
 
 - The visible form and Gravity Forms saved entry are intact.
-- Synuma/CRM delivery is not confirmed for this form and should be investigated.
+- Synuma/CRM delivery is now confirmed, but the lead-id write can be delayed.
 
 ### Form 2: Submit a Site
 
@@ -219,12 +226,13 @@ Live Gravity Forms entry:
 
 CRM bridge proof:
 
-- No `cefa_synuma_lead_id` entry meta was found after waiting and rechecking.
+- Initial check did not find `cefa_synuma_lead_id`.
+- 2026-05-01 quick recheck found `cefa_synuma_lead_id=83da4043-c001-4a99-9269-b43d00077c56`.
 
 Verdict:
 
 - The visible form and Gravity Forms saved entry are intact.
-- Synuma/CRM delivery is not confirmed for this form and should be investigated.
+- Synuma/CRM delivery is now confirmed, but the lead-id write can be delayed.
 
 ## Attribution Fields
 
@@ -244,9 +252,8 @@ Recommended next check:
 
 ## Priority Fix List
 
-1. Investigate why Canada Form `1` entry `30` does not have `cefa_synuma_lead_id`.
-2. Investigate why USA Form `2` entry `27` does not have `cefa_synuma_lead_id`.
-3. Decide whether USA Form `1` should filter out Canada locations.
-4. Fix or replace franchise attribution population for fields `14-30`.
+1. Check whether parent field `32.3` days per week should be required or always populated; latest live entry `91` had it blank.
+2. Decide whether USA Form `1` should filter out Canada locations; quick recheck found `6` USA options and `47` Canada options.
+3. Fix or replace franchise attribution population for fields `14-30`; quick recheck still found `lc_source`, `lc_medium`, `lc_campaign`, `gclid`, and `GA_Client_ID` blank on entries `30`, `33`, `26`, and `27`.
+4. Treat franchise CRM/Synuma lead IDs as delayed-write fields and allow a short wait before declaring failure.
 5. After form/CRM integrity is confirmed, return to the conversion tracking bridge and GTM/GA4/Ads/Meta mapping work.
-
