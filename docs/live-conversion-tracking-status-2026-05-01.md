@@ -41,6 +41,9 @@ Current parent result:
 - Attribution fields `35` through `46` are populated through the CEFA-owned attribution bridge.
 - Direct thank-you visits and thank-you reloads do not push the final primary event.
 - GTM maps the helper-plugin event to GA4/Google Ads/Meta.
+- Live GA4 BigQuery export check for the last 7 days found `41` helper-plugin parent `generate_lead` events, `50` helper-plugin `validation_error` events, and no duplicate helper-plugin `generate_lead` event IDs.
+- Current sampled live HTML loads `GTM-NZ6N7WNC` only; `GTM-PPV9ZRZ` is not present on the sampled live inquiry or thank-you pages.
+- Legacy/non-helper `generate_lead` rows remain in the GA4 property from old thank-you URL patterns, but they lack `event_id`, `tracking_source`, and the helper-plugin metadata.
 
 Guardrail:
 
@@ -189,6 +192,8 @@ Parent `267558140`:
 
 - Phase 1A event-scoped custom dimensions for the parent helper-plugin payload are registered.
 - `generate_lead` already exists as a key event.
+- `validation_error` is not a GA4 key event.
+- The property is linked to Google Ads customer `4159217891`.
 
 Franchise Canada `259747921`:
 
