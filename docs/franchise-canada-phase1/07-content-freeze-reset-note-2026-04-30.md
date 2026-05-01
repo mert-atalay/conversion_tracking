@@ -18,10 +18,6 @@ Current plugin version:
 
 - `0.4.0`
 
-Current branch:
-
-- `codex/franchise-canada-tracking-plan`
-
 Latest implementation commit:
 
 - `40d097c Add franchise Canada tracking bridge`

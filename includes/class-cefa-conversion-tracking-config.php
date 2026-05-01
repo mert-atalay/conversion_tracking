@@ -249,6 +249,67 @@ final class CEFA_Conversion_Tracking_Config {
 					),
 				),
 			),
+			'franchise_us' => array(
+				'hostnames' => array(
+					'cefafranusdev.wpenginepowered.com',
+					'franchisecefa.com',
+					'www.franchisecefa.com',
+				),
+				'forms'     => array(
+					1 => array(
+						'id'                   => 1,
+						'event_name'           => 'franchise_inquiry_submit',
+						'event_id_fields'      => array(),
+						'event_id_post_keys'   => array(),
+						'attribution_backfill' => false,
+						'attribution_fields'   => self::franchise_attribution_fields(),
+						'field_map'            => array(
+							'location_interest'   => '32',
+							'investment_range'    => '7',
+							'opening_timeline'    => '10',
+							'school_count_goal'   => '11',
+							'ownership_structure' => '12',
+						),
+						'static_payload'       => array(
+							'event_scope'                  => 'primary',
+							'site_context'                 => 'franchise_us',
+							'business_unit'                => 'franchise',
+							'market'                       => 'usa',
+							'country'                      => 'US',
+							'form_id'                      => '1',
+							'form_family'                  => 'franchise_inquiry',
+							'lead_type'                    => 'franchise_lead',
+							'lead_intent'                  => 'franchise_inquiry',
+							'location_availability_status' => 'unknown',
+						),
+					),
+					2 => array(
+						'id'                   => 2,
+						'event_name'           => 'real_estate_site_submit',
+						'event_id_fields'      => array(),
+						'event_id_post_keys'   => array(),
+						'attribution_backfill' => false,
+						'attribution_fields'   => self::franchise_attribution_fields(),
+						'field_map'            => array(
+							'site_offered_by'               => '39',
+							'property_square_footage_range' => '34',
+							'outdoor_space_range'           => '35',
+							'availability_timeline'         => '36',
+						),
+						'static_payload'       => array(
+							'event_scope'   => 'primary',
+							'site_context'  => 'franchise_us',
+							'business_unit' => 'franchise',
+							'market'        => 'usa',
+							'country'       => 'US',
+							'form_id'       => '2',
+							'form_family'   => 'site_inquiry',
+							'lead_type'     => 'real_estate_lead',
+							'lead_intent'   => 'submit_a_site',
+						),
+					),
+				),
+			),
 		);
 
 		/**

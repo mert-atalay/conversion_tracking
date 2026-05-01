@@ -45,6 +45,10 @@ final class CEFA_Conversion_Tracking_DataLayer_Payload {
 			$payload[ $key ] = self::entry_value( $entry, $field_id );
 		}
 
+		if ( isset( $payload['days_per_week'] ) ) {
+			$payload['days_per_week'] = self::normalize_days_value( (string) $payload['days_per_week'] );
+		}
+
 		foreach ( self::attribution_fields( $form_config ) as $key => $field_id ) {
 			$payload[ $key ] = self::entry_value( $entry, $field_id );
 		}
@@ -98,5 +102,15 @@ final class CEFA_Conversion_Tracking_DataLayer_Payload {
 		$max_length = in_array( $field_id, array( '20', '21', '28', '45', '46' ), true ) ? 1000 : 220;
 
 		return substr( sanitize_text_field( (string) rgar( $entry, $field_id ) ), 0, $max_length );
+	}
+
+	/**
+	 * Normalize legacy tracking-only day separators without changing entries.
+	 *
+	 * @param string $value Saved entry value.
+	 * @return string
+	 */
+	private static function normalize_days_value( string $value ): string {
+		return substr( sanitize_text_field( preg_replace( '/\s*\|\s*/', ',', $value ) ?? $value ), 0, 220 );
 	}
 }

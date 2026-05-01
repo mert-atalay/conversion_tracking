@@ -10,6 +10,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 
 - Ensures Form 4 field `32.4` has a unique submission-scoped `event_id`.
 - Supports Franchise Canada Form 1 and Form 2 with event IDs stored as Gravity Forms entry meta.
+- Supports Franchise USA Form 1 and Form 2 with the same event contracts, separated by `site_context=franchise_us`, `market=usa`, and `country=US`.
 - Uses the saved Gravity Forms entry as the source of truth.
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
@@ -21,6 +22,8 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
 - Reads Franchise Canada GAConnector hidden fields `14` through `30` when present; it does not overwrite them.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
+- Reads Form 4 school/program/day values for tracking, but does not overwrite School Manager business fields `32.1`, `32.2`, `32.3`, `32.5`, `32.6`, or `32.7`.
+- Provides `snippets/franchise-wpcode-bridge.php` as a temporary WPCode deployment fallback for live franchise hosts when normal plugin-file deployment is blocked.
 
 ## What It Does Not Own
 
@@ -37,10 +40,11 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 
 ## Current Live-Domain Audit Status
 
-- Parent `cefa.ca` passed the 2026-04-30 controlled browser-side submit test: one Form 4 success produced one `school_inquiry_submit`, the browser `event_id` matched field `32.4`, and GA4/Google Ads/Meta requests fired from the helper-plugin event.
-- Franchise Canada `franchise.cefa.ca` Forms 1 and 2 submit, but the helper bridge is not active on the live domain yet; no `franchise_inquiry_submit` or `real_estate_site_submit` was visible.
-- Franchise USA `franchisecefa.com` now shows separate public GTM/GA4 IDs, but still lacks the helper bridge and target dataLayer events.
-- Current detailed review: `docs/live-domain-controlled-submit-review-2026-04-30.md`.
+- Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
+- Franchise Canada `franchise.cefa.ca` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events.
+- Franchise USA `franchisecefa.com` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events.
+- Franchise website-side event sources are ready for GTM mapping, but GA4 custom dimensions, Ads labels, Meta dataset/custom conversion decisions, and duplicate-source cleanup are still pending.
+- Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 
 ## Required Runtime
 
@@ -223,12 +227,20 @@ The plugin ports the old parent-site attribution-cookie logic into the CEFA-owne
 - The browser writes the values into new Form 4 fields `35` through `46` when the fields are empty.
 - A server-side `gform_pre_submission_4` fallback backfills the same fields from cookies before Gravity Forms saves the entry.
 - Fields `33` and `34` are intentionally not modified because the redesign uses them for location/location-title values.
+- Field `32.3` days per week is intentionally not modified. School Manager owns that submitted value for KinderTales; this plugin only reads it and normalizes pipe-delimited legacy values in the dataLayer payload.
 
 For Franchise Canada, the plugin keeps GAConnector as the attribution source for now:
 
 - It reads existing hidden fields `14` through `30`.
 - It does not overwrite GAConnector-populated values.
 - If those fields remain empty after real submission testing, a later version can add a narrow missing-value backfill.
+
+For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the current temporary runtime bridge:
+
+- It stores `event_id` in Gravity Forms entry meta.
+- It emits `franchise_inquiry_submit` and `real_estate_site_submit` only after confirmed success.
+- It fetches the thank-you payload with `POST` and `cache: no-store`.
+- It does not change GAConnector attribution fields or CRM delivery.
 
 ## Install On Staging
 

@@ -26,7 +26,7 @@ Evidence used:
 
 | Property | Form | Visible form | Saved entry | CRM/bridge proof | Status |
 | --- | --- | --- | --- | --- | --- |
-| `cefa.ca` | Parent Form `4` | Pass | Pass, entries `89` and latest `91` | Field `32.*` and attribution fields save; latest real entry had `32.3` days blank | Mostly intact; check days-per-week requirement |
+| `cefa.ca` | Parent Form `4` | Pass | Pass, entries `133` and `134` after plugin `0.4.1` | Field `32.*` and attribution fields save; multi-day `32.3` is comma-separated | Working after tracking-plugin boundary fix |
 | `franchise.cefa.ca` | Franchise Inquiry Form `1` | Pass | Pass, entry `30` | `cefa_synuma_lead_id=07d5a7dd-53ca-408b-8242-b43d0007710f` after delayed recheck | Working, delayed CRM meta write observed |
 | `franchise.cefa.ca` | Submit a Site Form `2` | Pass | Pass, entry `33` | `cefa_synuma_lead_id=1c1c5f8a-0e20-430e-8408-b43c0189b628` | Working |
 | `franchisecefa.com` | Franchise Inquiry Form `1` | Pass, but mixed CA/US location options | Pass, entry `26` | `cefa_synuma_lead_id=290d4025-f0d0-4426-89bd-b43c018b497d` | Working, with location-list issue |
@@ -76,6 +76,14 @@ Confirmed attribution fields:
 
 - Latest live entry `91` saved school UUID, program ID, event ID, slug, school name, program name, and attribution values.
 - Latest live entry `91` had `32.3` days per week blank.
+
+2026-05-01 follow-up:
+
+- Backend MCP and raw `wp_gf_entry_meta` checks confirmed Form `4` stores Field `32` as split subfields (`32.1` through `32.7`).
+- The pipe-delimited full Field `32` value comes from the School Manager custom field export method when a consumer requests parent field `32`.
+- A separate issue was found in the CEFA Conversion Tracking plugin: its browser bridge wrote checked day values back into `32.3` with `|`.
+- This crossed the tracking/business boundary because School Manager/KinderTales owns `32.3`.
+- Patch `0.4.1` removes that business-field writeback and only normalizes pipe-delimited day values in the dataLayer payload.
 
 Parent verdict:
 
@@ -250,9 +258,54 @@ Recommended next check:
 - If yes, inspect script placement/load order and whether it reads the same field IDs after migration.
 - If GAConnector remains unreliable, replace or supplement it with the CEFA-owned attribution persistence layer from the broader tracking plan.
 
+## 2026-05-01 Parent Retest After Plugin 0.4.1
+
+CEFA Conversion Tracking `0.4.1` is active on `cefa.ca`.
+
+Live Form `4` entry `133` confirmed the patched boundary:
+
+- Saved Gravity Forms `32.3`: `2 days,3 days`
+- Saved Gravity Forms `32.4`: `4871ef25-d8f4-4fc0-a428-9f28b1c6979c`
+- Saved Gravity Forms `32.7`: `Junior Kindergarten 1`
+- DataLayer event: one `school_inquiry_submit`
+- DataLayer `days_per_week`: `2 days,3 days`
+- DataLayer `event_id`: `4871ef25-d8f4-4fc0-a428-9f28b1c6979c`
+
+Direct thank-you page visits without a plugin token and thank-you reloads did not push `school_inquiry_submit`.
+
+## 2026-05-01 Final Parent QA Pass
+
+Active runtime:
+
+- CEFA Conversion Tracking: `0.4.1`
+- CEFA School Manager: `1.0.17`
+- Gravity Forms: `2.10.1`
+- GTM container: `GTM-NZ6N7WNC`
+
+Live Form `4` entry `134` submitted successfully and confirmed the helper plugin is not altering the School Manager/KinderTales business fields:
+
+- Saved Gravity Forms `32.1`: `81236954-bcad-11ef-8bcb-028d36469a89`
+- Saved Gravity Forms `32.2`: `475`
+- Saved Gravity Forms `32.3`: `2 days,3 days`
+- Saved Gravity Forms `32.4`: `aa47a9e7-d33a-4eb1-ade6-78636c8b1709`
+- Saved Gravity Forms `32.5`: `abbotsford-highstreet`
+- Saved Gravity Forms `32.6`: `Abbotsford - Highstreet`
+- Saved Gravity Forms `32.7`: `Junior Kindergarten 1`
+- Saved attribution fields: `35-40`, `43-46`
+
+Browser dataLayer confirmed:
+
+- one `school_inquiry_submit`
+- same `event_id` as Gravity Forms `32.4`
+- clean school, program, days, UTM, and click-ID parameters
+- `inquiry_success=true`
+- `tracking_source=helper_plugin`
+
+Thank-you page reload and direct thank-you page visit both produced zero `school_inquiry_submit` events.
+
 ## Priority Fix List
 
-1. Check whether parent field `32.3` days per week should be required or always populated; latest live entry `91` had it blank.
+1. Completed: CEFA Conversion Tracking `0.4.1` is live on `cefa.ca`; Form `4` entries `133` and `134` confirmed `32.3` is comma-separated and the dataLayer event still emits clean tracking metadata.
 2. Decide whether USA Form `1` should filter out Canada locations; quick recheck found `6` USA options and `47` Canada options.
 3. Fix or replace franchise attribution population for fields `14-30`; quick recheck still found `lc_source`, `lc_medium`, `lc_campaign`, `gclid`, and `GA_Client_ID` blank on entries `30`, `33`, `26`, and `27`.
 4. Treat franchise CRM/Synuma lead IDs as delayed-write fields and allow a short wait before declaring failure.

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Added the live-domain status note for the parent cutover and franchise WPCode bridge rollout.
+- Added `snippets/franchise-wpcode-bridge.php` as a temporary live franchise deployment fallback for hosts where normal plugin-file writes are blocked.
+- Updated the franchise bridge to fetch one-time thank-you payloads with `POST` plus `cache: no-store` to avoid cached GET payload reuse.
+- Verified live Franchise Canada Form `1` and Form `2` confirmed-success dataLayer events through the WPCode bridge.
+- Verified live Franchise USA Form `1` and Form `2` confirmed-success dataLayer events through the WPCode bridge.
+- Added Franchise USA hostname support for Form 1 `franchise_inquiry_submit` and Form 2 `real_estate_site_submit` with `site_context=franchise_us`, `market=usa`, and `country=US`.
+- Stopped the browser bridge from overwriting Form 4 School Manager business subfields `32.3` and `32.7`; the plugin now derives days/program metadata for tracking without changing submitted lead values.
+- Normalized legacy pipe-delimited `days_per_week` values only in the dataLayer payload so historical entries can still report cleanly without mutating Gravity Forms entries or KinderTales delivery.
 - Added hostname-scoped configuration for parent and Franchise Canada tracking contracts.
 - Added Franchise Canada Form 1 `franchise_inquiry_submit` and Form 2 `real_estate_site_submit` confirmed-success payloads.
 - Added Gravity Forms entry-meta event ID storage for supported forms without a dedicated event ID field.

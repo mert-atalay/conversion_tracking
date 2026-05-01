@@ -1,6 +1,6 @@
 # Franchise Canada Phase 1 Tracking Plan
 
-Last updated: 2026-04-30
+Last updated: 2026-05-01
 
 This folder is the working implementation package for the new Canada franchise website tracking rollout.
 
@@ -17,21 +17,22 @@ Scope:
 
 ## Current Decision
 
-The website is now live on the original domain. Treat this folder as the implementation plan and prior evidence, but use the live-domain audit as the current status checkpoint before deploying the plugin or configuring GTM/GA4.
+The website is now live on the original domain. Treat this folder as the implementation plan and prior evidence, but use the live-domain status note as the current checkpoint before configuring GTM/GA4.
 
 Start Canada franchise as an audit-first Phase 1 build, not a blind copy of the old GTM container.
 
 Latest live-domain checkpoint:
 
-- [Live migration read-only audit, 2026-04-30](../live-migration-readonly-audit-2026-04-30.md)
+- [Live conversion tracking status, 2026-05-01](../live-conversion-tracking-status-2026-05-01.md)
 
-Current read-only result:
+Current live result:
 
 - Forms `1` and `2` are visible on the expected live paths.
 - `GTM-TPJGHFS` is visible.
 - GAConnector scripts and hidden fields `14` through `30` are visible.
-- The CEFA helper-plugin success bridge is not publicly visible on `franchise.cefa.ca`.
-- Do not map final GA4, Ads, or Meta conversions until controlled Form `1` and Form `2` submissions prove the confirmed-success dataLayer events and saved-entry attribution.
+- The WPCode fallback bridge is visible on the Form `1` and Form `2` paths.
+- Controlled Form `1` and Form `2` submissions proved the confirmed-success dataLayer events and `event_id` entry-meta join.
+- Do not map final GA4, Ads, or Meta conversions until GTM triggers, GA4 custom dimensions, Ads labels, Meta dataset strategy, and duplicate-source cleanup are configured and retested.
 
 Use the old Canada GTM container as a reference only. The old container already contains useful IDs and micro-conversion examples, but it is built around old paths, old Elementor form selectors, and thank-you/pageview logic. The new staging site uses Gravity Forms and different page paths.
 
