@@ -9,7 +9,7 @@ Admin/reporting recheck on 2026-05-01:
 - GA4 property `259747921` is visible and linked to Google Ads customer `3820636025`.
 - GA4 Data API reported one processed `generate_lead` on host `franchise.cefa.ca` for `2026-04-30` through `2026-05-01`.
 - Same-day `2026-05-01` and realtime GA4 checks were empty at verification time, so the processed report is evidence of receipt but not a complete same-day Form 1/Form 2 reporting split.
-- GA4 custom dimensions for the new helper payload are still not registered. Direct Admin API creation was blocked by the local ADC token scope.
+- GA4 custom dimensions for the low-cardinality helper payload were registered through the GA4 Admin API after ADC was refreshed with Analytics edit scope.
 - Google Ads conversion-action review found `fr_application_submit` primary, while `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` are secondary.
 - Meta browser/network receipt is verified from controlled tests, but Events Manager custom conversion setup was not API/UI verified in this pass.
 
@@ -77,6 +77,7 @@ Admin/reporting recheck on 2026-05-01:
 - [ ] Confirm CRM/Synuma/SiteZeus delivery still works.
 - [ ] Confirm GA4 realtime/debug view receives events in platform UI after processing delay.
 - [x] Confirm processed GA4 Data API event reporting includes `generate_lead` on `franchise.cefa.ca`.
+- [x] Confirm GA4 custom dimensions are registered for low-cardinality helper payload reporting fields.
 - [x] Confirm Google Ads primary/secondary status through reporting API evidence.
 - [x] Confirm Google Ads only receives approved final conversion events from browser/network evidence.
 - [x] Confirm Meta only receives approved final conversion events from browser/network evidence.

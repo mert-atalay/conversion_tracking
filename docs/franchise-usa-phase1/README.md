@@ -25,6 +25,7 @@ Scope:
 - GTM Version `15` is live as `CEFA Franchise USA Phase 1 helper-event GA4 mapping - 2026-05-01`.
 - GTM Version `15` maps both helper events to USA GA4 `generate_lead` through delayed dispatch events.
 - Legacy USA final conversion tags from the old Elementor/form-submit path were paused to avoid duplicate final conversions.
+- GA4 property `519783092` now has event-scoped custom dimensions registered for the low-cardinality helper payload fields.
 
 ## Current Boundary
 
@@ -36,7 +37,7 @@ Active:
 Blocked:
 - USA Google Ads final conversion tags until the correct USA-specific conversion labels are verified.
 - USA Meta final conversion tags until the correct USA dataset/pixel is verified.
-- USA GA4 custom dimensions until reporting scope and currency handling are confirmed.
+- Final USA GA4 reporting signoff until post-Version-15 controlled submissions are processed and the property currency setting is confirmed.
 
 Do not map USA final events to the Canada shared Meta dataset by default. USA should remain more separated unless a live campaign dependency is explicitly confirmed.
 

@@ -198,17 +198,16 @@ Parent `267558140`:
 Franchise Canada `259747921`:
 
 - Property exists and is linked to Google Ads customer `3820636025`.
-- Custom dimensions are still mostly legacy/reporting fields such as `event_title`, `event_label`, `preferred_location`, `applicant_capital`, page/click fields, and video fields.
-- The new helper-plugin franchise parameters are not fully registered yet.
+- Existing legacy/reporting dimensions remain in place, including `event_title`, `event_label`, `preferred_location`, `applicant_capital`, page/click fields, and video fields.
+- The low-cardinality helper-plugin franchise parameters are now registered as event-scoped custom dimensions: `site_context`, `business_unit`, `market`, `country`, `form_id`, `form_family`, `lead_type`, `lead_intent`, `tracking_source`, `event_scope`, `server_transport`, `location_interest`, `investment_range`, `opening_timeline`, `school_count_goal`, `ownership_structure`, `site_offered_by`, `property_square_footage_range`, `outdoor_space_range`, `availability_timeline`, `lc_channel`, and `fc_channel`.
 - GA4 Data API processing check for `2026-04-30` through `2026-05-01` returned one processed `generate_lead` row on host `franchise.cefa.ca`.
 - A same-day `2026-05-01` report and realtime check returned no active `generate_lead` rows at the time of verification.
-- Direct GA4 Admin API custom-dimension write was attempted with local ADC but blocked by `ACCESS_TOKEN_SCOPE_INSUFFICIENT`; registration still needs a reauth with Analytics edit scope or GA4 UI/API access that can create custom dimensions.
-- Recommended Canada custom-dimension registration should prioritize low-cardinality helper fields such as `site_context`, `business_unit`, `market`, `country`, `form_id`, `form_family`, `lead_type`, `lead_intent`, `tracking_source`, key Form 1/Form 2 metadata, and low-cardinality GAConnector source/medium/campaign/channel fields. Do not burn GA4 custom-dimension quota on high-cardinality `event_id`, click IDs, full URLs, landing URLs, referrers, or GA client IDs.
+- High-cardinality values such as `event_id`, click IDs, full URLs, landing URLs, referrers, GA client IDs, and Gravity Forms entry IDs were intentionally not registered as GA4 custom dimensions.
 
 Franchise USA `519783092`:
 
 - Property exists and is linked to Google Ads customers `3820636025` and `4159217891`.
-- No custom dimensions or custom metrics are currently registered.
+- The same low-cardinality franchise helper parameters listed above are now registered as event-scoped custom dimensions.
 - Currency is currently `CAD`; confirm whether that should remain or change before production reporting signoff.
 
 ## Google Ads Admin Status
@@ -248,11 +247,9 @@ Franchise Canada Phase 1 browser/platform mapping is now working from live brows
 Pending work:
 
 - Evaluate GA4 Measurement Protocol as a Phase 1B audit-only server-side event, not as a duplicate `generate_lead` source.
-- Register GA4 custom dimensions for the new franchise payloads in the Canada GA4 property.
 - Confirm Form 1 and Form 2 helper-event parameters in GA4 reports after custom dimensions are registered and processing completes.
 - Decide whether current Google Ads primary/secondary settings are correct for Canada reporting and bidding. Do not change primary status without explicit media-owner approval.
 - Confirm Meta Events Manager receives the Canada events and create/adjust franchise-specific custom conversions inside the current shared dataset.
-- Register USA GA4 custom dimensions after confirming whether USA reporting should use the same low-cardinality helper dimensions as Canada.
 - Run controlled USA Form 1 and Form 2 submissions after GTM Version `15` propagation and verify GA4 `generate_lead` receipt.
 - Confirm USA-specific Google Ads conversion action labels before activating Ads final helper-event tags.
 - Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
@@ -262,8 +259,8 @@ Pending work:
 
 Parent Canada is complete enough to keep live and monitor.
 
-Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, live destination hits, and one processed GA4 `generate_lead` report row are verified. It still needs GA4 custom dimensions, Meta custom-conversion confirmation, and a Google Ads primary/secondary decision before reporting signoff.
+Franchise Canada is now Phase 1 browser/platform functional: confirmed-success website events, attribution writeback, dispatch-layer GTM mapping, live destination hits, one processed GA4 `generate_lead` report row, and GA4 custom-dimension registration are verified. It still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision before reporting signoff.
 
-Franchise USA now has the confirmed-success website-side dataLayer source plus a live GTM Version `15` GA4 helper-event mapping. Ads/Meta final mapping remains intentionally blocked pending USA-specific platform confirmation, and controlled post-Version-15 form submissions still need to verify GA4 receipt.
+Franchise USA now has the confirmed-success website-side dataLayer source, a live GTM Version `15` GA4 helper-event mapping, and GA4 custom-dimension registration. Ads/Meta final mapping remains intentionally blocked pending USA-specific platform confirmation, and controlled post-Version-15 form submissions still need to verify GA4 receipt.
 
-Measurement Protocol remains a Phase 1B strengthening layer. If tested through the Gravity Forms Google Analytics Add-On, it should first send an audit-only event such as `school_inquiry_submit_server_audit` with the same `event_id`, not a second GA4 `generate_lead`.
+Measurement Protocol remains a Phase 1B strengthening layer. If tested through the Gravity Forms Google Analytics Add-On, it should first send an audit-only event such as `franchise_us_inquiry_submit_server_audit` with the same `event_id`, not a second GA4 `generate_lead`. USA Form 1 `location_interest` must be sent with the lowercase parameter name `location_interest` and the submitted answer value, not the literal field question.

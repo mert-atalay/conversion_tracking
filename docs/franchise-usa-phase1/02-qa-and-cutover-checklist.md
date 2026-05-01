@@ -31,7 +31,14 @@ Last updated: 2026-05-01
 - [ ] Confirm Form 1 and Form 2 do not produce legacy `fr_us_apply_submit_success` final conversions.
 - [ ] Confirm direct thank-you visits and reloads still do not push duplicate final events.
 - [ ] Confirm GA4 report processing after delay.
-- [ ] Register USA GA4 custom dimensions or document why USA reporting will stay event-count-only temporarily.
+- [x] Register USA GA4 custom dimensions for low-cardinality helper payload reporting fields.
 - [ ] Confirm Google Ads USA conversion action labels before activating Ads final helper-event tags.
 - [ ] Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
+
+## Measurement Protocol Audit Test
+
+- [ ] If the Gravity Forms Google Analytics / Measurement Protocol add-on is tested, send an audit-only event such as `franchise_us_inquiry_submit_server_audit`, not a second GA4 `generate_lead`.
+- [ ] Map `location_interest` using the lowercase parameter name exactly.
+- [ ] Confirm the value resolves to the submitted answer for "Where are you interested in opening a CEFA school?", not the literal question label.
+- [ ] Do not send name, email, phone, address, free-text notes, click IDs, full URLs, or other PII/high-cardinality values through the Measurement Protocol feed.

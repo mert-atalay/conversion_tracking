@@ -9,6 +9,8 @@
 - Verified live Franchise USA Form `1` and Form `2` confirmed-success dataLayer events through the WPCode bridge.
 - Published USA GTM Version `15` with hostname/context-scoped helper-event GA4 mapping for Franchise USA Forms `1` and `2`.
 - Paused old USA final conversion tags from legacy Elementor/form-submit paths while keeping USA Ads/Meta final helper-event mapping blocked until platform IDs are confirmed.
+- Registered Franchise Canada and Franchise USA GA4 event-scoped custom dimensions for low-cardinality helper payload reporting fields.
+- Documented the Franchise USA Gravity Forms Measurement Protocol test as audit-only, with lowercase `location_interest` mapping to the submitted field value.
 - Added Franchise USA Phase 1 GTM build notes and QA checklist.
 - Added Franchise USA hostname support for Form 1 `franchise_inquiry_submit` and Form 2 `real_estate_site_submit` with `site_context=franchise_us`, `market=usa`, and `country=US`.
 - Stopped the browser bridge from overwriting Form 4 School Manager business subfields `32.3` and `32.7`; the plugin now derives days/program metadata for tracking without changing submitted lead values.

@@ -43,7 +43,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
 - Franchise Canada `franchise.cefa.ca` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, GAConnector hidden-field writeback, and live GTM destination mapping through `GTM-TPJGHFS`.
 - Franchise USA `franchisecefa.com` now renders the WPCode fallback bridge, has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, and has live GTM Version `15` GA4 helper-event mapping through `GTM-5LZMHBZL`.
-- Franchise Canada still needs GA4 custom dimensions, Meta custom-conversion confirmation, and a Google Ads primary/secondary decision. Franchise USA still needs post-Version-15 controlled GA4 receipt testing plus USA-specific Google Ads and Meta final mapping confirmation.
+- Franchise Canada and Franchise USA now have GA4 custom dimensions registered for the low-cardinality helper payload fields. Canada still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision. USA still needs post-Version-15 controlled GA4 receipt testing plus USA-specific Google Ads and Meta final mapping confirmation.
 - Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 - Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
 
