@@ -25,6 +25,8 @@ Use `school_uuid` as the primary school identity key for parent inquiry tracking
 
 Source: `marketing-api-488017.mart_marketing.dim_school` joined by `school_uuid` to the CEFA Ops School Identity Map for `region` and `school_code`.
 
+Important caveat: `canonical_location_id` is present for all 53 checked rows, but the current warehouse values are mixed-format. BigQuery verification on 2026-05-03 showed 40 UUID-like values and 13 slug-like values. Treat slug-like values as current known warehouse values, not as blanks, but do not assume the column has been normalized to one ID format yet.
+
 | school_uuid | kindertales_school_id | canonical_location_id | location_code | location_name | region | school_code | school_slug | landing_page_path |
 |---|---|---|---|---|---|---|---|---|
 | 81236954-bcad-11ef-8bcb-028d36469a89 | 81236954-bcad-11ef-8bcb-028d36469a89 | 4abfc0c0-c672-43f6-899d-b3730f143db9 | abbotsford-highstreet | Abbotsford - Highstreet | British Columbia | ABB2M9 | abbotsford-highstreet | /cefa-find-a-school/abbotsford-highstreet |
@@ -97,6 +99,7 @@ Source: recent live GA4 BigQuery `generate_lead` rows where `tracking_source=hel
 ## Known Gaps
 
 - WordPress School Manager internal IDs are not yet mapped into this table.
+- `canonical_location_id` is complete but mixed-format: 40 UUID-like rows and 13 slug-like rows in the checked warehouse table.
 - GreenRope, GBP, Gravity location ID, and PiinPoint values were not available as populated rows in the checked BigQuery surfaces.
 - School-level ad naming tokens are not complete. Do not infer them from labels without naming-convention confirmation.
 - CRM/KinderTales program journey codes are not mapped yet.

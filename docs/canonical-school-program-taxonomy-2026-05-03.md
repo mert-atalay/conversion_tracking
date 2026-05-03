@@ -10,6 +10,8 @@ The strongest verified school identity key is `school_uuid`. It is used by the p
 
 The current marketing warehouse has a populated school dimension at `marketing-api-488017.mart_marketing.dim_school` with 53 rows. It maps `school_uuid` to `canonical_location_id`, `location_code`, `location_name`, `school_slug`, `timezone`, and `landing_page_path`.
 
+Follow-up verification on 2026-05-03 found no blank `canonical_location_id` values, but the field is mixed-format in the current warehouse table: 40 rows are UUID-like and 13 rows are slug-like. This is a normalization gap, not a missing-ID gap.
+
 What is not yet fully proven is a single populated table that maps every school to all requested systems at once:
 
 - WordPress School Manager internal post/object ID.
@@ -158,7 +160,7 @@ Recommended columns:
 | `school_uuid` | CEFA Ops School Identity Map, Form 4 `32.1`, GA4 `school_selected_id` | Verified |
 | `kindertales_school_id` | Same as `school_uuid` per CEFA Ops note, unless downstream proves separate ID | Working verified-as-same |
 | `wordpress_school_manager_id` | WordPress School Manager post/object ID | Missing |
-| `canonical_location_id` | `mart_marketing.dim_school` | Verified |
+| `canonical_location_id` | `mart_marketing.dim_school` | Verified present; format mixed |
 | `location_code` | `mart_marketing.dim_school` | Verified |
 | `location_name` | `mart_marketing.dim_school`, CEFA Ops School Identity Map | Verified |
 | `region` | CEFA Ops School Identity Map | Verified in Ops note |
