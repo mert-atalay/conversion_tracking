@@ -11,6 +11,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 ## Current Naming Version
 
 Current Meta naming version: `NC1`.
+Current local listing UTM version: `ll1`.
 
 Key contracts:
 
@@ -19,6 +20,13 @@ Key contracts:
 - Meta ad: `{FormatTag} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
 - Creative group key: `{school_slug}__{scope}__{funding}__{activation}__{theme}__{format}__{concept}__cr##__v#`
 - UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_slug}&utm_content={ad_slug_or_data_key}`
+
+## Current Files
+
+- [Local listing UTM rules - GBP and Yelp](./local-listing-utm-rules-gbp-yelp-2026-05-03.md)
+  - Status: `Partial`
+  - Covers GBP/Yelp website and inquiry-form UTM rules.
+  - The rule is approved for documentation use, but live listing updates still require field availability and school-slug verification.
 
 ## Rules
 
