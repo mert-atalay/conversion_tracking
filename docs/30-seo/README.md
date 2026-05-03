@@ -15,6 +15,10 @@ This folder is for SEO measurement and page/taxonomy documentation that touches 
 - CEFA SEO skills under `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agents/skills/`
 - Conversion-related page maps already linked from the conversion-tracking docs.
 
+## Current Files
+
+- [SEO restart handoff, 2026-05-03](./seo-restart-handoff-2026-05-03.md)
+
 ## Rules
 
 - Do not redefine conversion events here. Link back to `docs/10-conversion-tracking/`.
