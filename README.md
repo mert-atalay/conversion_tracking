@@ -38,6 +38,25 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - GAConnector attribution capture on franchise forms.
 - GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
 
+## Repo Operating Model
+
+This repo now has two separate responsibilities:
+
+- Runtime code for the `CEFA Conversion Tracking` WordPress plugin.
+- Governed documentation for CEFA marketing measurement workstreams.
+
+Start with [docs/README.md](docs/README.md) or [docs/00-governance/README.md](docs/00-governance/README.md) before adding new docs. New work should be routed to the narrowest correct folder:
+
+- [Conversion tracking](docs/10-conversion-tracking/README.md): parent, franchise Canada, franchise USA, GTM, GA4, Ads/Meta, CAPI, sGTM, Measurement Protocol.
+- [BigQuery](docs/20-bigquery/README.md): warehouse schemas, marts, QA checks, offline conversion exports, and reporting contracts.
+- [SEO](docs/30-seo/README.md): technical SEO, local SEO, Search Console, page taxonomy, and SEO measurement.
+- [Naming convention](docs/40-naming-convention/README.md): Meta naming, creative filenames, UTM conventions, and n8n naming guardrails.
+- [Paid media](docs/50-paid-media/README.md): ad account setup, launch QA, optimization notes, and platform conversion action status.
+- [Master data](docs/60-master-data/README.md): schools, programs, locations, CRM/system crosswalks, and canonical reference tables.
+- [Machine-readable reference data](data/reference/README.md): CSV/JSON/YAML reference files that support the docs.
+
+Keep runtime plugin changes and documentation-only changes separate when practical. Do not mix live platform decisions, SEO notes, naming rules, or school ID crosswalks into plugin code comments.
+
 ## Current Live-Domain Audit Status
 
 - Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
@@ -271,6 +290,8 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Operational Docs
 
+- [Docs landing page and workstream map](docs/README.md)
+- [Governance rules](docs/00-governance/README.md)
 - [Live migration read-only audit, 2026-04-30](docs/live-migration-readonly-audit-2026-04-30.md)
 - [Parent production cutover checklist](docs/parent-production-cutover-checklist.md)
 - [Cross-property measurement boundaries](docs/cross-property-measurement-boundaries.md)

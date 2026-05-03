@@ -1,0 +1,32 @@
+# Conversion Tracking Workstream
+
+This folder is the routing surface for CEFA conversion tracking across:
+
+- Parent `cefa.ca`
+- Franchise Canada `franchise.cefa.ca`
+- Franchise USA `www.franchisecefa.com`
+- GTM, GA4, Google Ads, Meta, CAPI, Measurement Protocol, and sGTM
+
+## Current Canonical Files
+
+- [Plugin README](../../README.md)
+- [Live conversion tracking status](../live-conversion-tracking-status-2026-05-01.md)
+- [Parent production cutover checklist](../parent-production-cutover-checklist.md)
+- [Cross-property measurement boundaries](../cross-property-measurement-boundaries.md)
+- [Phase 1A docs](../phase1a/README.md)
+- [Phase 1B Measurement Protocol/server-side options](../phase1b-measurement-protocol-server-side-options-2026-05-01.md)
+- [Franchise Canada Phase 1 docs](../franchise-canada-phase1/README.md)
+- [Franchise USA Phase 1 docs](../franchise-usa-phase1/README.md)
+- [Franchise transition final pack](../franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
+
+## Current Rules
+
+- Parent final website event: `school_inquiry_submit`.
+- Franchise final website events: `franchise_inquiry_submit` and `real_estate_site_submit`.
+- Website events stay neutral; GTM maps them to GA4, Google Ads, Meta, and future server-side destinations.
+- Keep Gravity Forms Measurement Protocol audit-only unless explicitly approved as a final source.
+- Keep parent, franchise Canada, and franchise USA separated by property, hostname, GA4 property, and platform mapping.
+
+## Where To Add New Files
+
+Use this folder for new tracking-wide docs. If the doc is specifically parent/franchise and an existing phase folder already exists, use that phase folder instead and link it here.
