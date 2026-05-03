@@ -1,6 +1,8 @@
 # Franchise USA QA And Cutover Checklist
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
+
+Status note: post-Version-15 controlled submissions were run on 2026-05-03 using the current production URLs. Both forms reached their thank-you pages and pushed the expected helper and dispatch events. Form `2` also showed browser-resource evidence of a GA4 `generate_lead` hit to `G-YL1KQPWV0M`. GA4 Data API and realtime checks did not yet show processed USA `generate_lead` rows, so reporting signoff stays open.
 
 ## Website Source
 
@@ -8,9 +10,12 @@ Last updated: 2026-05-01
 - [x] Confirm live Form 2 page renders `GTM-5LZMHBZL`.
 - [x] Confirm live Form 1 page renders WPCode bridge markers.
 - [x] Confirm live Form 2 page renders WPCode bridge markers.
+- [x] Confirm current Form 1 URL is `/available-opportunities/franchising-inquiry/`.
+- [x] Confirm current Form 2 URL is `/partner-with-cefa/real-estate-partners/submit-a-site/`.
+- [x] Confirm old test URLs `/franchise-application/` and `/real-estate-submission/` return `404` and are not current QA paths.
 - [x] Confirm Form 1 website-side event is `franchise_inquiry_submit`.
 - [x] Confirm Form 2 website-side event is `real_estate_site_submit`.
-- [x] Confirm payload context uses `site_context=franchise_us`, `market=usa`, and `country=US` from controlled pre-Version-15 submissions.
+- [x] Confirm payload context uses `site_context=franchise_us`, `market=usa`, and `country=US` from controlled post-Version-15 submissions.
 
 ## GTM Version 15
 
@@ -26,13 +31,17 @@ Last updated: 2026-05-01
 
 ## Post-Publish QA
 
-- [ ] Submit controlled Form 1 test after Version `15` propagation and confirm one GA4 `generate_lead`.
-- [ ] Submit controlled Form 2 test after Version `15` propagation and confirm one GA4 `generate_lead`.
+- [x] Submit controlled Form 1 test after Version `15` propagation and confirm the helper and dispatch events.
+- [x] Submit controlled Form 2 test after Version `15` propagation and confirm the helper and dispatch events.
+- [ ] Confirm Form 1 GA4 `generate_lead` browser hit or processed report row.
+- [x] Confirm Form 2 GA4 `generate_lead` browser hit.
 - [ ] Confirm Form 1 and Form 2 do not produce legacy `fr_us_apply_submit_success` final conversions.
 - [ ] Confirm direct thank-you visits and reloads still do not push duplicate final events.
 - [ ] Confirm GA4 report processing after delay.
 - [x] Register USA GA4 custom dimensions for low-cardinality helper payload reporting fields.
-- [ ] Confirm Google Ads USA conversion action labels before activating Ads final helper-event tags.
+- [x] Confirm GA4 property `519783092` is linked to Google Ads accounts `3820636025` and `4159217891`.
+- [x] Confirm USA-related imported Google Ads conversion actions exist through reporting-query evidence.
+- [ ] Confirm which Google Ads account and conversion action should be the USA bidding/primary action before activating Ads final helper-event tags.
 - [ ] Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
 

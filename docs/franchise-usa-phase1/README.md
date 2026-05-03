@@ -1,6 +1,6 @@
 # Franchise USA Phase 1 Tracking Plan
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
 
 This folder is the working implementation package for Franchise USA tracking.
 
@@ -18,7 +18,11 @@ Scope:
 ## Current State
 
 - The live USA site renders the WPCode fallback bridge from `snippets/franchise-wpcode-bridge.php`.
-- Controlled submissions before GTM Version `15` proved the website-side confirmed-success dataLayer events:
+- Current production form URLs are:
+  - Form `1`: `https://franchisecefa.com/available-opportunities/franchising-inquiry/`
+  - Form `2`: `https://franchisecefa.com/partner-with-cefa/real-estate-partners/submit-a-site/`
+- Older test paths `/franchise-application/` and `/real-estate-submission/` now return `404`; do not use them for launch QA.
+- Controlled submissions after GTM Version `15` proved the website-side confirmed-success dataLayer events:
   - Form `1`: `franchise_inquiry_submit`
   - Form `2`: `real_estate_site_submit`
 - The helper payload uses `site_context=franchise_us`, `market=usa`, and `country=US`.
@@ -26,6 +30,9 @@ Scope:
 - GTM Version `15` maps both helper events to USA GA4 `generate_lead` through delayed dispatch events.
 - Legacy USA final conversion tags from the old Elementor/form-submit path were paused to avoid duplicate final conversions.
 - GA4 property `519783092` now has event-scoped custom dimensions registered for the low-cardinality helper payload fields.
+- Form `2` has browser-resource evidence of a GA4 `generate_lead` hit to `G-YL1KQPWV0M` with helper metadata and matching event ID.
+- GA4 Data API and realtime checks on 2026-05-03 did not yet show processed USA `generate_lead` rows, so report processing confirmation remains open.
+- GA4 property `519783092` is linked to Google Ads customers `3820636025` and `4159217891`; USA-related imported conversion actions exist in both accounts, but the observed USA actions still had zero all-conversion volume in the 2025-05-01 to 2026-05-03 reporting query.
 
 ## Current Boundary
 
@@ -33,11 +40,13 @@ Active:
 - USA GA4 helper-event mapping to `G-YL1KQPWV0M`.
 - Non-PII helper payload fields only.
 - Hostname/context filters for `franchisecefa.com` and `www.franchisecefa.com`.
+- Browser/dataLayer source for both current live forms.
+- Browser-level GA4 hit evidence for Form `2`.
 
 Blocked:
-- USA Google Ads final conversion tags until the correct USA-specific conversion labels are verified.
+- USA Google Ads final helper-event tags until the correct account and conversion action are confirmed for optimization.
 - USA Meta final conversion tags until the correct USA dataset/pixel is verified.
-- Final USA GA4 reporting signoff until post-Version-15 controlled submissions are processed and the property currency setting is confirmed.
+- Final USA GA4 reporting signoff until processed reports show the post-Version-15 controlled submissions and the property currency setting is confirmed.
 
 Do not map USA final events to the Canada shared Meta dataset by default. USA should remain more separated unless a live campaign dependency is explicitly confirmed.
 
@@ -45,3 +54,4 @@ Do not map USA final events to the Canada shared Meta dataset by default. USA sh
 
 - [GTM build and QA notes](./01-gtm-build-and-qa-2026-05-01.md)
 - [QA and cutover checklist](./02-qa-and-cutover-checklist.md)
+- [Post-Version-15 QA evidence, 2026-05-03](./03-post-version-15-qa-2026-05-03.md)

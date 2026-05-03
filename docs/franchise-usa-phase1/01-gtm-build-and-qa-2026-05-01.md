@@ -1,6 +1,6 @@
 # Franchise USA GTM Build And QA Notes
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
 
 ## Published GTM Version
 
@@ -119,12 +119,15 @@ Base pageview, Google tag, conversion linker, remarketing, and non-final tags we
   - `cefa_franchise_us_site_dispatch`
 - Live Form 1 page renders `GTM-5LZMHBZL`, `cefa-franchise-conversion`, `franchise_inquiry_submit`, and `wpcode_bridge`.
 - Live Form 2 page renders `GTM-5LZMHBZL`, `cefa-franchise-conversion`, `real_estate_site_submit`, and `wpcode_bridge`.
+- Post-Version-15 controlled Form 1 submission reached the thank-you page and pushed `franchise_inquiry_submit` plus `cefa_franchise_us_inquiry_dispatch` with `event_id=4adf41e8-0f00-4051-acb5-0ad780fe84f1`.
+- Post-Version-15 controlled Form 2 submission reached the thank-you page and pushed `real_estate_site_submit` plus `cefa_franchise_us_site_dispatch` with `event_id=75716e51-70bd-4023-be4e-eec4f32ea468`.
+- Form 2 browser-resource evidence showed a GA4 `generate_lead` request to `G-YL1KQPWV0M` with the helper metadata and matching event ID.
+- Current production QA URLs are `/available-opportunities/franchising-inquiry/` and `/partner-with-cefa/real-estate-partners/submit-a-site/`; older test paths `/franchise-application/` and `/real-estate-submission/` now return `404`.
 
 ## Still Needed
 
-- Controlled post-Version-15 Form 1 submission and GA4 realtime/reporting confirmation.
-- Controlled post-Version-15 Form 2 submission and GA4 realtime/reporting confirmation.
-- USA GA4 custom dimensions for low-cardinality helper fields.
-- USA Google Ads conversion action/label confirmation before activating Ads final tags.
+- Form 1 GA4 browser-hit or processed-report confirmation.
+- Processed GA4 report confirmation for both forms after the GA4 delay.
+- USA Google Ads account and conversion-action decision before activating Ads final helper-event tags.
 - USA Meta dataset/pixel confirmation before activating Meta final tags.
 - Decision on whether USA GA4 property currency should remain `CAD`.

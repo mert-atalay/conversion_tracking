@@ -1,6 +1,6 @@
 # Franchise Canada QA And Cutover Checklist
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
 
 Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. GAConnector field population is verified on a clean Form 1 runtime test; Form 2 uses the same selector map and final destination mapping is verified, but a final post-Version-52 Form 2 attribution re-submit can still be run if stricter evidence is needed.
 
@@ -12,6 +12,14 @@ Admin/reporting recheck on 2026-05-01:
 - GA4 custom dimensions for the low-cardinality helper payload were registered through the GA4 Admin API after ADC was refreshed with Analytics edit scope.
 - Google Ads conversion-action review found `fr_application_submit` primary, while `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` are secondary.
 - Meta browser/network receipt is verified from controlled tests, but Events Manager custom conversion setup was not API/UI verified in this pass.
+
+Admin/reporting refresh on 2026-05-03:
+
+- Fresh `gtm.js` check for `GTM-TPJGHFS` still contains `franchise_inquiry_submit`, `real_estate_site_submit`, `cefa_franchise_inquiry_dispatch`, and `cefa_real_estate_site_dispatch`.
+- GA4 Data API for `2026-05-01` through `2026-05-03` reported `4` processed `generate_lead` rows on host `franchise.cefa.ca`: `1` row with helper metadata `site_context=franchise_ca`, `form_family=franchise_inquiry`, `lead_type=franchise_lead`, `tracking_source=helper_plugin`, plus `3` older/not-set rows.
+- GA4 property `259747921` remains linked to Google Ads customer `3820636025`.
+- Google Ads reporting-query evidence through Supermetrics still shows `fr_application_submit` as primary and `generate_lead (GA4)`, `fr_site_form_submit`, and `fr_inquiry_submit` as secondary in account `3820636025`.
+- Direct Meta Events Manager custom-conversion setup was still not available through the current tool access; it remains a UI/API confirmation item.
 
 ## Before GTM Build
 

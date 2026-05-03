@@ -1,6 +1,6 @@
 # Franchise Canada Phase 1 Tracking Plan
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
 
 This folder is the working implementation package for the new Canada franchise website tracking rollout.
 
@@ -34,6 +34,7 @@ Current live result:
 - Controlled Form `1` and Form `2` submissions proved the confirmed-success dataLayer events and `event_id` entry-meta join.
 - GTM Version `52` maps the helper events through dispatch events to GA4, Google Ads, Meta, and LinkedIn destinations with existing IDs.
 - GA4 Data API has reported at least one processed `generate_lead` on host `franchise.cefa.ca`, and the low-cardinality helper payload custom dimensions are registered.
+- 2026-05-03 GA4 Data API refresh reported `4` processed `generate_lead` rows on host `franchise.cefa.ca`, including `1` helper-plugin row with franchise Canada metadata.
 - Google Ads primary/secondary status needs an explicit media-owner decision before bidding signoff; reporting evidence shows `fr_application_submit` is primary while `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` are secondary.
 - Meta Events Manager custom conversions still need direct UI/API confirmation inside the current shared dataset.
 
