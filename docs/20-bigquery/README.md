@@ -15,14 +15,18 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - School dimension: `marketing-api-488017.mart_marketing.dim_school`
 - Parent/franchise marts: `mart_marketing`, `mart_marketing_parents`, `mart_marketing_franchise`
 - Raw sources: `raw_ga4`, `raw_google_ads`, `raw_meta_ads`, `raw_supermetrics`
+- GreenRope bridge: `marketing-api-488017.mart_marketing.bridge_greenrope_group_school`
+- GreenRope aggregate: `marketing-api-488017.mart_marketing.fct_greenrope_school_funnel_daily`
 - Dashboard service view with CRM aggregate: `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily`
 - Current measurement rule view: `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`
+- Supabase data foundation target: project ref `twtfbvegbpwfzoaseezo`, pending refreshed MCP tool visibility before schema writes
 
 ## Current Files
 
 - [Warehouse current state, QA, freshness, and free-tier usage, 2026-05-03](./warehouse-current-state-2026-05-03.md)
 - [Dashboard source layer, GreenRope, and rule registry, 2026-05-03](./dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md)
 - [GreenRope metric definitions and API map, 2026-05-03](./greenrope-metric-definitions-and-api-map-2026-05-03.md)
+- [Supabase data foundation setup, 2026-05-03](./supabase-data-foundation-setup-2026-05-03.md)
 
 ## Rules
 
@@ -30,6 +34,7 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - Put reusable source data in raw/staging/core/mart layers according to the existing warehouse plan.
 - Keep `school_uuid` as the parent school join key unless a verified source changes the model.
 - Mark sparse or incomplete marts as `Partial`, not `Verified`.
+- Label GreenRope UTM/click-ID evidence as `ad-attributed inquiries`, not solid paid-media truth.
 
 ## Suggested Next Files
 

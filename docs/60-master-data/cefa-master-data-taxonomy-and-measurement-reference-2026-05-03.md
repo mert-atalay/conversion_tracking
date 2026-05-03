@@ -14,9 +14,42 @@ Status labels used below:
 |---|---|
 | Verified | Confirmed by current docs, code, live audit notes, local reference files, or checked warehouse/API output. |
 | Partial | Available, but incomplete, mixed-format, locally recoverable only, or not yet reconciled into one canonical table. |
+| Pending | Known needed field, decision, access, or refresh dependency not confirmed yet. |
+| Open question | Needs user, platform owner, agency, source-system, or business-owner confirmation. |
 | Missing | Needed for the master model, but not available as a populated authoritative field today. |
 | Reference only | Useful context, but not authoritative KPI truth. |
 | Future | Valid architecture direction, but not part of the current stable source-of-truth layer. |
+
+## Governance And Workstream Placement
+
+This document belongs to `docs/60-master-data/`. It is the consolidated reference, not the only source of truth. Narrow implementation, platform, and QA facts should still live in their owning workstream folders and be linked here.
+
+### Authority Order
+
+| Priority | Source type | Rule |
+|---:|---|---|
+| 1 | Live verified systems | WordPress, Gravity Forms, GTM, GA4, Google Ads, Meta, BigQuery, CRM exports, browser/network proof, and current API output win over stale docs. |
+| 2 | Runtime code and current governed docs | Use repo code and current docs for migrated, checked, and actively maintained facts. |
+| 3 | Local CEFA conversion-tracking knowledge base | Use `/Users/matthewbison/Desktop/cefa-nexus/CEFA/cefa conversion tracking/` only for unmigrated evidence and cite it as source evidence. |
+| 4 | CEFA local NEXUS context | Use `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/` as upstream context, not as the governed repo source when a current `docs/` file exists. |
+| 5 | CEFA Ops vault/source files | Use only when explicitly cited and relevant to the active workstream. |
+| 6 | External platform best practices | Reference only unless verified against CEFA's live configuration. |
+
+### Workstream Routing
+
+| Folder | Use |
+|---|---|
+| `docs/00-governance/` | Repo rules, source-of-truth hierarchy, contribution workflow, agent handoff standards, and repo map. |
+| `docs/10-conversion-tracking/` | Parent/franchise tracking contracts, GTM/GA4/Ads/Meta mappings, event IDs, CAPI, sGTM, and Measurement Protocol decisions. |
+| `docs/20-bigquery/` | Warehouse state, marts, SQL, row coverage, refresh jobs, Looker/reporting contracts, and offline conversion exports. |
+| `docs/30-seo/` | SEO measurement, technical/local SEO, Search Console, page taxonomy, and SEO research handoffs. |
+| `docs/40-naming-convention/` | Meta naming, creative filenames, GBP/Yelp UTM rules, and campaign/source naming governance. |
+| `docs/50-paid-media/` | Platform launch QA, data availability, campaign/conversion use, optimization notes, and platform-owner decisions. |
+| `docs/60-master-data/` | School, program, location, CRM, platform, and reporting crosswalks plus metric/source taxonomy. |
+
+### Cross-Workstream Rule
+
+Do not promote assumptions into this master document as verified truth. Use `Verified`, `Partial`, `Pending`, `Open question`, `Missing`, `Reference only`, and `Future` explicitly, and update the narrower owning document when a fact changes.
 
 ## Primary Rules
 
@@ -35,7 +68,19 @@ Status labels used below:
 
 | Area | File / source | Use |
 |---|---|---|
+| Governed docs root | `docs/README.md` | Current entrypoint for the organized documentation layer and workstream routing. |
+| Governance source-of-truth rules | `docs/00-governance/source-of-truth-rules.md` | Authority order, verification labels, stable decisions, and forbidden source swaps. |
+| Governance repo map | `docs/00-governance/repo-map.md` | Where new docs belong and which areas must not be mixed. |
+| Governance agent responsibilities | `docs/00-governance/agent-responsibilities.md` | Workstream ownership and required handoff format. |
+| Governance contribution workflow | `docs/00-governance/contribution-workflow.md` | Required structure for dated docs, verification, and evidence. |
+| Workstream update template | `docs/_templates/workstream-update-template.md` | Standard structure for new workstream update docs. |
 | Plugin overview and contracts | `README.md` | Runtime ownership, parent/franchise dataLayer contracts, micro-events. |
+| Business truth and tracking gaps | `docs/10-conversion-tracking/business-truth-and-tracking-data-gaps-2026-05-03.md` | Current business-truth gaps, stale marts, source reconciliation needs, and tracking-data limits. |
+| BigQuery warehouse current state | `docs/20-bigquery/warehouse-current-state-2026-05-03.md` | Current warehouse refresh, view coverage, row counts, GA4 export range, paid-data freshness, and cost/tier usage. |
+| Dashboard source layer and GreenRope aggregate | `docs/20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md` | Dashboard service account, keyless auth path, GreenRope daily aggregate, CRM dashboard views, and measurement rule registry. |
+| GreenRope metric definitions and API map | `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md` | Exact GreenRope metric definitions, loaded API endpoints, dashboard labels, and interpretation limits. |
+| Supabase data foundation setup | `docs/20-bigquery/supabase-data-foundation-setup-2026-05-03.md` | New Supabase MCP setup, project boundary, schema plan, and first build sequence. |
+| SEO restart handoff | `docs/30-seo/seo-restart-handoff-2026-05-03.md` | SEO measurement context, GSC/DataForSEO handoff, and SEO-only pending checks. |
 | Final known school/program table | `docs/known-school-program-reference-table-2026-05-03.md` | 53 school rows, 6 program rows, canonical key guidance, known gaps. |
 | Canonical taxonomy status | `docs/canonical-school-program-taxonomy-2026-05-03.md` | Cross-system taxonomy status, BigQuery evidence, recommended canonical tables. |
 | Parent production state | `docs/parent-production-cutover-checklist.md` | Parent GTM/GA4/custom-dimension/cutover status. |
@@ -52,9 +97,12 @@ Status labels used below:
 | Franchise Canada taxonomy | `docs/franchise-canada-phase1/02-event-taxonomy-and-datalayer-contract.md` | Franchise Canada form events, payloads, attribution fields, PII rules. |
 | Franchise Canada QA | `docs/franchise-canada-phase1/05-qa-and-cutover-checklist.md` | Current Canada QA state and remaining platform confirmations. |
 | Franchise USA QA/build | `docs/franchise-usa-phase1/01-gtm-build-and-qa-2026-05-01.md` and `02-qa-and-cutover-checklist.md` | USA GTM Version 15, helper mapping, remaining Ads/Meta confirmation. |
+| Franchise USA post-Version-15 QA | `docs/franchise-usa-phase1/03-post-version-15-qa-2026-05-03.md` | Current USA form URLs, helper events, browser-level GA4 evidence, old 404 paths, and remaining Ads/Meta/GA4 reporting gaps. |
 | Franchise implementation roadmap | `docs/franchise-transition-final-pack-v1/11-implementation-roadmap-and-build-board.md` | Existing workstream roadmap for parent cutover, franchise stabilization, USA setup, and Phase 1B/2. |
 | CAPI and sGTM roadmap | `docs/franchise-transition-final-pack-v1/09-capi-and-sgtm-roadmap.md` | Existing long-term server-side, CAPI, and sGTM sequencing. |
-| Parent local-listing UTM rules | `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-parents-local-listing-utm-rules-2026-05-03.md` | GBP/Yelp parent-school local-listing UTM convention and reporting interpretation. |
+| Parent local-listing UTM rules | `docs/40-naming-convention/local-listing-utm-rules-gbp-yelp-2026-05-03.md` | Governed GBP/Yelp parent-school local-listing UTM convention and reporting interpretation. |
+| Paid-media data availability | `docs/50-paid-media/platform-data-availability-2026-05-03.md` | Current platform transfer status, row freshness, and paid-media use limitations. |
+| School dimension warehouse coverage | `docs/60-master-data/school-dimension-warehouse-coverage-2026-05-03.md` | 53-school warehouse coverage, current view row counts, source coverage by platform, and external-ID gaps. |
 | Agentic Brain source ownership | `/Users/matthewbison/Desktop/agentic-brain/docs/DASHBOARD_SOURCE_OWNERSHIP_MATRIX.md` | Current dashboard source ownership by surface and metric. |
 | Agentic Brain metric contract | `/Users/matthewbison/Desktop/agentic-brain/docs/CRM_LEAD_CALCULATION_CONTRACT.md` | CRM lead calculation and dedupe rules. |
 | Agentic Brain operational layer | `/Users/matthewbison/Desktop/agentic-brain/docs/CEFA_OPERATIONAL_LAYER_REFERENCE.md` | Reporting vs workflow vs engagement layer separation. |
@@ -72,6 +120,8 @@ Status labels used below:
 | Helper plugin duplicate guard | `includes/class-cefa-conversion-tracking-duplicate-guard.php` | One-time payload token and consumed-event logic. |
 | Franchise fallback bridge | `snippets/franchise-wpcode-bridge.php` | Live WPCode fallback bridge for franchise forms when full plugin deployment is blocked. |
 | GreenRope local school map | `/Users/matthewbison/Desktop/agentic-brain/src/config/greenrope-group-map.ts` | Locally recoverable GreenRope group mapping for all 53 current schools, pending live CRM production validation. |
+| BigQuery GreenRope bridge | `marketing-api-488017.mart_marketing.bridge_greenrope_group_school` | Loaded school-to-GreenRope group bridge. Duplicate group `50` is not dashboard-safe for automatic school totals. |
+| BigQuery GreenRope daily aggregate | `marketing-api-488017.mart_marketing.fct_greenrope_school_funnel_daily` | Counts-only GreenRope daily group aggregate from `GetOpportunitiesRequest`; no full lead/contact payloads. |
 | Gravity inquiry routing | `/Users/matthewbison/Desktop/agentic-brain/data/inquiry-location-forms.json` | Local Gravity routing/location code reference, currently 49/53 mapped. |
 | GBP location export | `/Users/matthewbison/Desktop/agentic-brain/data/gbp-locations.json` | Local GBP reference, currently 47/53 mapped. |
 | Local school ops snapshot | `/Users/matthewbison/Desktop/agentic-brain/data/schools.json` | Local school/program/enrollment context, reference only until reconciled to `school_uuid`. |
@@ -83,6 +133,12 @@ Status labels used below:
 | BigQuery empty core tables | `marketing-api-488017.cefa_core.dim_school`, `marketing-api-488017.cefa_core.dim_school_alias` | Schemas exist but are empty in checked evidence. |
 | BigQuery assertion surface | `marketing-api-488017.dataform_assertions.assert_dim_school_location_not_null` | Assertion/failure surface; proves expected bridge columns exist, but not populated master values. |
 | BigQuery GA4 export | `marketing-api-488017.analytics_267558140.events_*` | Parent GA4 event evidence and observed program IDs. |
+| BigQuery marketing context fact | `marketing-api-488017.mart_marketing.fact_school_marketing_context_daily` | Current daily school marketing context fact; latest checked coverage has 53 schools per day. |
+| BigQuery dashboard view | `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_daily` | Current dashboard-serving marketing view, populated through 2026-05-02 in the latest governed warehouse note. |
+| BigQuery dashboard CRM view | `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily` | Dashboard daily source with GreenRope aggregate fields joined only where the CRM group mapping is dashboard-safe. |
+| BigQuery GreenRope school view | `marketing-api-488017.mart_marketing.vw_greenrope_school_funnel_school_daily` | School-level GreenRope aggregate view over the bridge and counts table. |
+| BigQuery Looker contract view | `marketing-api-488017.mart_marketing.vw_school_marketing_looker_contract_daily` | Current Looker/reporting contract view, populated through 2026-05-02 in the latest governed warehouse note. |
+| BigQuery measurement rule registry | `marketing-api-488017.cefa_core.measurement_rule_registry` and `mart_marketing.vw_measurement_rule_registry_current` | Dashboard-readable conversion-tracking and naming-convention rule references. Seeded with 5 current rows. |
 
 ## Data Source Registry
 
@@ -99,7 +155,9 @@ Status labels used below:
 | GTM parent container | CEFA/GTM | Maps neutral website events to GA4, Google Ads, Meta. | Verified | Active parent container: `GTM-NZ6N7WNC`; old `GTM-PPV9ZRZ` is reference-only/not present in sampled live HTML. |
 | GA4 parent property | Google Analytics | Parent analytics and `generate_lead` reporting. | Verified | Property `267558140` / `Main Site - GA4`. Helper-plugin parent custom dimensions are registered. |
 | BigQuery GA4 export | Google/BigQuery | Event-level GA4 export for helper events and historical legacy events. | Verified | Used for program evidence and helper-plugin generate_lead checks. |
+| GA4 Data API runtime access | Google Analytics API | Non-BigQuery GA4 reporting/API path. | Pending | Service-account/runtime API access is not yet the reliable business-truth path; warehouse uses native GA4 export where available. |
 | GreenRope CRM | CRM | Opportunities, phases, activities, contacts, journeys, workflow and engagement context. | Verified for CRM objects, partial for live availability | Strong for current funnel and workflow diagnostics. Not a clean live school/program availability matrix today. |
+| GreenRope BigQuery aggregate | BigQuery / GreenRope API | Daily CRM opportunity counts by GreenRope group. | Verified aggregate; partial business interpretation | Loaded 6,390 group-date rows from 52 groups and 24,916 counted opportunities for 2025-06-12 through 2026-05-03. Stores counts only. `greenrope_ad_attributed_inquiries` means UTM/click-id evidence, not solid paid-media truth. |
 | KinderTales | Business delivery / school identity | Current school unique ID appears to be `school_uuid`. | Partial | Treat `kindertales_school_id = school_uuid` unless downstream proves a separate ID. |
 
 ### Marketing, Paid Media, And Visibility Sources
@@ -108,19 +166,49 @@ Status labels used below:
 |---|---|---|---|---|
 | `marketing-api-488017.mart_marketing.dim_school` | BigQuery marketing mart | 53-row school/location dimension. | Verified | Has `school_uuid`, `canonical_location_id`, `location_code`, `location_name`, `school_slug`, `timezone`, `landing_page_path`. |
 | `canonical_location_id` | BigQuery marketing mart | Current location metadata. | Partial | Present for all 53 schools, but mixed-format: 40 UUID-like and 13 slug-like. Do not use as main tracking join until normalized. |
-| Google Ads | Paid media | Google spend, clicks, conversion actions, linked Ads accounts. | Partial | Account-level and some school-level data exist; school-level ad naming tokens are incomplete. |
-| Meta Ads / Pixel | Paid media | Meta events, Lead/custom events, campaign reporting. | Partial | Canada franchise currently verified on shared pixel `918227085392601`; separation is target architecture. |
-| Supermetrics / reporting connectors | Marketing data movement | Paid-media reporting feeds and conversion action reporting. | Partial | Useful for reporting; not sufficient alone for all Ads admin configuration. |
+| `mart_marketing.fact_school_marketing_context_daily` | BigQuery marketing mart | Daily school marketing context by school. | Verified | Latest governed check shows 12,084 rows and 53 schools. |
+| `vw_school_marketing_dashboard_daily` | BigQuery marketing mart | Dashboard-serving daily marketing view. | Verified | Populated from 2025-09-17 through 2026-05-02 in the latest governed check. |
+| `vw_school_marketing_dashboard_with_crm_daily` | BigQuery marketing mart | Dashboard-serving daily marketing view with GreenRope aggregate fields. | Verified | Queryable by the dashboard service account. GreenRope fields are joined only for dashboard-safe mappings. |
+| `vw_school_marketing_looker_contract_daily` | BigQuery marketing mart | Looker/reporting contract view. | Verified | Latest governed check shows 80,678 rows and 53 schools. |
+| `cefa-dashboard-bq-reader` service account | Google Cloud / BigQuery | Dashboard read identity. | Verified | Has project `roles/bigquery.jobUser` and dataset read access on `mart_marketing` and `cefa_core`. No service-account key was created. |
+| `cefa_core.measurement_rule_registry` | BigQuery core | Current dashboard-facing conversion-tracking and naming-convention rule references. | Verified seeded surface | Current mart view exposes 5 active/current rows. This is a rule-reference registry, not permission to change CEFA NC1 naming. |
+| Google Ads | Paid media | Google spend, clicks, conversion actions, linked Ads accounts. | Partial | Transfer config is enabled and recent runs succeeded, but checked campaign/conversion detail rows stop at 2026-04-30. School-level ad naming tokens are incomplete. |
+| Meta Ads / Pixel | Paid media | Meta events, Lead/custom events, campaign reporting. | Partial | Native Meta rows are present through 2026-05-02, but May 1/2 dashboard paid metrics are zero in the latest governed check. Canada franchise currently verified on shared pixel `918227085392601`; separation is target architecture. |
+| Supermetrics / reporting connectors | Marketing data movement | Paid-media reporting feeds and conversion action reporting. | Partial | Useful for reporting; latest checked Google/Meta Supermetrics detail stops at 2026-04-30 and is not sufficient alone for all Ads admin configuration. |
 | GBP | Google Business Profile | Location visibility, reviews, GBP location IDs, scorecards. | Partial | Local GBP export maps 47/53 school locations. Six GBP gaps remain. |
 | PiinPoint | Market intelligence | School/location market context. | Missing as deterministic key | App has fallback behavior, but populated `piinpoint_school_key` is not available in checked identity bridge. |
 | Budget files | Local repo reference | Budget/spend planning and some school-level ad tokens. | Partial/reference | `data/budgets.json`, `data/campaign-budgets.json`. Only 15/53 schools currently have local budget-file ad tokens. |
+
+### BigQuery Warehouse And Business-Truth Snapshot
+
+| Area | Current verified state | Status | Notes / gaps |
+|---|---|---|---|
+| Warehouse refresh | Cloud Scheduler is enabled daily at `0 6 * * *` America/Vancouver; latest documented manual Cloud Run job completed on 2026-05-03. | Verified | Next documented scheduler run was 2026-05-04 13:00 UTC. Recheck live scheduler before making current-day claims after that date. |
+| Dashboard auth | Dashboard reader identity `cefa-dashboard-bq-reader@marketing-api-488017.iam.gserviceaccount.com` exists and can query the dashboard CRM view. | Verified | Preferred production pattern is keyless Cloud Run service identity or Workload Identity Federation, not browser-side credentials. |
+| Dashboard and Looker coverage | Core dashboard, dashboard-with-CRM, and Looker contract views are populated through 2026-05-02 with all 53 schools in latest seven-day context coverage. | Verified | May 1/2 paid values are partial/zero for some sources. |
+| GreenRope daily aggregate | `mart_marketing.fct_greenrope_school_funnel_daily` contains 6,390 daily group rows from 2025-06-12 through 2026-05-03. | Verified aggregate; partial business interpretation | First load was manual. It stores counts only and exposes ad-attributed inquiry evidence, not platform-confirmed paid inquiries. |
+| Measurement rule registry | `cefa_core.measurement_rule_registry` has 5 seeded conversion-tracking/naming-convention rule references exposed through `vw_measurement_rule_registry_current`. | Verified seeded surface | Future rule uploads still need a repeatable controlled workflow. |
+| Native GA4 export | `analytics_267558140.events_*` is available from 2026-03-11 through 2026-05-02 in the governed check. | Verified | Use as event evidence, not as final business lead truth by itself. |
+| Parent inquiry business-truth marts | `fct_parent_inquiries_daily` and `fct_parent_inquiries_by_location_daily` exist, but max at 2026-03-29. | Partial/stale | Must be refreshed before MTD/YTD stakeholder reporting depends on them. |
+| Franchise lead-source mart | `fct_franchise_lead_sources_daily` exists but maxes at 2026-03-29 in checked evidence. | Partial/stale | Needs refresh and reconciliation before final franchise lead-source reporting. |
+| Google Ads warehouse detail | Transfer config enabled and recent runs succeeded; checked campaign/conversion detail rows stop at 2026-04-30. | Partial | Current Google paid reporting after 2026-04-30 needs refresh/proof before claims. |
+| Meta warehouse detail | Native Meta rows are present through 2026-05-02, while Supermetrics action/ad-set detail stops at 2026-04-30. | Partial | May 1/2 dashboard paid metrics are zero and need source-level explanation. |
+| BigQuery free-tier usage | Latest governed check after dashboard/GreenRope/rule-registry work: May query usage 12.9346 GiB, about 1.263% of 1 TiB; storage 0.9679 GiB, about 9.68% of 10 GiB. | Verified snapshot | Snapshot only; recheck before billing/capacity decisions. |
+
+### SEO Measurement Sources
+
+| Source | Owner / system | What it owns | Current status | Notes / gaps |
+|---|---|---|---|---|
+| Google Search Console | SEO/search reporting | Organic search query/page performance. | Partial/stale snapshot | Current governed SEO handoff references data through 2026-03-31; refresh before current SEO claims. |
+| DataForSEO artifacts | SEO research | Sector keyword, local/organic research, and SERP context. | Partial/reference | Existing artifacts are useful research inputs, not conversion or business-truth sources. |
+| GBP SEO/category checks | Local SEO | Local listing category and profile optimization evidence. | Pending | Needs dedicated current verification before acting on listing/category recommendations. |
 
 ### Franchise Sources
 
 | Source | Owner / system | What it owns | Current status | Notes / gaps |
 |---|---|---|---|---|
 | `franchise.cefa.ca` | Franchise Canada website | Canada franchise forms and thank-you pages. | Verified live tracking path | Uses WPCode fallback bridge and `GTM-TPJGHFS`. |
-| `franchisecefa.com` | Franchise USA website | USA franchise forms and thank-you pages. | Partial/active transition | Uses WPCode fallback bridge and `GTM-5LZMHBZL` Version 15 GA4 helper mapping. Ads/Meta final mapping still needs USA-specific confirmation. |
+| `franchisecefa.com` | Franchise USA website | USA franchise forms and thank-you pages. | Verified website/GTM path; reporting still pending | Production form URLs are live on `/available-opportunities/franchising-inquiry/` and `/partner-with-cefa/real-estate-partners/submit-a-site/`; old `/franchise-application/` and `/real-estate-submission/` paths now return 404. Uses WPCode fallback bridge and `GTM-5LZMHBZL` Version 15 GA4 helper mapping. Ads/Meta final mapping still needs USA-specific confirmation. |
 | Gravity Forms Franchise Form 1 | Franchise sites | Franchise Inquiry. | Verified | Event `franchise_inquiry_submit`; Form 1 field IDs differ from parent. |
 | Gravity Forms Franchise Form 2 | Franchise sites | Real Estate / Site Inquiry. | Verified | Event `real_estate_site_submit`. |
 | GAConnector fields 14-30 | Franchise forms | Last-click, first-click, click/client attribution. | Partial/verified in some Canada runtime tests | Do not overwrite. Canada field population is stronger than the first read-only audit; USA still needs final confirmation. |
@@ -151,7 +239,7 @@ Status labels used below:
 | `school_slug` | 53/53 | Verified | Website/path alias. |
 | `landing_page_path` | 53/53 | Verified | Website/path alias. |
 | WordPress School Manager ID | 51/53 locally known | Partial | Two gaps remain. |
-| GreenRope group/location ID | 53/53 locally recoverable | Partial | Locally reconciled from `agentic-brain`, but live CRM validation is still needed before production master use. |
+| GreenRope group/location ID | 53/53 loaded to BigQuery bridge | Partial | Locally reconciled from `agentic-brain` and loaded to `bridge_greenrope_group_school`; duplicate group `50` maps to two South Surrey rows, so only one-school mappings are dashboard-safe. |
 | Gravity location ID/code/routing | 49/53 locally known | Partial | Four routing gaps remain. |
 | GBP location ID | 47/53 locally known | Partial | Six GBP gaps remain. |
 | School-level ad token | 15/53 locally known | Partial | Need platform export or naming owner confirmation. |
@@ -187,6 +275,7 @@ These 13 `canonical_location_id` values are present but slug-like. They need nor
 | School code | Calgary - South; North Vancouver - Capilano Mall; Surrey - Sunnyside |
 | PiinPoint deterministic key | All 53 currently missing as populated bridge keys |
 | Ad naming token | 38/53 not represented in current local budget files |
+| Duplicate GreenRope group mapping | Group `50` maps to both South Surrey - Morgan Crossing and South Surrey - Morgan Crossing East; do not split or add those CRM totals without a business decision |
 
 ## Program Reference
 
@@ -280,19 +369,31 @@ Franchise Canada key payload fields:
 
 | Event | Scope | Form | Destination mapping | Current status |
 |---|---|---:|---|---|
-| `franchise_inquiry_submit` | Primary conversion | Form 1 | GA4 `generate_lead` in USA property | Website/GTM/GA4 helper mapping published; post-Version-15 controlled receipt still needed |
-| `real_estate_site_submit` | Primary conversion | Form 2 | GA4 `generate_lead` in USA property | Website/GTM/GA4 helper mapping published; post-Version-15 controlled receipt still needed |
-| `cefa_franchise_us_inquiry_dispatch` | GTM dispatch | Form 1 | USA GA4 helper dispatch | Verified in live `gtm.js` |
-| `cefa_franchise_us_site_dispatch` | GTM dispatch | Form 2 | USA GA4 helper dispatch | Verified in live `gtm.js` |
+| `franchise_inquiry_submit` | Primary conversion | Form 1 | GA4 `generate_lead` in USA property | Verified website/helper event in post-Version-15 controlled QA; processed GA4 reporting still pending after delay |
+| `real_estate_site_submit` | Primary conversion | Form 2 | GA4 `generate_lead` in USA property | Verified website/helper event and browser-level GA4 hit in post-Version-15 controlled QA; processed GA4 reporting still pending after delay |
+| `cefa_franchise_us_inquiry_dispatch` | GTM dispatch | Form 1 | USA GA4 helper dispatch | Verified in live `gtm.js` and controlled QA |
+| `cefa_franchise_us_site_dispatch` | GTM dispatch | Form 2 | USA GA4 helper dispatch | Verified in live `gtm.js` and controlled QA |
+
+USA post-Version-15 QA facts:
+
+| Fact | Current state |
+|---|---|
+| Form 1 production URL | `https://franchisecefa.com/available-opportunities/franchising-inquiry/`, HTTP 200, `GTM-5LZMHBZL` and WPCode bridge markers present. |
+| Form 2 production URL | `https://franchisecefa.com/partner-with-cefa/real-estate-partners/submit-a-site/`, HTTP 200, `GTM-5LZMHBZL` and WPCode bridge markers present. |
+| Old test paths | `/franchise-application/` and `/real-estate-submission/` return 404. |
+| Controlled Form 1 event | `franchise_inquiry_submit` with dispatch `cefa_franchise_us_inquiry_dispatch`; `location_interest=1190`; `site_context=franchise_us`, `market=usa`, `country=US`, `form_id=1`. |
+| Controlled Form 2 event | `real_estate_site_submit` with dispatch `cefa_franchise_us_site_dispatch`; browser resource evidence showed GA4 request to `G-YL1KQPWV0M` with `generate_lead`, value `250`, currency `USD`; `site_context=franchise_us`, `market=usa`, `country=US`, `form_id=2`. |
+| Processed GA4 reporting | Property `519783092` had no processed `generate_lead` rows yet in the documented follow-up; treat reporting confirmation as pending until rechecked after processing delay. |
+| USA Google Ads linkage | GA4 property linked to Ads accounts `3820636025` and `4159217891`; imported GA4 actions exist but are secondary and zero-volume in checked evidence. |
 
 USA remaining platform gaps:
 
 | Area | Gap |
 |---|---|
-| Google Ads | USA-specific conversion action labels must be confirmed before Ads final helper-event tags are activated. |
+| Google Ads | USA account owner must confirm the correct Google Ads account and conversion action before any final USA helper-event conversion is used for bidding. |
 | Meta | USA dataset/pixel ownership must be confirmed before Meta final helper-event tags are activated. |
 | GA4 currency | USA property currency is currently CAD; confirm whether this should remain. |
-| Post-publish QA | Controlled Form 1 and Form 2 submissions after GTM Version 15 propagation still need GA4 reporting confirmation. |
+| Processed reporting QA | Website source and GTM runtime are live, but processed GA4 reporting still needs delayed recheck. |
 
 ## Attribution Taxonomy
 
@@ -339,7 +440,9 @@ USA remaining platform gaps:
 
 ### Parent Local Listing UTMs
 
-Source: `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-parents-local-listing-utm-rules-2026-05-03.md`
+Governed source: `docs/40-naming-convention/local-listing-utm-rules-gbp-yelp-2026-05-03.md`
+
+Upstream context source: `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-parents-local-listing-utm-rules-2026-05-03.md`
 
 Scope:
 
@@ -451,7 +554,7 @@ Reporting interpretation:
 | Canonical CRM lead | GreenRope opportunity created in range, across lead-volume phases, deduped by school + month + child/program best-key. | GreenRope opportunities via Agentic Brain reconciliation | Verified current dashboard contract | Metric name: `crm_total_leads_child_dedup`. |
 | Executive comparable leads | Canonical CRM reconciliation total when available; Gravity fallback only if CRM unavailable. | V2 executive / analytics API | Verified current product contract | Exposed as `total_leads_comparable`. |
 | Paid lead, Gravity signal | Gravity/Form attribution has paid click ID or paid UTM/source-medium signal. | Gravity Forms fields / reconciliation | Partial | Exposed as `paid_inquiries_gravity` or `gravity_paid_inquiries_params`. Good comparator, but source labels must remain visible. |
-| Paid lead, CRM signal | CRM opportunity has paid attribution fields. | GreenRope opportunities | Verified current logic | Paid if any recognized attribution field is present. |
+| GreenRope ad-attributed inquiry signal | Inquiry-phase CRM opportunity has at least one recognized UTM/click-id field populated. | GreenRope `GetOpportunitiesRequest` aggregate in BigQuery | Partial | Dashboard field: `greenrope_ad_attributed_inquiries`. This is ad-attribution evidence only, not solid paid-media inquiry truth. |
 | Paid lead, platform signal | Paid platform conversions from Meta + Google campaign data. | Ads/Supermetrics/BigQuery/ads routes | Partial | Exposed as `ads_paid_inquiries_total`, `paid_inquiries_meta`, `paid_inquiries_google`. Platform semantics differ from Gravity/CRM. |
 | Tour | Phase-scoped opportunity count in CRM for tour phases. | GreenRope opportunities | Verified current product contract | Not deduped using the lead best-key. BI tour totals may differ. |
 | Enrollment | Phase-scoped opportunity count where phase includes enrollment and closed won/won. | GreenRope opportunities | Verified current product contract | BI/reporting enrollments are reference/comparison, not automatically equivalent. |
@@ -462,6 +565,22 @@ Reporting interpretation:
 | Enrollment rate | Usually `enrollments / leads` or reporting-specific enrollment percent. | Derived / BI | Partial | Needs business definition lock when used in executive reporting. |
 | Waitlisted | Count/status from BI/reporting or School Manager/CRM availability context. | BI/reporting reference today | Partial | Not yet locked as canonical metric. |
 | Current school availability state | School + Program availability label/status. | WordPress School Manager today | Partial | GreenRope journey codes can support but are not authoritative by themselves. |
+
+### GreenRope Dashboard Metrics
+
+Current governed endpoint map: `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md`
+
+| Dashboard metric | Endpoint | Source fields | Status | Interpretation |
+|---|---|---|---|---|
+| `greenrope_inquiries_total` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Count of opportunity rows in inquiry-like phases. It is CRM opportunity-state evidence, not final conversion truth. |
+| `greenrope_ad_attributed_inquiries` | `GetOpportunitiesRequest` by `group_id` | Opportunity custom fields normalized to `utmsource`, `utmmedium`, `utmcampaign`, `gclid`, `gbraid`, `wbraid`, `fbclid`, or `msclkid` | Partial | Count of inquiry rows with UTM/click-id evidence. Do not label as GreenRope paid inquiries. |
+| `greenrope_no_detected_ad_attribution_inquiries` | `GetOpportunitiesRequest` by `group_id` | Same custom-field set as above | Partial | Count of inquiry rows without detected UTM/click-id evidence. This does not prove organic source. |
+| `greenrope_tour_phase_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for tour-like phases, not an attended-tour ledger. |
+| `greenrope_enrollment_phase_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for won/enrollment-like phases, not the final operational enrollment ledger. |
+| `raw_opportunity_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity rows returned with usable date | Verified extraction count | Row count used for the daily aggregate. Not deduped lead truth. |
+| `greenrope_group_id` / `greenrope_group_name` | `GetGroupsRequest`; `GetOpportunitiesRequest` request parameter | GreenRope group ID/name | Verified/partial | Mapping and QA fields. Not canonical CEFA school identity by themselves. |
+
+Loaded support endpoints are currently limited to `GetGroupsRequest` and `GetOpportunitiesRequest`. `GetOpportunityFieldsRequest`, `GetPhasesRequest`, and `GetPhasePathsRequest` remain pending inputs for a more auditable field and phase dictionary.
 
 ### Date Window Definitions
 
@@ -480,8 +599,8 @@ Recommendation: lock all stakeholder MTD/YTD reporting to a named timezone, pref
 | Metric | Definition | Status |
 |---|---|---|
 | Spend | Ad spend from platform/reporting source for selected range. | Partial/available |
-| Paid inquiries total | Meta paid inquiries + Google paid inquiries where platform data is available. | Partial/available |
-| CPL / CPI | `spend / paid inquiries`. | Derived; source-sensitive |
+| Platform paid inquiries total | Meta paid inquiries + Google paid inquiries where platform data is available. | Partial/available |
+| CPL / CPI | `spend / platform paid inquiries`; do not use GreenRope ad-attributed inquiry counts as the denominator unless the dashboard explicitly labels that comparator. | Derived; source-sensitive |
 | CPC | `spend / clicks`. | Derived from ads platform data |
 | CTR | `clicks / impressions`. | Derived from ads platform data |
 | Session conversion rate | GA4 conversions or lead events divided by sessions. | Partial; must state event basis |
@@ -681,13 +800,14 @@ These labels still need a governed mapping to School Manager availability fields
 | PiinPoint bridge key missing | Populate deterministic keys or keep PiinPoint matching as non-authoritative fallback. |
 | Ad naming token incomplete | Confirm whether 38 schools are missing mappings or simply have no active paid campaigns. |
 | KinderTales ID equivalence | Confirm whether `school_uuid` is truly the KinderTales ID everywhere. |
+| Duplicate GreenRope group `50` | Decide whether South Surrey - Morgan Crossing and South Surrey - Morgan Crossing East need separate CRM groups, a split rule, or a manual review process. |
 
 ### Metric Governance Gaps
 
 | Metric / area | Needed decision |
 |---|---|
 | Total lead | Decide when stakeholder reporting should use Gravity total submissions vs CRM deduped leads. |
-| Paid lead | Decide source priority between Gravity paid params, CRM paid attribution, and platform conversions for each dashboard. |
+| Paid/ad-attributed lead | Keep Gravity paid params, GreenRope ad-attributed inquiry evidence, and platform conversions as separately labeled metrics until a reconciled paid-lead definition is approved. |
 | Tour | Lock BI/reporting tour definition vs CRM phase-scoped tour count. |
 | Enrollment | Lock BI/reporting enrollment definition vs CRM won/enrollment phase count. |
 | Waitlist | Decide if it is program, status, or both. |
@@ -704,6 +824,15 @@ These labels still need a governed mapping to School Manager availability fields
 | Franchise Canada Meta | Custom conversion status inside current shared dataset still needs Events Manager verification. |
 | Franchise USA Ads | Confirm USA-specific conversion labels before activating Ads final helper tags. |
 | Franchise USA Meta | Confirm USA dataset/pixel before activating Meta final helper tags. |
+| Parent business-truth marts | Refresh parent inquiry marts beyond 2026-03-29 before current MTD/YTD business reporting. |
+| Franchise business-truth marts | Refresh franchise lead-source mart beyond 2026-03-29 before current franchise reporting. |
+| Google/Supermetrics freshness | Explain or refresh checked detail after 2026-04-30 before current paid-media claims. |
+| Meta May paid zeros | Resolve why native Meta rows exist through 2026-05-02 while May 1/2 dashboard paid metrics are zero. |
+| GA4 Data API runtime access | Decide whether service-account/runtime GA4 Data API access is needed, or continue to use native GA4 BigQuery export as the reporting path. |
+| GreenRope refresh automation | Add a scheduled refresh before dashboards depend on the GreenRope aggregate daily. |
+| GreenRope field dictionary | Load or snapshot `GetOpportunityFieldsRequest` before treating custom-field matching as fully governed. |
+| GreenRope phase taxonomy | Load or snapshot `GetPhasesRequest` and `GetPhasePathsRequest` before treating phase matching as fully governed. |
+| Rule registry upload workflow | Create a controlled upload process for future conversion-tracking and naming-convention rule changes. |
 | Server-side tracking | Keep MP audit-only until browser/GTM parity is stable and dedupe design is explicit. |
 
 ## Future Conversion Tracking Roadmap
@@ -719,7 +848,7 @@ Goal: make the current data foundation safe before adding more tracking layers.
 | Lock `dim_school` primary key | `school_uuid` accepted as parent conversion join key. | Started / current rule |
 | Lock `dim_program` primary key | `program_id` accepted as program join key. | Started / observed values known |
 | Resolve school identity gaps | WordPress IDs, Gravity routing, GBP IDs, PiinPoint key, ad tokens. | Open |
-| Lock metric definitions | Total lead, paid lead, tour, application, enrollment, lost lead, MTD/YTD. | Open |
+| Lock metric definitions | Total lead, paid/ad-attributed lead, tour, application, enrollment, lost lead, MTD/YTD. | Open |
 | Lock date boundary | Named timezone and inclusive/exclusive rules for MTD/YTD/monthly reporting. | Open |
 | Lock PII rules | Approved fields for dataLayer, GA4, Ads, Meta, raw storage, and reporting marts. | Started |
 
@@ -753,7 +882,7 @@ Goal: stop reporting directly from messy raw imports and build an auditable data
 
 | Work item | Output | Status |
 |---|---|---|
-| Raw layer | `raw_gravity_forms_entries`, `raw_greenrope_*`, `raw_ga4_events`, `raw_marketing_spend`, `raw_gbp_*`, `raw_school_manager_availability`. | Future |
+| Raw layer | `raw_gravity_forms_entries`, `raw_greenrope_*`, `raw_ga4_events`, `raw_marketing_spend`, `raw_gbp_*`, `raw_school_manager_availability`. | Future; current GreenRope BigQuery load is aggregate counts only |
 | Normalized facts | `fact_leads`, `fact_paid_signals`, `fact_tours`, `fact_applications`, `fact_enrollments`, `fact_marketing_spend`, `fact_school_availability_snapshot`. | Future |
 | Marts | `mart_school_monthly`, `mart_school_program_monthly`, `mart_executive_monthly`, `mart_source_coverage`, `mart_school_current_state`. | Future |
 | Freshness checks | `sync_runs`, row counts, latest timestamps, error logs, source coverage. | Future |
@@ -862,13 +991,14 @@ A reviewed school/program current-state record can update WordPress School Manag
 1. Create `dim_school` using `school_uuid` as the primary key and load all known 53 rows from the current reference.
 2. Create `dim_program` using the 6 observed program rows, with `waitlist` marked for business modeling review.
 3. Create raw source tables separately from clean fact/mart tables.
-4. Create `metric_definitions` before exposing dashboards from the new database.
+4. Use `cefa_core.measurement_rule_registry` as the current seeded rule-reference surface, but create fuller `metric_definitions` before exposing new stakeholder KPI dashboards.
 5. Add `sync_runs`, `mapping_review_queue`, and `source_coverage_daily` from day one.
-6. Ingest Gravity Forms and GreenRope first, because those define submissions and CRM funnel truth.
-7. Add GA4/BigQuery and paid media after the school/program joins are stable.
-8. Add GBP and Parent Insights as separate domains, not funnel truth.
-9. Keep AI/runtime/checkpoint tables out of the foundational database.
-10. Only push availability back to WordPress School Manager after a reviewed School + Program availability bridge exists.
+6. Automate the current counts-only GreenRope aggregate only after the duplicate group `50`, field dictionary, and phase taxonomy gaps are handled or clearly labeled.
+7. Ingest Gravity Forms and deeper GreenRope raw/stage tables first, because those define submissions and CRM funnel truth.
+8. Add GA4/BigQuery and paid media after the school/program joins are stable.
+9. Add GBP and Parent Insights as separate domains, not funnel truth.
+10. Keep AI/runtime/checkpoint tables out of the foundational database.
+11. Only push availability back to WordPress School Manager after a reviewed School + Program availability bridge exists.
 
 ## Maintenance Rule
 
