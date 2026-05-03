@@ -22,6 +22,8 @@ What is not yet fully proven is a single populated table that maps every school 
 
 The right move is to treat this document as the tracked canonical-taxonomy backlog and only promote fields to `verified` when the source table/export/API confirms them.
 
+Concrete known-value table: [known-school-program-reference-table-2026-05-03.md](./known-school-program-reference-table-2026-05-03.md).
+
 ## Why This Matters For Tracking
 
 School and program identity should not be inferred from labels alone. Labels can change by punctuation, spelling, dash style, editor wording, or platform truncation.
