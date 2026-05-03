@@ -46,6 +46,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Franchise Canada and Franchise USA now have GA4 custom dimensions registered for the low-cardinality helper payload fields. Canada still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision. USA still needs post-Version-15 controlled GA4 receipt testing plus USA-specific Google Ads and Meta final mapping confirmation.
 - Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 - Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
+- School/program taxonomy status: `docs/canonical-school-program-taxonomy-2026-05-03.md`.
 
 ## Required Runtime
 
@@ -276,6 +277,7 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 - [GPT Pro review handoff for franchise Meta transition](docs/gpt-pro-review-franchise-meta-transition-2026-04-28.md)
 - [Reviewed franchise transition plan](docs/franchise-transition-reviewed-plan-2026-04-28.md)
 - [GPT Pro franchise transition final pack](docs/franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
+- [Canonical school and program taxonomy status](docs/canonical-school-program-taxonomy-2026-05-03.md)
 
 ## Development
 
