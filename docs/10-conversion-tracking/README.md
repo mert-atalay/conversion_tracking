@@ -28,6 +28,12 @@ This folder is the routing surface for CEFA conversion tracking across:
 - Keep Gravity Forms Measurement Protocol audit-only unless explicitly approved as a final source.
 - Keep parent, franchise Canada, and franchise USA separated by property, hostname, GA4 property, and platform mapping.
 
+## BigQuery / Dashboard Registry
+
+- Current conversion-tracking rule references are available to dashboards through `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`.
+- The BigQuery implementation is documented in [Dashboard source layer, GreenRope, and rule registry](../20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md).
+- Do not upload a conversion-tracking rule as `Verified` unless the owning source doc and live evidence support that status.
+
 ## Where To Add New Files
 
 Use this folder for new tracking-wide docs. If the doc is specifically parent/franchise and an existing phase folder already exists, use that phase folder instead and link it here.

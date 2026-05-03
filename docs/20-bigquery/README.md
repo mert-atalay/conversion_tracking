@@ -15,10 +15,13 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - School dimension: `marketing-api-488017.mart_marketing.dim_school`
 - Parent/franchise marts: `mart_marketing`, `mart_marketing_parents`, `mart_marketing_franchise`
 - Raw sources: `raw_ga4`, `raw_google_ads`, `raw_meta_ads`, `raw_supermetrics`
+- Dashboard service view with CRM aggregate: `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily`
+- Current measurement rule view: `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`
 
 ## Current Files
 
 - [Warehouse current state, QA, freshness, and free-tier usage, 2026-05-03](./warehouse-current-state-2026-05-03.md)
+- [Dashboard source layer, GreenRope, and rule registry, 2026-05-03](./dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md)
 
 ## Rules
 

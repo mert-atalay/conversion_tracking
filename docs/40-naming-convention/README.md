@@ -28,6 +28,12 @@ Key contracts:
   - Covers GBP/Yelp website and inquiry-form UTM rules.
   - The rule is approved for documentation use, but live listing updates still require field availability and school-slug verification.
 
+## BigQuery / Dashboard Registry
+
+- Current naming-convention rule references are available to dashboards through `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`.
+- The BigQuery implementation is documented in [Dashboard source layer, GreenRope, and rule registry](../20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md).
+- The workbook or mirrored Google Sheet remains the human source of truth for Meta NC1. Do not treat the dashboard registry as permission to change NC1 token meanings.
+
 ## Rules
 
 - Do not silently change token meanings.
