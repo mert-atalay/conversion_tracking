@@ -8,6 +8,10 @@ This folder is for ad-account execution context that depends on conversion track
 - `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-meta-naming-convention-2026-04-28.md`
 - CEFA budget workbook path and guardrails from the CEFA repo `AGENTS.md`.
 
+## Current Files
+
+- [Paid media platform data availability, 2026-05-03](./platform-data-availability-2026-05-03.md)
+
 ## Rules
 
 - Do not change live budgets from spreadsheet math alone.

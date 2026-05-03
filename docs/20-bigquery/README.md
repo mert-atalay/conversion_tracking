@@ -16,6 +16,10 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - Parent/franchise marts: `mart_marketing`, `mart_marketing_parents`, `mart_marketing_franchise`
 - Raw sources: `raw_ga4`, `raw_google_ads`, `raw_meta_ads`, `raw_supermetrics`
 
+## Current Files
+
+- [Warehouse current state, QA, freshness, and free-tier usage, 2026-05-03](./warehouse-current-state-2026-05-03.md)
+
 ## Rules
 
 - Do not create a second hand-maintained school registry if `school_uuid` / master-data tables can be reused.

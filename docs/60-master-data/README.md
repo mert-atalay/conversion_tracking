@@ -7,6 +7,7 @@ This folder is for canonical and partial reference data across schools, programs
 - [Final known school/program tracking reference](../known-school-program-reference-table-2026-05-03.md)
 - [Canonical school/program taxonomy status](../canonical-school-program-taxonomy-2026-05-03.md)
 - [Master data, taxonomy, conversion, and metrics reference](./cefa-master-data-taxonomy-and-measurement-reference-2026-05-03.md)
+- [School dimension warehouse coverage, 2026-05-03](./school-dimension-warehouse-coverage-2026-05-03.md)
 
 ## Current Rules
 
