@@ -8,6 +8,8 @@ Document the BigQuery resources created so CEFA dashboards can read governed rep
 
 This is a BigQuery/data workstream document. It does not redefine conversion events, Meta naming tokens, or school identity rules.
 
+Important GreenRope label rule: the CRM aggregate contains `ad-attributed inquiries`, not solid paid-media inquiry truth. Do not label this metric as plain `paid inquiries` in dashboards.
+
 ## Scope
 
 | Field | Value |
@@ -61,8 +63,8 @@ The daily aggregate includes:
 
 - `raw_opportunity_count`
 - `inquiries_total`
-- `paid_inquiries`
-- `non_paid_inquiries`
+- `paid_inquiries` as a physical first-load field, exposed in dashboard views as `ad_attributed_inquiries`
+- `non_paid_inquiries` as a physical first-load field, exposed in dashboard views as `no_detected_ad_attribution_inquiries`
 - `tour_phase_count`
 - `enrollment_phase_count`
 - extraction metadata and warnings
@@ -121,6 +123,8 @@ The dashboard service account was used to query these surfaces successfully:
 | `fct_greenrope_school_funnel_daily` totals | 15,352 inquiries, 840 tour-phase rows, 904 enrollment-phase rows |
 | `vw_school_marketing_dashboard_with_crm_daily` for 2026-05-01 through 2026-05-03 | 106 dashboard rows, 61 GreenRope joined rows, 59 dashboard-safe CRM rows |
 
+Metric definitions and endpoint mappings are documented in `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md`.
+
 ## Cost Snapshot
 
 | Usage area | Status | Current value |
@@ -141,6 +145,7 @@ This work stayed well inside the BigQuery free query and storage tier based on t
 | Google Ads/Supermetrics freshness after 2026-04-30 | Open question | BigQuery and paid media | Still unresolved from the warehouse current-state doc. |
 | Parent/franchise business-truth marts after 2026-03-29 | Pending | Conversion tracking and BigQuery | GreenRope daily aggregate helps CRM visibility but does not replace the stale parent/franchise marts yet. |
 | Rule registry upload workflow | Pending | BigQuery, conversion tracking, naming convention | Tables/views exist and seed rows are loaded; future rules still need a repeatable upload script or controlled process. |
+| GreenRope ad-attributed inquiry confidence | Partial | BigQuery and paid media | The CRM metric is based on UTM/click-id fields in GreenRope opportunities. It is not final paid-media truth until reconciled to Google Ads/Meta and spend/import data. |
 
 ## Source Evidence
 

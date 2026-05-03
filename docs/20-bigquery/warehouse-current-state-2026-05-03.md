@@ -27,7 +27,7 @@ This file records the current verified BigQuery, warehouse, dashboard, QA, and c
 | Looker contract view | Verified | `mart_marketing.vw_school_marketing_looker_contract_daily` is populated from 2025-09-17 through 2026-05-02. |
 | Dashboard service auth | Verified | `cefa-dashboard-bq-reader@marketing-api-488017.iam.gserviceaccount.com` exists, has `roles/bigquery.jobUser`, and has read access to `mart_marketing` and `cefa_core`. No service-account key was created. |
 | Dashboard CRM view | Verified | `mart_marketing.vw_school_marketing_dashboard_with_crm_daily` is queryable by the dashboard service account. |
-| GreenRope daily aggregate | Verified | `mart_marketing.fct_greenrope_school_funnel_daily` has 6,390 daily group rows from 2025-06-12 through 2026-05-03. It stores counts only, not full lead/contact payloads. |
+| GreenRope daily aggregate | Verified | `mart_marketing.fct_greenrope_school_funnel_daily` has 6,390 daily group rows from 2025-06-12 through 2026-05-03. It stores counts only, not full lead/contact payloads. Its ad-attributed inquiry count is not solid paid-media truth. |
 | Measurement rule registry | Verified | `cefa_core.measurement_rule_registry` has 5 seeded conversion-tracking/naming-convention rule references and is exposed through `mart_marketing.vw_measurement_rule_registry_current`. |
 | Native GA4 export | Verified | `analytics_267558140.events_*` is available from 2026-03-11 through 2026-05-02 in the checked event-date table window. |
 | GA4 Data API runtime access | Pending | Runtime service account access to the GA4 Data API is still missing; the warehouse refresh currently relies on the native GA4 BigQuery export path where available. |
@@ -149,6 +149,7 @@ The current verified state is not close to the free query or free storage limits
 | GreenRope refresh automation | Pending | BigQuery and CRM/source systems | First GreenRope daily aggregate load was manual. Add a scheduled refresh before dashboards depend on it daily. |
 | Duplicate GreenRope group `50` | Partial | BigQuery and master data | Group `50` maps to both South Surrey Morgan Crossing rows. Dashboard-safe CRM fields are withheld for duplicate group mappings to avoid silent double-counting. |
 | Rule registry upload workflow | Pending | BigQuery, conversion tracking, naming convention | Tables/views and seed rows exist. A repeatable upload process is still needed for future rule changes. |
+| GreenRope ad-attributed inquiry definition | Partial | BigQuery and paid media | Dashboard views expose `greenrope_ad_attributed_inquiries`; this means GreenRope inquiry rows with UTM/click-id markers, not platform-confirmed paid inquiries. |
 
 ## Next Actions
 
@@ -165,4 +166,5 @@ The current verified state is not close to the free query or free storage limits
 
 - Verified through BigQuery, Cloud Run, Cloud Scheduler, and Data Transfer checks run against `marketing-api-488017` on 2026-05-03.
 - Dashboard source layer details are documented in `docs/20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md`.
+- GreenRope metric definitions and API endpoint mappings are documented in `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md`.
 - Sensitive Data Transfer configuration values were not copied into this document.

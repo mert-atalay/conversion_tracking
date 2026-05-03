@@ -22,6 +22,7 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 
 - [Warehouse current state, QA, freshness, and free-tier usage, 2026-05-03](./warehouse-current-state-2026-05-03.md)
 - [Dashboard source layer, GreenRope, and rule registry, 2026-05-03](./dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md)
+- [GreenRope metric definitions and API map, 2026-05-03](./greenrope-metric-definitions-and-api-map-2026-05-03.md)
 
 ## Rules
 
