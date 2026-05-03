@@ -24,7 +24,7 @@ What is not yet fully proven is a single populated table that maps every school 
 
 The right move is to treat this document as the tracked canonical-taxonomy backlog and only promote fields to `verified` when the source table/export/API confirms them.
 
-Final known-value table and normalization worklist: [known-school-program-reference-table-2026-05-03.md](./known-school-program-reference-table-2026-05-03.md).
+Final known-value table, normalization worklist, and named missing-ID worklists: [known-school-program-reference-table-2026-05-03.md](./known-school-program-reference-table-2026-05-03.md).
 
 ## Why This Matters For Tracking
 

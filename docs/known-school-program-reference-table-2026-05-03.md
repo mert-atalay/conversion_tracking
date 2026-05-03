@@ -121,10 +121,31 @@ These rows have a current `canonical_location_id`, but it is slug-like rather th
 | 812372f3-bcad-11ef-8bcb-028d36469a89 | Vancouver - Commercial Drive | vancouver-commercial-drive | vancouver-commercial-drive | vancouver-commercial-drive | needs normalization decision |
 | 812374c6-bcad-11ef-8bcb-028d36469a89 | Victoria - Douglas | victoria---douglas | victoria-douglas | victoria-douglas | needs normalization decision |
 
+## WordPress School Manager ID Gap Worklist
+
+These rows are known school rows, but the WordPress School Manager internal ID is still missing from the current reference table. Source: CEFA tracking gap list provided on 2026-05-03, mapped back to the known school table by school name.
+
+| school_uuid | location_name | school_slug | missing_field | recommended_status |
+|---|---|---|---|---|
+| 81237712-bcad-11ef-8bcb-028d36469a89 | South Surrey - Morgan Crossing East | south-surrey-morgan-crossing-east | `wordpress_school_manager_id` | needs WordPress/School Manager lookup |
+| c77db124-f089-4d39-932a-343c1508fd75 | Surrey - Panorama North | surrey-panorama-north | `wordpress_school_manager_id` | needs WordPress/School Manager lookup |
+
+## Gravity Routing Gap Worklist
+
+These rows are known school rows, but Gravity routing is still missing from the current reference table. This does not mean the school is missing from tracking; it means the exact Gravity routing value/path still needs to be confirmed and documented.
+
+| school_uuid | location_name | school_slug | missing_field | recommended_status |
+|---|---|---|---|---|
+| 81237712-bcad-11ef-8bcb-028d36469a89 | South Surrey - Morgan Crossing East | south-surrey-morgan-crossing-east | `gravity_routing` | needs Gravity routing lookup |
+| 81237777-bcad-11ef-8bcb-028d36469a89 | Surrey - Cloverdale | surrey-cloverdale | `gravity_routing` | needs Gravity routing lookup |
+| c77db124-f089-4d39-932a-343c1508fd75 | Surrey - Panorama North | surrey-panorama-north | `gravity_routing` | needs Gravity routing lookup |
+| 81237465-bcad-11ef-8bcb-028d36469a89 | Surrey - Sullivan Ridge | surrey-sullivan-ridge | `gravity_routing` | needs Gravity routing lookup |
+
 ## Known Gaps
 
-- WordPress School Manager internal IDs are not yet mapped into this table.
+- WordPress School Manager internal IDs are not fully mapped into this table. Known missing rows: South Surrey - Morgan Crossing East and Surrey - Panorama North.
 - `canonical_location_id` is complete but mixed-format: 40 UUID-like rows and 13 slug-like rows in the checked warehouse table.
+- Gravity routing is not fully mapped into this table. Known missing rows: South Surrey - Morgan Crossing East, Surrey - Cloverdale, Surrey - Panorama North, and Surrey - Sullivan Ridge.
 - GreenRope, GBP, Gravity location ID, and PiinPoint values were not available as populated rows in the checked BigQuery surfaces.
 - School-level ad naming tokens are not complete. Do not infer them from labels without naming-convention confirmation.
 - CRM/KinderTales program journey codes are not mapped yet.
@@ -134,9 +155,11 @@ These rows have a current `canonical_location_id`, but it is slug-like rather th
 
 These schools are present in the warehouse table but have no `school_code` value in the checked CEFA Ops School Identity Map:
 
-- Calgary - South
-- North Vancouver - Capilano Mall
-- Surrey - Sunnyside
+| school_uuid | location_name | school_slug | missing_field | recommended_status |
+|---|---|---|---|---|
+| 812368e9-bcad-11ef-8bcb-028d36469a89 | Calgary - South | calgary-south | `school_code` | needs BI/school code confirmation |
+| 81236e59-bcad-11ef-8bcb-028d36469a89 | North Vancouver - Capilano Mall | north-vancouver-capilano-mall | `school_code` | needs BI/school code confirmation |
+| 59258c9a-c5eb-42b7-9059-aea9a326f479 | Surrey - Sunnyside | surrey-sunnyside | `school_code` | needs BI/school code confirmation |
 
 ## Maintenance Rule
 
