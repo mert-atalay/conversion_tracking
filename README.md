@@ -47,7 +47,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 - Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
 - School/program taxonomy status: `docs/canonical-school-program-taxonomy-2026-05-03.md`.
-- Known school/program reference table: `docs/known-school-program-reference-table-2026-05-03.md`.
+- Final known school/program tracking reference: `docs/known-school-program-reference-table-2026-05-03.md`.
 
 ## Required Runtime
 
@@ -279,7 +279,7 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 - [Reviewed franchise transition plan](docs/franchise-transition-reviewed-plan-2026-04-28.md)
 - [GPT Pro franchise transition final pack](docs/franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
 - [Canonical school and program taxonomy status](docs/canonical-school-program-taxonomy-2026-05-03.md)
-- [Known school and program reference table](docs/known-school-program-reference-table-2026-05-03.md)
+- [Final known school and program tracking reference](docs/known-school-program-reference-table-2026-05-03.md)
 
 ## Development
 

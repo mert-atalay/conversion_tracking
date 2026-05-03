@@ -1,4 +1,4 @@
-# Known School And Program Reference Table
+# Final Known School And Program Tracking Reference
 
 Last updated: 2026-05-03
 
@@ -6,7 +6,9 @@ Last updated: 2026-05-03
 
 This file is the concrete known-values reference for CEFA parent conversion tracking joins. It documents what is currently verified and leaves unresolved cross-system IDs as `pending` instead of guessing.
 
-Use `school_uuid` as the primary school identity key for parent inquiry tracking. Use `program_id` as the primary program identity key once emitted with Form 4/GA4 events.
+Use `school_uuid` as the final parent-tracking school join key. Use `program_id` as the final parent-tracking program join key once emitted with Form 4/GA4 events.
+
+Do not treat the current warehouse `canonical_location_id` column as the final normalized school key yet. It is present for every checked school row, but it is mixed-format: some rows are UUID-like and some rows are slug-like. That makes it useful as current warehouse metadata, not the safest cross-system tracking key.
 
 ## Source Coverage
 
@@ -14,6 +16,7 @@ Use `school_uuid` as the primary school identity key for parent inquiry tracking
 |---|---|---|---|
 | Stable school ID | known | `school_uuid` | Used by Form 4 `32.1`, helper payload `school_selected_id`, CEFA Ops school map, and `mart_marketing.dim_school`. |
 | WordPress School Manager ID | pending | WordPress backend / School Manager export | Not present in the verified warehouse table used for this file. |
+| Canonical location ID | known but not normalized | `mart_marketing.dim_school.canonical_location_id` | Present for all 53 rows; 40 UUID-like values and 13 slug-like values. Use `school_uuid` as tracking join key until normalized. |
 | GreenRope group/location ID | pending | CRM or upstream warehouse source | `greenrope_primary_location_id` exists in an assertion schema, but no populated values were available in the checked table. |
 | KinderTales ID | known as `school_uuid` unless disproven | CEFA Ops School Identity Map | Ops note defines `school_uuid` as current KinderTales school unique ID. Keep a separate column later only if downstream proves another ID. |
 | Gravity Forms school label | partially known | Form 4 `32.6` / GA4 `school_selected_name` | Available in events/entries, but not yet normalized as a complete source table. |
@@ -26,6 +29,8 @@ Use `school_uuid` as the primary school identity key for parent inquiry tracking
 Source: `marketing-api-488017.mart_marketing.dim_school` joined by `school_uuid` to the CEFA Ops School Identity Map for `region` and `school_code`.
 
 Important caveat: `canonical_location_id` is present for all 53 checked rows, but the current warehouse values are mixed-format. BigQuery verification on 2026-05-03 showed 40 UUID-like values and 13 slug-like values. Treat slug-like values as current known warehouse values, not as blanks, but do not assume the column has been normalized to one ID format yet.
+
+Final tracking rule: use `school_uuid` for parent tracking joins and deduped school reporting until `canonical_location_id` is normalized into one agreed format.
 
 | school_uuid | kindertales_school_id | canonical_location_id | location_code | location_name | region | school_code | school_slug | landing_page_path |
 |---|---|---|---|---|---|---|---|---|
@@ -95,6 +100,26 @@ Source: recent live GA4 BigQuery `generate_lead` rows where `tracking_source=hel
 | 478 | Junior Kindergarten 2 | jk2 | JK2; Junior Kindergarten 2 | 7 |
 | 482 | Junior Kindergarten 3 | jk3 | JK3; Junior Kindergarten 3 | 5 |
 | 486 | CEFA Weekend Care Program | weekend_care | Weekend Care; CEFA Weekend Care; CEFA Weekend Care Program | 1 |
+
+## Canonical Location ID Normalization Worklist
+
+These rows have a current `canonical_location_id`, but it is slug-like rather than UUID-like. They are not missing IDs. They are rows that should be normalized or explicitly approved as slug-key rows before `canonical_location_id` becomes the main cross-system join key.
+
+| school_uuid | location_name | current_canonical_location_id | location_code | school_slug | recommended_status |
+|---|---|---|---|---|---|
+| 81236ff4-bcad-11ef-8bcb-028d36469a89 | Burnaby - Brentwood | burnaby-brentwood | burnaby-brentwood | burnaby-brentwood | needs normalization decision |
+| 81237055-bcad-11ef-8bcb-028d36469a89 | Burnaby - Canada Way | burnaby-canada-way | burnaby-canada-way | burnaby-canada-way | needs normalization decision |
+| 8123764f-bcad-11ef-8bcb-028d36469a89 | Calgary - Beacon Hill | calgary-beacon-hill | calgary-beacon-hill | calgary-beacon-hill | needs normalization decision |
+| 812368e9-bcad-11ef-8bcb-028d36469a89 | Calgary - South | calgary-south | calgary-south | calgary-south | needs normalization decision |
+| 81237582-bcad-11ef-8bcb-028d36469a89 | Delta - Captains Cove | delta-captain-s-cove | delta-captain-s-cove | delta-captains-cove | needs normalization decision |
+| 8123677c-bcad-11ef-8bcb-028d36469a89 | New Westminster Downtown | new-westminster-downtown | new-westminster-downtown | new-westminster-downtown | needs normalization decision |
+| 81237350-bcad-11ef-8bcb-028d36469a89 | Richmond - Crestwood | richmond---crestwood | richmond-crestwood | richmond-crestwood | needs normalization decision |
+| 8123687f-bcad-11ef-8bcb-028d36469a89 | South Surrey - Morgan Crossing | morgan-crossing | morgan-crossing | south-surrey-morgan-crossing | needs normalization decision |
+| 81237777-bcad-11ef-8bcb-028d36469a89 | Surrey - Cloverdale | surrey-cloverdale | surrey-cloverdale | surrey-cloverdale | needs normalization decision |
+| c77db124-f089-4d39-932a-343c1508fd75 | Surrey - Panorama North | surrey---panorama-north | surrey-panorama-north | surrey-panorama-north | needs normalization decision |
+| 81237465-bcad-11ef-8bcb-028d36469a89 | Surrey - Sullivan Ridge | sullivan-ridge | sullivan-ridge | surrey-sullivan-ridge | needs normalization decision |
+| 812372f3-bcad-11ef-8bcb-028d36469a89 | Vancouver - Commercial Drive | vancouver-commercial-drive | vancouver-commercial-drive | vancouver-commercial-drive | needs normalization decision |
+| 812374c6-bcad-11ef-8bcb-028d36469a89 | Victoria - Douglas | victoria---douglas | victoria-douglas | victoria-douglas | needs normalization decision |
 
 ## Known Gaps
 
