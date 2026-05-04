@@ -61,8 +61,8 @@ This is a planning document. No live GA4, GTM, or Google Ads configuration chang
 
 Parent decision to make:
 
-- The 2026-05-04 GTM/Ads audit found that the live helper-event Ads tag is not yet firing `Inquiry Submit_ollo`; it currently uses the `Contact Form Submit_ollo` label.
-- Keep `Inquiry Submit_ollo` as the intended parent primary Google Ads action, but correct the GTM conversion label before Ads bidding signoff.
+- The 2026-05-04 GTM/Ads audit found that the live helper-event Ads tag was firing the `Contact Form Submit_ollo` label.
+- GTM version `7` corrected that tag to the existing `Inquiry Submit_ollo` label. Keep `Inquiry Submit_ollo` as the intended parent primary Google Ads action.
 - GA4-imported `generate_lead` currently exists as secondary/not included; it can remain secondary for reporting unless CEFA intentionally wants GA4 import as the bidding source.
 
 ### Franchise Canada `franchise.cefa.ca`
@@ -142,8 +142,7 @@ Safe without approval:
 
 Start with a parent Google/GTM signoff:
 
-1. Approve and publish a parent GTM correction: change the direct Google Ads conversion label on the `school_inquiry_submit` tag from `Contact Form Submit_ollo` label `5_KbCJO3j_gCEIzSyv4C` to `Inquiry Submit_ollo` label `cFt-CMrLufgCEIzSyv4C`.
-2. Deploy repo plugin `0.4.3` to live `cefa.ca`.
-3. Run controlled post-change QA and verify the Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
-4. Re-check GA4, BigQuery, and Google Ads after processing delay.
-5. Keep Meta and business-truth reconciliation as the remaining parent signoff gaps.
+1. Deploy repo plugin `0.4.3` to live `cefa.ca`.
+2. Run controlled post-change QA and verify the Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
+3. Re-check GA4, BigQuery, and Google Ads after processing delay.
+4. Keep Meta and business-truth reconciliation as the remaining parent signoff gaps.
