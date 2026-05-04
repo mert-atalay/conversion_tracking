@@ -79,6 +79,7 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | BigQuery warehouse current state | `docs/20-bigquery/warehouse-current-state-2026-05-03.md` | Current warehouse refresh, view coverage, row counts, GA4 export range, paid-data freshness, and cost/tier usage. |
 | Dashboard source layer and GreenRope aggregate | `docs/20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md` | Dashboard service account, keyless auth path, GreenRope daily aggregate, CRM dashboard views, and measurement rule registry. |
 | GreenRope metric definitions and API map | `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md` | Exact GreenRope metric definitions, loaded API endpoints, dashboard labels, and interpretation limits. |
+| GreenRope current-state aggregate corrections | `docs/20-bigquery/greenrope-current-state-aggregate-corrections-2026-05-04.md` | 2026-05-04 correction that confirms GreenRope dashboard metrics are current-state opportunity aggregates, adds zero-fill/reason-code behavior, and documents missing raw/audit tables. |
 | Supabase data foundation setup | `docs/20-bigquery/supabase-data-foundation-setup-2026-05-03.md` | New Supabase MCP setup, project boundary, schema plan, and first build sequence. |
 | SEO restart handoff | `docs/30-seo/seo-restart-handoff-2026-05-03.md` | SEO measurement context, GSC/DataForSEO handoff, and SEO-only pending checks. |
 | Final known school/program table | `docs/known-school-program-reference-table-2026-05-03.md` | 53 school rows, 6 program rows, canonical key guidance, known gaps. |
@@ -121,7 +122,7 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | Franchise fallback bridge | `snippets/franchise-wpcode-bridge.php` | Live WPCode fallback bridge for franchise forms when full plugin deployment is blocked. |
 | GreenRope local school map | `/Users/matthewbison/Desktop/agentic-brain/src/config/greenrope-group-map.ts` | Locally recoverable GreenRope group mapping for all 53 current schools, pending live CRM production validation. |
 | BigQuery GreenRope bridge | `marketing-api-488017.mart_marketing.bridge_greenrope_group_school` | Loaded school-to-GreenRope group bridge. Duplicate group `50` is not dashboard-safe for automatic school totals. |
-| BigQuery GreenRope daily aggregate | `marketing-api-488017.mart_marketing.fct_greenrope_school_funnel_daily` | Counts-only GreenRope daily group aggregate from `GetOpportunitiesRequest`; no full lead/contact payloads. |
+| BigQuery GreenRope daily aggregate | `marketing-api-488017.mart_marketing.fct_greenrope_school_funnel_daily` | Counts-only GreenRope current-state opportunity aggregate from `GetOpportunitiesRequest`; no full lead/contact payloads. Physical field names are legacy compatibility names. |
 | Gravity inquiry routing | `/Users/matthewbison/Desktop/agentic-brain/data/inquiry-location-forms.json` | Local Gravity routing/location code reference, currently 49/53 mapped. |
 | GBP location export | `/Users/matthewbison/Desktop/agentic-brain/data/gbp-locations.json` | Local GBP reference, currently 47/53 mapped. |
 | Local school ops snapshot | `/Users/matthewbison/Desktop/agentic-brain/data/schools.json` | Local school/program/enrollment context, reference only until reconciled to `school_uuid`. |
@@ -135,8 +136,8 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | BigQuery GA4 export | `marketing-api-488017.analytics_267558140.events_*` | Parent GA4 event evidence and observed program IDs. |
 | BigQuery marketing context fact | `marketing-api-488017.mart_marketing.fact_school_marketing_context_daily` | Current daily school marketing context fact; latest checked coverage has 53 schools per day. |
 | BigQuery dashboard view | `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_daily` | Current dashboard-serving marketing view, populated through 2026-05-02 in the latest governed warehouse note. |
-| BigQuery dashboard CRM view | `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily` | Dashboard daily source with GreenRope aggregate fields joined only where the CRM group mapping is dashboard-safe. |
-| BigQuery GreenRope school view | `marketing-api-488017.mart_marketing.vw_greenrope_school_funnel_school_daily` | School-level GreenRope aggregate view over the bridge and counts table. |
+| BigQuery dashboard CRM view | `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily` | Dashboard daily source with GreenRope current-state aggregate fields, explicit zero-fill behavior, and `greenrope_join_reason`. Duplicate group mappings keep CRM metrics null. |
+| BigQuery GreenRope school view | `marketing-api-488017.mart_marketing.vw_greenrope_school_funnel_school_daily` | School-level GreenRope current-state aggregate view over the bridge and counts table. Unsafe school mappings keep school-level metric fields null. |
 | BigQuery Looker contract view | `marketing-api-488017.mart_marketing.vw_school_marketing_looker_contract_daily` | Current Looker/reporting contract view, populated through 2026-05-02 in the latest governed warehouse note. |
 | BigQuery measurement rule registry | `marketing-api-488017.cefa_core.measurement_rule_registry` and `mart_marketing.vw_measurement_rule_registry_current` | Dashboard-readable conversion-tracking and naming-convention rule references. Seeded with 5 current rows. |
 
@@ -157,7 +158,7 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | BigQuery GA4 export | Google/BigQuery | Event-level GA4 export for helper events and historical legacy events. | Verified | Used for program evidence and helper-plugin generate_lead checks. |
 | GA4 Data API runtime access | Google Analytics API | Non-BigQuery GA4 reporting/API path. | Pending | Service-account/runtime API access is not yet the reliable business-truth path; warehouse uses native GA4 export where available. |
 | GreenRope CRM | CRM | Opportunities, phases, activities, contacts, journeys, workflow and engagement context. | Verified for CRM objects, partial for live availability | Strong for current funnel and workflow diagnostics. Not a clean live school/program availability matrix today. |
-| GreenRope BigQuery aggregate | BigQuery / GreenRope API | Daily CRM opportunity counts by GreenRope group. | Verified aggregate; partial business interpretation | Loaded 6,390 group-date rows from 52 groups and 24,916 counted opportunities for 2025-06-12 through 2026-05-03. Stores counts only. `greenrope_ad_attributed_inquiries` means UTM/click-id evidence, not solid paid-media truth. |
+| GreenRope BigQuery aggregate | BigQuery / GreenRope API | Daily current-state CRM opportunity counts by GreenRope group, bucketed by opportunity created date. | Verified extraction count; partial business interpretation | Loaded 6,390 group-date rows from 52 groups and 24,916 counted opportunities for 2025-06-12 through 2026-05-03. Stores counts only. `greenrope_ad_attributed_current_inquiry_phase_opportunities` means UTM/click-id evidence on opportunities currently in inquiry-like phases, not solid paid-media truth. |
 | KinderTales | Business delivery / school identity | Current school unique ID appears to be `school_uuid`. | Partial | Treat `kindertales_school_id = school_uuid` unless downstream proves a separate ID. |
 
 ### Marketing, Paid Media, And Visibility Sources
@@ -168,7 +169,7 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | `canonical_location_id` | BigQuery marketing mart | Current location metadata. | Partial | Present for all 53 schools, but mixed-format: 40 UUID-like and 13 slug-like. Do not use as main tracking join until normalized. |
 | `mart_marketing.fact_school_marketing_context_daily` | BigQuery marketing mart | Daily school marketing context by school. | Verified | Latest governed check shows 12,084 rows and 53 schools. |
 | `vw_school_marketing_dashboard_daily` | BigQuery marketing mart | Dashboard-serving daily marketing view. | Verified | Populated from 2025-09-17 through 2026-05-02 in the latest governed check. |
-| `vw_school_marketing_dashboard_with_crm_daily` | BigQuery marketing mart | Dashboard-serving daily marketing view with GreenRope aggregate fields. | Verified | Queryable by the dashboard service account. GreenRope fields are joined only for dashboard-safe mappings. |
+| `vw_school_marketing_dashboard_with_crm_daily` | BigQuery marketing mart | Dashboard-serving daily marketing view with GreenRope current-state aggregate fields. | Verified updated | Queryable by the dashboard service account. Safe no-opportunity rows are zero-filled with `greenrope_join_reason`; duplicate GreenRope group mappings remain null. |
 | `vw_school_marketing_looker_contract_daily` | BigQuery marketing mart | Looker/reporting contract view. | Verified | Latest governed check shows 80,678 rows and 53 schools. |
 | `cefa-dashboard-bq-reader` service account | Google Cloud / BigQuery | Dashboard read identity. | Verified | Has project `roles/bigquery.jobUser` and dataset read access on `mart_marketing` and `cefa_core`. No service-account key was created. |
 | `cefa_core.measurement_rule_registry` | BigQuery core | Current dashboard-facing conversion-tracking and naming-convention rule references. | Verified seeded surface | Current mart view exposes 5 active/current rows. This is a rule-reference registry, not permission to change CEFA NC1 naming. |
@@ -186,14 +187,14 @@ Do not promote assumptions into this master document as verified truth. Use `Ver
 | Warehouse refresh | Cloud Scheduler is enabled daily at `0 6 * * *` America/Vancouver; latest documented manual Cloud Run job completed on 2026-05-03. | Verified | Next documented scheduler run was 2026-05-04 13:00 UTC. Recheck live scheduler before making current-day claims after that date. |
 | Dashboard auth | Dashboard reader identity `cefa-dashboard-bq-reader@marketing-api-488017.iam.gserviceaccount.com` exists and can query the dashboard CRM view. | Verified | Preferred production pattern is keyless Cloud Run service identity or Workload Identity Federation, not browser-side credentials. |
 | Dashboard and Looker coverage | Core dashboard, dashboard-with-CRM, and Looker contract views are populated through 2026-05-02 with all 53 schools in latest seven-day context coverage. | Verified | May 1/2 paid values are partial/zero for some sources. |
-| GreenRope daily aggregate | `mart_marketing.fct_greenrope_school_funnel_daily` contains 6,390 daily group rows from 2025-06-12 through 2026-05-03. | Verified aggregate; partial business interpretation | First load was manual. It stores counts only and exposes ad-attributed inquiry evidence, not platform-confirmed paid inquiries. |
+| GreenRope daily aggregate | `mart_marketing.fct_greenrope_school_funnel_daily` contains 6,390 daily group rows from 2025-06-12 through 2026-05-03. | Verified extraction count; partial business interpretation | First load was manual. It stores counts only and exposes current-state opportunity counts, not final CRM leads/tours/enrollments. Its ad-attributed current inquiry-phase metric is not platform-confirmed paid inquiry truth. |
 | Measurement rule registry | `cefa_core.measurement_rule_registry` has 5 seeded conversion-tracking/naming-convention rule references exposed through `vw_measurement_rule_registry_current`. | Verified seeded surface | Future rule uploads still need a repeatable controlled workflow. |
 | Native GA4 export | `analytics_267558140.events_*` is available from 2026-03-11 through 2026-05-02 in the governed check. | Verified | Use as event evidence, not as final business lead truth by itself. |
 | Parent inquiry business-truth marts | `fct_parent_inquiries_daily` and `fct_parent_inquiries_by_location_daily` exist, but max at 2026-03-29. | Partial/stale | Must be refreshed before MTD/YTD stakeholder reporting depends on them. |
 | Franchise lead-source mart | `fct_franchise_lead_sources_daily` exists but maxes at 2026-03-29 in checked evidence. | Partial/stale | Needs refresh and reconciliation before final franchise lead-source reporting. |
 | Google Ads warehouse detail | Transfer config enabled and recent runs succeeded; checked campaign/conversion detail rows stop at 2026-04-30. | Partial | Current Google paid reporting after 2026-04-30 needs refresh/proof before claims. |
 | Meta warehouse detail | Native Meta rows are present through 2026-05-02, while Supermetrics action/ad-set detail stops at 2026-04-30. | Partial | May 1/2 dashboard paid metrics are zero and need source-level explanation. |
-| BigQuery free-tier usage | Latest governed check after dashboard/GreenRope/rule-registry work: May query usage 12.9346 GiB, about 1.263% of 1 TiB; storage 0.9679 GiB, about 9.68% of 10 GiB. | Verified snapshot | Snapshot only; recheck before billing/capacity decisions. |
+| BigQuery free-tier usage | Latest governed query check after 2026-05-04 GreenRope view verification: May query usage 13.8818 GiB, about 1.356% of 1 TiB. Latest storage snapshot after 2026-05-03 physical writes: 0.9679 GiB, about 9.68% of 10 GiB. | Verified snapshot | Snapshot only; recheck before billing/capacity decisions. |
 
 ### SEO Measurement Sources
 
@@ -554,10 +555,10 @@ Reporting interpretation:
 | Canonical CRM lead | GreenRope opportunity created in range, across lead-volume phases, deduped by school + month + child/program best-key. | GreenRope opportunities via Agentic Brain reconciliation | Verified current dashboard contract | Metric name: `crm_total_leads_child_dedup`. |
 | Executive comparable leads | Canonical CRM reconciliation total when available; Gravity fallback only if CRM unavailable. | V2 executive / analytics API | Verified current product contract | Exposed as `total_leads_comparable`. |
 | Paid lead, Gravity signal | Gravity/Form attribution has paid click ID or paid UTM/source-medium signal. | Gravity Forms fields / reconciliation | Partial | Exposed as `paid_inquiries_gravity` or `gravity_paid_inquiries_params`. Good comparator, but source labels must remain visible. |
-| GreenRope ad-attributed inquiry signal | Inquiry-phase CRM opportunity has at least one recognized UTM/click-id field populated. | GreenRope `GetOpportunitiesRequest` aggregate in BigQuery | Partial | Dashboard field: `greenrope_ad_attributed_inquiries`. This is ad-attribution evidence only, not solid paid-media inquiry truth. |
+| GreenRope ad-attributed current inquiry-phase signal | Current inquiry-phase CRM opportunity has at least one recognized UTM/click-id field populated. | GreenRope `GetOpportunitiesRequest` aggregate in BigQuery | Partial | Preferred dashboard field: `greenrope_ad_attributed_current_inquiry_phase_opportunities`. This is ad-attribution evidence only, not solid paid-media inquiry truth. |
 | Paid lead, platform signal | Paid platform conversions from Meta + Google campaign data. | Ads/Supermetrics/BigQuery/ads routes | Partial | Exposed as `ads_paid_inquiries_total`, `paid_inquiries_meta`, `paid_inquiries_google`. Platform semantics differ from Gravity/CRM. |
-| Tour | Phase-scoped opportunity count in CRM for tour phases. | GreenRope opportunities | Verified current product contract | Not deduped using the lead best-key. BI tour totals may differ. |
-| Enrollment | Phase-scoped opportunity count where phase includes enrollment and closed won/won. | GreenRope opportunities | Verified current product contract | BI/reporting enrollments are reference/comparison, not automatically equivalent. |
+| Tour | Phase-scoped opportunity count in CRM for tour phases. | GreenRope opportunities | Partial | BigQuery dashboard field is current phase-state evidence bucketed by opportunity created date, not completed-tour or scheduled-tour history. BI tour totals may differ. |
+| Enrollment | Phase-scoped opportunity count where phase includes enrollment and closed won/won. | GreenRope opportunities | Partial | BigQuery dashboard field is current phase-state evidence bucketed by opportunity created date, not the final operational enrollment ledger. |
 | Application | A submitted application or application-stage opportunity, if CEFA formalizes this stage. | Not locked | Missing/needed | Current available docs do not define a governed application metric. |
 | Lost lead | Opportunity/contact moved into a lost/disqualified/lost-review state or counted by lost-lead workflow activity. | GreenRope phases/activities | Partial | Operational `Lost Lead Review` activity exists as workflow signal; KPI definition still needs business signoff. |
 | Lead-to-tour rate | `tours / leads`. | Derived | Partial | Must state source of numerator and denominator. |
@@ -572,15 +573,16 @@ Current governed endpoint map: `docs/20-bigquery/greenrope-metric-definitions-an
 
 | Dashboard metric | Endpoint | Source fields | Status | Interpretation |
 |---|---|---|---|---|
-| `greenrope_inquiries_total` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Count of opportunity rows in inquiry-like phases. It is CRM opportunity-state evidence, not final conversion truth. |
-| `greenrope_ad_attributed_inquiries` | `GetOpportunitiesRequest` by `group_id` | Opportunity custom fields normalized to `utmsource`, `utmmedium`, `utmcampaign`, `gclid`, `gbraid`, `wbraid`, `fbclid`, or `msclkid` | Partial | Count of inquiry rows with UTM/click-id evidence. Do not label as GreenRope paid inquiries. |
-| `greenrope_no_detected_ad_attribution_inquiries` | `GetOpportunitiesRequest` by `group_id` | Same custom-field set as above | Partial | Count of inquiry rows without detected UTM/click-id evidence. This does not prove organic source. |
-| `greenrope_tour_phase_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for tour-like phases, not an attended-tour ledger. |
-| `greenrope_enrollment_phase_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for won/enrollment-like phases, not the final operational enrollment ledger. |
-| `raw_opportunity_count` | `GetOpportunitiesRequest` by `group_id` | Opportunity rows returned with usable date | Verified extraction count | Row count used for the daily aggregate. Not deduped lead truth. |
+| `greenrope_opportunities_created` | `GetOpportunitiesRequest` by `group_id` | Opportunity rows returned with usable created date | Verified extraction count | Count used for the daily current-state aggregate. Not deduped lead truth. Legacy physical field: `raw_opportunity_count`. |
+| `greenrope_current_inquiry_phase_opportunities` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Count of opportunity rows currently in inquiry-like phases, bucketed by opportunity created date. It is not total CRM leads. Legacy alias: `greenrope_inquiries_total`. |
+| `greenrope_ad_attributed_current_inquiry_phase_opportunities` | `GetOpportunitiesRequest` by `group_id` | Opportunity custom fields normalized to `utmsource`, `utmmedium`, `utmcampaign`, `gclid`, `gbraid`, `wbraid`, `fbclid`, or `msclkid` | Partial | Count of current inquiry-phase rows with UTM/click-id evidence. Do not label as GreenRope paid inquiries. Legacy alias: `greenrope_ad_attributed_inquiries`. |
+| `greenrope_no_detected_ad_attribution_current_inquiry_phase_opportunities` | `GetOpportunitiesRequest` by `group_id` | Same custom-field set as above | Partial | Count of current inquiry-phase rows without detected UTM/click-id evidence. This does not prove organic source. Legacy alias: `greenrope_no_detected_ad_attribution_inquiries`. |
+| `greenrope_current_tour_phase_opportunities` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for tour-like phases, not attended-tour or scheduled-tour history. Legacy alias: `greenrope_tour_phase_count`. |
+| `greenrope_current_enrollment_phase_opportunities` | `GetOpportunitiesRequest` by `group_id` | Opportunity `phase` / `stage` / `status` | Partial | Current phase evidence for won/enrollment-like phases, not the final operational enrollment ledger. Legacy alias: `greenrope_enrollment_phase_count`. |
+| `greenrope_join_reason` / `greenrope_metrics_zero_filled` | BigQuery view logic | Bridge mapping and aggregate row availability | Verified | Explains whether metrics are available, zero-filled for a safe no-opportunity day, withheld for duplicate mapping, or missing for another reason. |
 | `greenrope_group_id` / `greenrope_group_name` | `GetGroupsRequest`; `GetOpportunitiesRequest` request parameter | GreenRope group ID/name | Verified/partial | Mapping and QA fields. Not canonical CEFA school identity by themselves. |
 
-Loaded support endpoints are currently limited to `GetGroupsRequest` and `GetOpportunitiesRequest`. `GetOpportunityFieldsRequest`, `GetPhasesRequest`, and `GetPhasePathsRequest` remain pending inputs for a more auditable field and phase dictionary.
+Loaded support endpoints are currently limited to `GetGroupsRequest` and `GetOpportunitiesRequest`. `GetOpportunityFieldsRequest`, `GetPhasesRequest`, and `GetPhasePathsRequest` remain pending inputs for a more auditable field and phase dictionary. Raw/restricted GreenRope opportunities and normalized opportunity tables are also pending before the definitions can be called fully governed.
 
 ### Date Window Definitions
 
@@ -600,7 +602,7 @@ Recommendation: lock all stakeholder MTD/YTD reporting to a named timezone, pref
 |---|---|---|
 | Spend | Ad spend from platform/reporting source for selected range. | Partial/available |
 | Platform paid inquiries total | Meta paid inquiries + Google paid inquiries where platform data is available. | Partial/available |
-| CPL / CPI | `spend / platform paid inquiries`; do not use GreenRope ad-attributed inquiry counts as the denominator unless the dashboard explicitly labels that comparator. | Derived; source-sensitive |
+| CPL / CPI | `spend / platform paid inquiries`; do not use GreenRope ad-attributed current inquiry-phase opportunity counts as the denominator unless the dashboard explicitly labels that comparator. | Derived; source-sensitive |
 | CPC | `spend / clicks`. | Derived from ads platform data |
 | CTR | `clicks / impressions`. | Derived from ads platform data |
 | Session conversion rate | GA4 conversions or lead events divided by sessions. | Partial; must state event basis |
@@ -807,7 +809,7 @@ These labels still need a governed mapping to School Manager availability fields
 | Metric / area | Needed decision |
 |---|---|
 | Total lead | Decide when stakeholder reporting should use Gravity total submissions vs CRM deduped leads. |
-| Paid/ad-attributed lead | Keep Gravity paid params, GreenRope ad-attributed inquiry evidence, and platform conversions as separately labeled metrics until a reconciled paid-lead definition is approved. |
+| Paid/ad-attributed lead | Keep Gravity paid params, GreenRope ad-attributed current inquiry-phase evidence, and platform conversions as separately labeled metrics until a reconciled paid-lead definition is approved. |
 | Tour | Lock BI/reporting tour definition vs CRM phase-scoped tour count. |
 | Enrollment | Lock BI/reporting enrollment definition vs CRM won/enrollment phase count. |
 | Waitlist | Decide if it is program, status, or both. |
@@ -830,6 +832,8 @@ These labels still need a governed mapping to School Manager availability fields
 | Meta May paid zeros | Resolve why native Meta rows exist through 2026-05-02 while May 1/2 dashboard paid metrics are zero. |
 | GA4 Data API runtime access | Decide whether service-account/runtime GA4 Data API access is needed, or continue to use native GA4 BigQuery export as the reporting path. |
 | GreenRope refresh automation | Add a scheduled refresh before dashboards depend on the GreenRope aggregate daily. |
+| Raw/restricted GreenRope opportunities | Add a PII-controlled audit surface before treating extractor-only phase/date/custom-field logic as fully governed. |
+| Normalized GreenRope opportunities | Add a stable PII-aware opportunity layer for current-state and future historical CRM metrics. |
 | GreenRope field dictionary | Load or snapshot `GetOpportunityFieldsRequest` before treating custom-field matching as fully governed. |
 | GreenRope phase taxonomy | Load or snapshot `GetPhasesRequest` and `GetPhasePathsRequest` before treating phase matching as fully governed. |
 | Rule registry upload workflow | Create a controlled upload process for future conversion-tracking and naming-convention rule changes. |

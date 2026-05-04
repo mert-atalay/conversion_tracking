@@ -1,6 +1,6 @@
 # BigQuery Warehouse Current State
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## Purpose
 
@@ -13,7 +13,7 @@ This file records the current verified BigQuery, warehouse, dashboard, QA, and c
 | Workstream | BigQuery and reporting data |
 | Project | `marketing-api-488017` |
 | Primary datasets | `analytics_267558140`, `raw_ga4`, `raw_google_ads`, `raw_meta_ads`, `raw_supermetrics`, `mart_marketing`, `mart_marketing_parents`, `mart_marketing_franchise`, `cefa_ops` |
-| Verification date | 2026-05-03 |
+| Verification date | 2026-05-03 warehouse refresh check; 2026-05-04 GreenRope view correction check |
 | Live writes made by this BigQuery readiness update | Yes: dashboard reader identity, GreenRope aggregate tables/views, and measurement rule registry |
 | Warehouse refresh observed | Verified Cloud Run job execution completed on 2026-05-03 |
 
@@ -26,8 +26,8 @@ This file records the current verified BigQuery, warehouse, dashboard, QA, and c
 | Dashboard daily view | Verified | `mart_marketing.vw_school_marketing_dashboard_daily` is populated from 2025-09-17 through 2026-05-02. |
 | Looker contract view | Verified | `mart_marketing.vw_school_marketing_looker_contract_daily` is populated from 2025-09-17 through 2026-05-02. |
 | Dashboard service auth | Verified | `cefa-dashboard-bq-reader@marketing-api-488017.iam.gserviceaccount.com` exists, has `roles/bigquery.jobUser`, and has read access to `mart_marketing` and `cefa_core`. No service-account key was created. |
-| Dashboard CRM view | Verified | `mart_marketing.vw_school_marketing_dashboard_with_crm_daily` is queryable by the dashboard service account. |
-| GreenRope daily aggregate | Verified | `mart_marketing.fct_greenrope_school_funnel_daily` has 6,390 daily group rows from 2025-06-12 through 2026-05-03. It stores counts only, not full lead/contact payloads. Its ad-attributed inquiry count is not solid paid-media truth. |
+| Dashboard CRM view | Verified updated | `mart_marketing.vw_school_marketing_dashboard_with_crm_daily` is queryable by the dashboard service account and now exposes GreenRope current-state aliases, `greenrope_join_reason`, and explicit zero-fill behavior. |
+| GreenRope daily aggregate | Verified extraction count; partial business interpretation | `mart_marketing.fct_greenrope_school_funnel_daily` has 6,390 daily group rows from 2025-06-12 through 2026-05-03. It stores counts only, not full lead/contact payloads. It is a current-state opportunity aggregate bucketed by opportunity created date, not final lead/tour/enrollment or paid-media truth. |
 | Measurement rule registry | Verified | `cefa_core.measurement_rule_registry` has 5 seeded conversion-tracking/naming-convention rule references and is exposed through `mart_marketing.vw_measurement_rule_registry_current`. |
 | Native GA4 export | Verified | `analytics_267558140.events_*` is available from 2026-03-11 through 2026-05-02 in the checked event-date table window. |
 | GA4 Data API runtime access | Pending | Runtime service account access to the GA4 Data API is still missing; the warehouse refresh currently relies on the native GA4 BigQuery export path where available. |
@@ -35,7 +35,7 @@ This file records the current verified BigQuery, warehouse, dashboard, QA, and c
 | Meta Ads source data | Partial | Native Meta rows are present through 2026-05-02, but the May 1 and May 2 dashboard rows contain zero paid metrics. Supermetrics Meta action/detail rows stop at 2026-04-30. |
 | Parent inquiry business-truth marts | Partial | Parent inquiry marts are present but stale at 2026-03-29. |
 | Franchise lead-source mart | Partial | Franchise lead-source mart is present but stale at 2026-03-29. |
-| BigQuery free query tier | Verified | May 2026 query usage observed at 12.9346 GiB after the dashboard/GreenRope/rule-registry work, which is about 1.263 percent of the 1 TiB monthly free query tier. |
+| BigQuery free query tier | Verified | May 2026 query usage observed at 13.8818 GiB after the 2026-05-04 GreenRope verification, which is about 1.356 percent of the 1 TiB monthly free query tier. |
 | BigQuery free storage tier | Verified | Logical storage observed at 0.9679 GiB, which is about 9.68 percent of the 10 GiB free storage tier. |
 
 ## Source Freshness
@@ -116,7 +116,7 @@ Duplicate checks were run for these keys: context school/date, dashboard school/
 |---|---|---|
 | `mart_marketing.fact_*` dashboard fact tables | Verified | Tables are partitioned by `date`. Cluster keys are aligned to the main query grain, such as `school_id`, `school_id, conversion_type`, `school_id, ad_group`, `school_id, keyword_text`, `school_id, ad_set_name`, `school_id, creative_key`, `school_id, landing_page`, `school_id, session_source_medium`, and `school_id, event_name`. |
 | `raw_supermetrics.*` refresh tables | Verified | Tables are partitioned by `report_date` and clustered by account, campaign, or detail keys. |
-| `fct_greenrope_school_funnel_daily` | Verified | Table is partitioned by `snapshot_date` and clustered by `greenrope_group_id`. It stores aggregate counts only. |
+| `fct_greenrope_school_funnel_daily` | Verified extraction count; legacy physical naming | Table is partitioned by `snapshot_date` and clustered by `greenrope_group_id`. The physical `snapshot_date` field is the opportunity created-date bucket, not a true snapshot/as-of date. It stores aggregate counts only. |
 | `measurement_rule_registry` | Verified | Table is clustered by `rule_family`, `rule_scope`, and `lifecycle_status`; dashboard reads use the current-rule mart view. |
 | `mart_marketing.dim_school` | Verified | Small dimension table is unpartitioned, which is appropriate for its size and use. |
 | `vw_school_marketing_dashboard_daily`, `vw_school_marketing_dashboard_with_crm_daily`, `vw_school_marketing_looker_contract_daily`, and `vw_measurement_rule_registry_current` | Verified | Views, not physical tables. |
@@ -125,9 +125,9 @@ Duplicate checks were run for these keys: context school/date, dashboard school/
 
 | Usage area | Status | Current value |
 |---|---:|---:|
-| May 2026 query usage | Verified | 12.9346 GiB |
-| Share of 1 TiB monthly free query tier | Verified | About 1.263 percent |
-| May 2026 query job count | Verified | 408 jobs |
+| May 2026 query usage | Verified | 13.8818 GiB |
+| Share of 1 TiB monthly free query tier | Verified | About 1.356 percent |
+| May 2026 query job count | Verified | 469 jobs |
 | 2026-05-03 query usage | Verified | 12.4932 GiB |
 | 2026-05-03 query job count | Verified | 331 jobs |
 | Logical storage | Verified | 0.9679 GiB |
@@ -148,8 +148,11 @@ The current verified state is not close to the free query or free storage limits
 | GA4 key-event inquiry metrics in school marketing marts | Partial | Conversion tracking and BigQuery | GA4 school marketing marts are populated for traffic/event analysis, but inquiry metrics are not yet reliable as business truth. |
 | GreenRope refresh automation | Pending | BigQuery and CRM/source systems | First GreenRope daily aggregate load was manual. Add a scheduled refresh before dashboards depend on it daily. |
 | Duplicate GreenRope group `50` | Partial | BigQuery and master data | Group `50` maps to both South Surrey Morgan Crossing rows. Dashboard-safe CRM fields are withheld for duplicate group mappings to avoid silent double-counting. |
+| Raw or restricted GreenRope opportunities table | Pending | BigQuery and CRM/source systems | Needed to audit exact source phase strings, date fields, and custom-field matching from warehouse-visible evidence. |
+| Normalized GreenRope opportunity table | Pending | BigQuery and CRM/source systems | Needed for a stable PII-aware opportunity-level source before calling GreenRope definitions fully governed. |
+| GreenRope field dictionary and phase/path snapshots | Pending | BigQuery and CRM/source systems | `GetOpportunityFieldsRequest`, `GetPhasesRequest`, and `GetPhasePathsRequest` are not loaded yet. |
 | Rule registry upload workflow | Pending | BigQuery, conversion tracking, naming convention | Tables/views and seed rows exist. A repeatable upload process is still needed for future rule changes. |
-| GreenRope ad-attributed inquiry definition | Partial | BigQuery and paid media | Dashboard views expose `greenrope_ad_attributed_inquiries`; this means GreenRope inquiry rows with UTM/click-id markers, not platform-confirmed paid inquiries. |
+| GreenRope ad-attributed inquiry definition | Partial | BigQuery and paid media | Dashboard views expose `greenrope_ad_attributed_current_inquiry_phase_opportunities`; this means current GreenRope inquiry-phase opportunity rows with UTM/click-id markers, not platform-confirmed paid inquiries. Legacy alias `greenrope_ad_attributed_inquiries` remains for compatibility. |
 
 ## Next Actions
 
@@ -160,11 +163,13 @@ The current verified state is not close to the free query or free storage limits
 | 3 | Pending | Decide whether GA4 Data API service-account access should be repaired or removed from the refresh dependency list. |
 | 4 | Pending | Add a repeatable low-cost QA script or saved query set for the duplicate, integrity, freshness, and free-tier checks listed here. |
 | 5 | Pending | Document the Looker dashboard contract in a stable schema file if downstream dashboards depend on exact field names. |
-| 6 | Pending | Automate the GreenRope daily aggregate refresh and rule-registry upload workflow if dashboards will depend on those surfaces. |
+| 6 | Pending | Load or snapshot GreenRope field dictionary, phase taxonomy, and phase paths. |
+| 7 | Pending | Automate the GreenRope daily aggregate refresh and rule-registry upload workflow if dashboards will depend on those surfaces. |
 
 ## Source Evidence
 
-- Verified through BigQuery, Cloud Run, Cloud Scheduler, and Data Transfer checks run against `marketing-api-488017` on 2026-05-03.
+- Verified through BigQuery, Cloud Run, Cloud Scheduler, and Data Transfer checks run against `marketing-api-488017` on 2026-05-03, plus GreenRope view correction checks on 2026-05-04.
 - Dashboard source layer details are documented in `docs/20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md`.
 - GreenRope metric definitions and API endpoint mappings are documented in `docs/20-bigquery/greenrope-metric-definitions-and-api-map-2026-05-03.md`.
+- GreenRope view correction details are documented in `docs/20-bigquery/greenrope-current-state-aggregate-corrections-2026-05-04.md`.
 - Sensitive Data Transfer configuration values were not copied into this document.

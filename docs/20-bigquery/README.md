@@ -17,6 +17,7 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - Raw sources: `raw_ga4`, `raw_google_ads`, `raw_meta_ads`, `raw_supermetrics`
 - GreenRope bridge: `marketing-api-488017.mart_marketing.bridge_greenrope_group_school`
 - GreenRope aggregate: `marketing-api-488017.mart_marketing.fct_greenrope_school_funnel_daily`
+- GreenRope school view: `marketing-api-488017.mart_marketing.vw_greenrope_school_funnel_school_daily`
 - Dashboard service view with CRM aggregate: `marketing-api-488017.mart_marketing.vw_school_marketing_dashboard_with_crm_daily`
 - Current measurement rule view: `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`
 - Supabase data foundation target: project ref `twtfbvegbpwfzoaseezo`, pending refreshed MCP tool visibility before schema writes
@@ -26,6 +27,7 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - [Warehouse current state, QA, freshness, and free-tier usage, 2026-05-03](./warehouse-current-state-2026-05-03.md)
 - [Dashboard source layer, GreenRope, and rule registry, 2026-05-03](./dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md)
 - [GreenRope metric definitions and API map, 2026-05-03](./greenrope-metric-definitions-and-api-map-2026-05-03.md)
+- [GreenRope current-state aggregate corrections, 2026-05-04](./greenrope-current-state-aggregate-corrections-2026-05-04.md)
 - [Supabase data foundation setup, 2026-05-03](./supabase-data-foundation-setup-2026-05-03.md)
 
 ## Rules
@@ -34,7 +36,10 @@ This folder is for CEFA warehouse, reporting, and data-contract work connected t
 - Put reusable source data in raw/staging/core/mart layers according to the existing warehouse plan.
 - Keep `school_uuid` as the parent school join key unless a verified source changes the model.
 - Mark sparse or incomplete marts as `Partial`, not `Verified`.
-- Label GreenRope UTM/click-ID evidence as `ad-attributed inquiries`, not solid paid-media truth.
+- Treat GreenRope dashboard metrics as a current-state opportunity aggregate bucketed by opportunity created date, not final lead/tour/enrollment truth.
+- Prefer current-state view fields such as `greenrope_current_inquiry_phase_opportunities` and `greenrope_ad_attributed_current_inquiry_phase_opportunities`; legacy fields remain only for compatibility.
+- Label GreenRope UTM/click-ID evidence as `ad-attributed current inquiry-phase opportunities`, not solid paid-media truth.
+- Use `greenrope_join_reason` and `greenrope_metrics_zero_filled` before interpreting dashboard nulls or zeros.
 
 ## Suggested Next Files
 
