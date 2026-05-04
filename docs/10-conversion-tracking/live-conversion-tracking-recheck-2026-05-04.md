@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-04
 
+Update note: this read-only recheck was followed by controlled live Franchise Canada and Franchise USA submissions later on 2026-05-04. For the current main conversion event signoff, use [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md).
+
 ## Purpose
 
 Re-check the live conversion tracking state after confirming WP Engine SSH/WP-CLI access for all three sites.

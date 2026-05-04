@@ -1,8 +1,8 @@
 # Franchise Canada QA And Cutover Checklist
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
-Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. GAConnector field population is verified on a clean Form 1 runtime test; Form 2 uses the same selector map and final destination mapping is verified, but a final post-Version-52 Form 2 attribution re-submit can still be run if stricter evidence is needed.
+Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. Controlled live Form 1 and Form 2 submissions on 2026-05-04 both reached their thank-you pages, pushed the expected helper events, created Gravity Forms entries, saved matching `cefa_conversion_tracking_event_id` values, and appeared in GA4 realtime as `generate_lead`. Form 2 attribution still needs cleanup review because GAConnector kept the earlier same-session `gclid` in field `29` while the landing URL reflected the later Form 2 click ID.
 
 Admin/reporting recheck on 2026-05-01:
 
@@ -21,6 +21,13 @@ Admin/reporting refresh on 2026-05-03:
 - Google Ads reporting-query evidence through Supermetrics still shows `fr_application_submit` as primary and `generate_lead (GA4)`, `fr_site_form_submit`, and `fr_inquiry_submit` as secondary in account `3820636025`.
 - Direct Meta Events Manager custom-conversion setup was still not available through the current tool access; it remains a UI/API confirmation item.
 
+Live main-conversion refresh on 2026-05-04:
+
+- Form 1 controlled submission emitted `franchise_inquiry_submit` with event ID `bbf3bbef-2154-48d9-b036-8f54e4bee3e3`; Gravity Forms entry `44` saved the same event ID and a `cefa_synuma_lead_id`.
+- Form 2 controlled submission emitted `real_estate_site_submit` with event ID `740e7413-9cbc-4410-a19f-53a5e0e34e80`; Gravity Forms entry `45` saved the same event ID and a `cefa_synuma_lead_id`.
+- GA4 realtime for property `259747921` showed `2` `generate_lead` events after the Form 1 and Form 2 tests.
+- Form 2 saved GAConnector fields `14`, `15`, `16`, `29`, and `30`, but field `29` used the earlier Form 1 `gclid`; attribution signoff remains open even though the main conversion event passed.
+
 ## Before GTM Build
 
 - [x] Confirm GTM account/container for Canada franchise.
@@ -35,7 +42,7 @@ Admin/reporting refresh on 2026-05-03:
 - [x] Confirm GAConnector scripts/cookies load on staging runtime.
 - [x] Confirm `gclid` can populate hidden field `29` in runtime tests.
 - [x] Confirm real Form 1 entry/runtime saves clean fields `14` through `30`.
-- [ ] Confirm real Form 2 entry saves clean fields `14` through `30` after Version 52.
+- [ ] Confirm real Form 2 entry saves clean/current fields `14` through `30` after Version 52. It saved the fields on 2026-05-04, but field `29` used the earlier same-session `gclid`.
 - [x] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
 - [x] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
 - [x] Confirm Meta dataset decision for Canada transition.
@@ -83,7 +90,7 @@ Admin/reporting refresh on 2026-05-03:
 - [x] Submit Form 1 in production test mode and verify one primary event.
 - [x] Submit Form 2 in production test mode and verify one primary event.
 - [ ] Confirm CRM/Synuma/SiteZeus delivery still works.
-- [ ] Confirm GA4 realtime/debug view receives events in platform UI after processing delay.
+- [x] Confirm GA4 realtime receives events after controlled live Form 1/Form 2 submissions.
 - [x] Confirm processed GA4 Data API event reporting includes `generate_lead` on `franchise.cefa.ca`.
 - [x] Confirm GA4 custom dimensions are registered for low-cardinality helper payload reporting fields.
 - [x] Confirm Google Ads primary/secondary status through reporting API evidence.
