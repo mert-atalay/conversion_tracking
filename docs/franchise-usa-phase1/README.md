@@ -1,6 +1,6 @@
 # Franchise USA Phase 1 Tracking Plan
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 This folder is the working implementation package for Franchise USA tracking.
 
@@ -26,26 +26,29 @@ Scope:
   - Form `1`: `franchise_inquiry_submit`
   - Form `2`: `real_estate_site_submit`
 - The helper payload uses `site_context=franchise_us`, `market=usa`, and `country=US`.
-- GTM Version `15` is live as `CEFA Franchise USA Phase 1 helper-event GA4 mapping - 2026-05-01`.
-- GTM Version `15` maps both helper events to USA GA4 `generate_lead` through delayed dispatch events.
+- GTM Version `16` is live as `CEFA Franchise USA Meta dataset split - 2026-05-04`.
+- GTM Version `16` keeps the Version `15` helper-event and GA4 mapping, switches the USA Meta base pixel to dataset `1531247935333023`, and adds USA Meta `Lead` tags on the existing delayed dispatch events.
 - Legacy USA final conversion tags from the old Elementor/form-submit path were paused to avoid duplicate final conversions.
 - GA4 property `519783092` now has event-scoped custom dimensions registered for the low-cardinality helper payload fields.
 - Form `2` has browser-resource evidence of a GA4 `generate_lead` hit to `G-YL1KQPWV0M` with helper metadata and matching event ID.
 - GA4 Data API and realtime checks on 2026-05-03 did not yet show processed USA `generate_lead` rows, so report processing confirmation remains open.
 - GA4 property `519783092` is linked to Google Ads customers `3820636025` and `4159217891`; USA-related imported conversion actions exist in both accounts, but the observed USA actions still had zero all-conversion volume in the 2025-05-01 to 2026-05-03 reporting query.
+- The old shared Meta pixel `918227085392601` was removed from the USA WordPress Insert Headers and Footers options after GTM Version `16` was published.
 
 ## Current Boundary
 
 Active:
 - USA GA4 helper-event mapping to `G-YL1KQPWV0M`.
+- USA Meta base pixel dataset `1531247935333023` through `GTM-5LZMHBZL`.
+- USA Meta standard `Lead` tags for Form `1` and Form `2` dispatch events with non-PII helper parameters and `eventID` from the helper payload.
 - Non-PII helper payload fields only.
 - Hostname/context filters for `franchisecefa.com` and `www.franchisecefa.com`.
 - Browser/dataLayer source for both current live forms.
 - Browser-level GA4 hit evidence for Form `2`.
 
-Blocked:
+Blocked / still needs signoff:
 - USA Google Ads final helper-event tags until the correct account and conversion action are confirmed for optimization.
-- USA Meta final conversion tags until the correct USA dataset/pixel is verified.
+- Meta Events Manager confirmation for dataset `1531247935333023`, including custom conversion / optimization-event setup.
 - Final USA GA4 reporting signoff until processed reports show the post-Version-15 controlled submissions and the property currency setting is confirmed.
 
 Do not map USA final events to the Canada shared Meta dataset by default. USA should remain more separated unless a live campaign dependency is explicitly confirmed.

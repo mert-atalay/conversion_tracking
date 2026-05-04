@@ -1,6 +1,6 @@
 # Cross-Property Measurement Boundaries
 
-Last updated: 2026-04-30
+Last updated: 2026-05-04
 
 This document keeps parent, franchise Canada, and franchise USA tracking decisions separated while allowing shared implementation patterns.
 
@@ -69,6 +69,28 @@ Why not keep everything shared forever:
 - CAPI/server-side dedup becomes riskier when unrelated funnels share event names and IDs.
 - USA has different domain, market, sales motion, and likely compliance/reporting needs.
 
+## 2026-05-04 USA Meta Boundary Update
+
+Franchise USA is now separated at the browser/GTM runtime layer:
+
+- USA Meta dataset/pixel: `1531247935333023`
+- USA GTM container: `GTM-5LZMHBZL`
+- Published GTM version: `16` / `CEFA Franchise USA Meta dataset split - 2026-05-04`
+- Old shared dataset/pixel removed from active USA WordPress header/body options: `918227085392601`
+
+Verified after publish:
+
+- Public USA `gtm.js` contains `1531247935333023` and no active public-runtime occurrence of `918227085392601`.
+- Fresh USA form-page HTML contains `GTM-5LZMHBZL` and no `918227085392601`.
+- WordPress DB search for `918227085392601` returned zero matches.
+- Fresh headless Chrome network check saw the USA Meta config request for `1531247935333023` and zero old shared-dataset Meta requests.
+
+Still required:
+
+- Confirm dataset receipt and custom conversions inside Meta Events Manager.
+- Confirm which Meta campaign/ad set optimization events should move to the USA dataset.
+- Keep Canada on the shared dataset only as a controlled transition if active campaigns depend on it.
+
 ## What Needs GPT Pro Review
 
 The current CEFA plan already says separate Meta datasets or pixels are required for parent, franchise Canada, and franchise USA. A GPT Pro review is optional, not required, if the question is only whether separation belongs in the plan.
@@ -89,11 +111,12 @@ Ask GPT Pro only if we want a deeper transition strategy for:
 - [ ] Identify all franchise Canada forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Identify all franchise USA forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Confirm GA4 property IDs for franchise Canada and franchise USA.
-- [ ] Confirm Meta datasets/pixels currently used by parent, franchise Canada, and franchise USA.
+- [x] Confirm and implement separate USA Meta dataset/pixel `1531247935333023`.
+- [ ] Confirm Meta datasets/pixels currently used by parent and franchise Canada.
 - [ ] Confirm whether active Canada franchise campaigns are optimizing against the shared parent/franchise dataset.
 - [ ] Keep Canada franchise on the shared dataset only as a controlled transition if active campaigns depend on it.
 - [ ] Create franchise Canada custom conversions inside the shared dataset using franchise-specific parameters before campaign migration.
-- [ ] Separate USA dataset/pixel before serious USA production optimization.
+- [x] Separate USA dataset/pixel before serious USA production optimization.
 
 ## 2026-04-30 Live Migration Read-Only Status
 

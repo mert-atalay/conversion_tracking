@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Update note: this read-only recheck was followed by controlled live Franchise Canada and Franchise USA submissions later on 2026-05-04. It was then followed by a parent plugin deployment and franchise GAConnector cleanup patch. For the current main conversion event signoff, use [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md).
+Update note: this read-only recheck was followed by controlled live Franchise Canada and Franchise USA submissions later on 2026-05-04. It was then followed by a parent plugin deployment, franchise GAConnector cleanup patch, and Franchise USA GTM Version `16` Meta dataset split to `1531247935333023`. For the current main conversion event signoff, use [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md).
 
 ## Purpose
 
@@ -16,7 +16,7 @@ No live WordPress plugin update, GTM publish, Google Ads mutation, GA4 setting c
 |---|---|---|
 | Parent `cefa.ca` | Mostly good | GTM now points `school_inquiry_submit` to existing Google Ads `Inquiry Submit_ollo`; later on 2026-05-04 the live plugin was updated from `0.4.1` to `0.4.3`. |
 | Franchise Canada `franchise.cefa.ca` | Partially verified | Site loads the franchise bridge and GTM; GA4 has at least one helper-plugin `generate_lead`; no Gravity Forms Google Analytics feed was found. |
-| Franchise USA `franchisecefa.com` | Needs follow-up | Site loads the franchise bridge and GTM, but GA4 Data API returned no rows for the target franchise events; an active Gravity Forms Google Analytics feed exists for Form `1`. |
+| Franchise USA `franchisecefa.com` | Historical snapshot, superseded | This early recheck found the site loaded the franchise bridge and GTM, but GA4 Data API returned no rows for the target franchise events; an active Gravity Forms Google Analytics feed existed for Form `1`. Later live QA passed the helper path, and GTM Version `16` moved USA Meta to dataset `1531247935333023`. |
 
 ## Parent `cefa.ca`
 
@@ -177,6 +177,8 @@ Public `gtm.js` check for `GTM-5LZMHBZL` found:
 - `AW-802334988`
 - `AW-11088792613`
 - Meta pixel `918227085392601`
+
+Superseded note: the Meta pixel marker above was true for this early read-only recheck. Later on 2026-05-04, USA GTM Version `16` moved the active USA Meta runtime to dataset `1531247935333023`, and post-purge checks found zero active public-runtime or page-HTML occurrences of `918227085392601` on the USA form pages.
 
 ### GA4 Data API
 

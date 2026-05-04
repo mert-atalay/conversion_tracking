@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
+Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` then moved USA Meta to dataset `1531247935333023`. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
 
 Live main-conversion refresh on 2026-05-04:
 
@@ -13,6 +13,8 @@ Live main-conversion refresh on 2026-05-04:
 - Post-patch Form 1 retest saved Gravity Forms entry `37` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRUS-PATCH-INQ-20260504`, and `30=1930300797.1777927657`; the `franchise_inquiry_submit` payload carried the same clean attribution values.
 - Post-patch Form 2 retest saved Gravity Forms entry `36` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRUS-PATCH-SITE-20260504`, and `30=1618510533.1777927481`; the `real_estate_site_submit` payload carried the same clean attribution values.
 - WordPress still has Gravity Forms Google Analytics active with an active Form `1` feed. Keep this as a duplicate-source risk until disabled or proven audit-only.
+- GTM Version `16` published the USA Meta dataset split: base pixel `1531247935333023`, host-scoped pageview trigger, and standard Meta `Lead` tags for both dispatch events.
+- The old shared Meta pixel `918227085392601` was removed from the USA WordPress Insert Headers and Footers header/body options. A post-purge WordPress database search returned zero matches for that ID.
 
 ## Website Source
 
@@ -39,6 +41,19 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Pause legacy Meta final tags pending USA-specific dataset/pixel confirmation.
 - [x] Confirm live `gtm.js` contains the new dispatch and helper event names.
 
+## GTM Version 16 - USA Meta
+
+- [x] Publish USA GTM Version `16`.
+- [x] Move USA Meta base pixel to dataset `1531247935333023`.
+- [x] Hostname-scope the USA Meta base pixel to `franchisecefa.com` and `www.franchisecefa.com`.
+- [x] Add Meta standard `Lead` tag for Form `1` dispatch event `cefa_franchise_us_inquiry_dispatch`.
+- [x] Add Meta standard `Lead` tag for Form `2` dispatch event `cefa_franchise_us_site_dispatch`.
+- [x] Pass `eventID` from the helper payload into Meta `Lead` tags.
+- [x] Remove old shared Meta pixel `918227085392601` from USA WordPress Insert Headers and Footers options.
+- [x] Confirm fresh public HTML has zero `918227085392601` occurrences after WP Engine cache purge.
+- [x] Confirm fresh headless browser network check has a `1531247935333023` Meta config request and zero `918227085392601` Meta requests.
+- [ ] Confirm Meta Events Manager receipt/custom conversions for dataset `1531247935333023`.
+
 ## Post-Publish QA
 
 - [x] Submit controlled Form 1 test after Version `15` propagation and confirm the helper and dispatch events.
@@ -52,7 +67,8 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Confirm GA4 property `519783092` is linked to Google Ads accounts `3820636025` and `4159217891`.
 - [x] Confirm USA-related imported Google Ads conversion actions exist through reporting-query evidence.
 - [ ] Confirm which Google Ads account and conversion action should be the USA bidding/primary action before activating Ads final helper-event tags.
-- [ ] Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
+- [x] Confirm and activate USA Meta dataset/pixel `1531247935333023` in GTM Version `16`.
+- [ ] Confirm USA Meta Events Manager receipt and custom-conversion rules.
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
 - [ ] Disable or prove audit-only the active Gravity Forms Google Analytics Form `1` feed.
 - [x] Fix USA attribution mapping so helper payloads include populated UTM/click/GA client values when GAConnector cookies exist.

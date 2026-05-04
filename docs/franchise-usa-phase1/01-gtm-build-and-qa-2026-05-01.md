@@ -1,6 +1,6 @@
 # Franchise USA GTM Build And QA Notes
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## Published GTM Version
 
@@ -129,5 +129,60 @@ Base pageview, Google tag, conversion linker, remarketing, and non-final tags we
 - Form 1 GA4 browser-hit or processed-report confirmation.
 - Processed GA4 report confirmation for both forms after the GA4 delay.
 - USA Google Ads account and conversion-action decision before activating Ads final helper-event tags.
-- USA Meta dataset/pixel confirmation before activating Meta final tags.
 - Decision on whether USA GA4 property currency should remain `CAD`.
+
+## Published GTM Version 16 - USA Meta Dataset Split
+
+Published on 2026-05-04 after the USA dataset was created.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `16`
+- Version name: `CEFA Franchise USA Meta dataset split - 2026-05-04`
+- Rollback target: Version `15`
+
+What changed:
+
+- Updated tag `57` from the shared Meta dataset to the USA dataset:
+  - New tag name: `CEFA - Franchise USA - Meta Base Pixel (1531247935333023)`
+  - New pixel/dataset ID: `1531247935333023`
+  - Old shared dataset ID removed from active public GTM runtime: `918227085392601`
+- Added host-scoped pageview trigger `266`:
+  - Name: `CEFA - Franchise USA - pageview - production host`
+  - Hostname regex: `^(www\.)?franchisecefa\.com$`
+- Added final Meta standard `Lead` tags on the existing dispatch events:
+  - Tag `267`: `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`, trigger `260`
+  - Tag `268`: `CEFA - Franchise USA - Meta Lead - Site Submit`, trigger `261`
+- Meta `Lead` tags use non-PII helper parameters only and pass `eventID` from `DLV - cefa - event_id`.
+
+WordPress cleanup:
+
+- The old shared Meta pixel was also present outside GTM in the `insert-headers-and-footers` plugin options:
+  - `ihaf_insert_header`
+  - `ihaf_insert_body`
+- The old inline and noscript `918227085392601` blocks were removed on 2026-05-04.
+- GTM install code was left intact.
+- WP Engine cache purge was called after the option update.
+- Remote rollback backup path from the change: `/tmp/cefa-usa-old-meta-pixel-backup-20260504-211855`
+
+Verification:
+
+- Public `gtm.js?id=GTM-5LZMHBZL` check after publish:
+  - `1531247935333023`: present
+  - `918227085392601`: zero active public runtime occurrences
+  - `cefa_franchise_us_inquiry_dispatch`: present
+  - `cefa_franchise_us_site_dispatch`: present
+- Fresh Form 1 and Form 2 HTML checks after WP Engine purge:
+  - `GTM-5LZMHBZL`: present
+  - `918227085392601`: zero HTML occurrences
+- WordPress database search after cleanup:
+  - `wp db search 918227085392601 --all-tables`: zero matches
+- Fresh headless Chrome network check after purge:
+  - Meta config request for `1531247935333023`: present
+  - Meta config/request count for `918227085392601`: zero
+
+Remaining Meta signoff:
+
+- Confirm receipt in Meta Events Manager for dataset `1531247935333023`.
+- Create or confirm USA-specific custom conversions for the two standard `Lead` variants using helper parameters such as `site_context=franchise_us`, `form_family`, and `lead_type`.
