@@ -19,6 +19,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - [Franchise USA Phase 1 docs](../franchise-usa-phase1/README.md)
 - [Franchise transition final pack](../franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
 - [Business truth and tracking data gaps, 2026-05-03](./business-truth-and-tracking-data-gaps-2026-05-03.md)
+- [Parent current state and remaining work, 2026-05-04](./parent-current-state-and-remaining-work-2026-05-04.md)
 
 ## Current Rules
 
