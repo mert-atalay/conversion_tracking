@@ -7,11 +7,15 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Local summary: `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-meta-naming-convention-2026-04-28.md`
 - Google Sheet mirror: documented in that local summary.
 - Workbook remains the human source of truth unless CEFA approves a new naming version.
+- Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
+  - Status: `Partial`
+  - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
 
 ## Current Naming Version
 
 Current Meta naming version: `NC1`.
 Current local listing UTM version: `ll1`.
+Budget-driven Meta naming v19 is a candidate future version, not the approved current version.
 
 Key contracts:
 
@@ -23,6 +27,9 @@ Key contracts:
 
 ## Current Files
 
+- [Budget-driven Meta naming v19 review](./budget-driven-meta-naming-v19-review-2026-05-04.md)
+  - Status: `Partial`
+  - Covers the latest Drive package links, v19 naming rules, n8n phase-1 guardrails, and open approval risks.
 - [Local listing UTM rules - GBP and Yelp](./local-listing-utm-rules-gbp-yelp-2026-05-03.md)
   - Status: `Partial`
   - Covers GBP/Yelp website and inquiry-form UTM rules.
