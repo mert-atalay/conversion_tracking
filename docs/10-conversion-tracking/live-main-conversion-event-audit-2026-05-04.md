@@ -8,7 +8,7 @@ Scope:
 - Franchise Canada: `https://franchise.cefa.ca`
 - Franchise USA: `https://franchisecefa.com` and `https://www.franchisecefa.com`
 
-Initial audit note: no backend settings, GTM publishing, GA4 settings, Google Ads settings, or Meta settings were changed during the first audit pass. Later on 2026-05-04, targeted live fixes were deployed: parent `cefa-conversion-tracking` was updated to `0.4.3`, the franchise WPCode bridge was patched to backfill/clean existing GAConnector hidden attribution fields before Gravity Forms saves the entry, and Franchise USA GTM Version `16` moved Meta to the new USA dataset `1531247935333023`.
+Initial audit note: no backend settings, GTM publishing, GA4 settings, Google Ads settings, or Meta settings were changed during the first audit pass. Later on 2026-05-04, targeted live fixes were deployed: parent `cefa-conversion-tracking` was updated to `0.4.3`, the franchise WPCode bridge was patched to backfill/clean existing GAConnector hidden attribution fields before Gravity Forms saves the entry, Franchise USA GTM Version `16` moved Meta to the new USA dataset `1531247935333023`, and Franchise USA GTM Version `17` paused old active micro/click tags.
 
 ## Executive Status
 
@@ -17,10 +17,10 @@ Initial audit note: no backend settings, GTM publishing, GA4 settings, Google Ad
 | Parent `cefa.ca` | `school_inquiry_submit` -> GA4 `generate_lead` | Working | GA4 processed report, public runtime, GTM JS, WP plugin/feed check | Plugin deployment gap resolved: live now runs `cefa-conversion-tracking` `0.4.3`. Mobile/post-change Ads request QA still pending. |
 | Franchise Canada Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | None blocking main conversion. Attribution/gclid behavior needs cleanup review. |
 | Franchise Canada Form 2 | `real_estate_site_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | GAConnector stale-`gclid` cleanup patched and verified with entry `46`. |
-| Franchise USA Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead`; Meta `Lead` via USA dataset `1531247935333023` | Working for GA4/helper path; Meta browser runtime configured | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry, GTM Version `16`, fresh headless Meta runtime check | Attribution cleanup patched and verified with entry `37`; active Gravity Forms Google Analytics feed remains for Form 1; Meta Events Manager confirmation pending. |
-| Franchise USA Form 2 | `real_estate_site_submit` -> GA4 `generate_lead`; Meta `Lead` via USA dataset `1531247935333023` | Working for GA4/helper path; Meta browser runtime configured | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry, GTM Version `16`, fresh headless Meta runtime check | Attribution cleanup patched and verified with entry `36`; Meta Events Manager confirmation pending. |
+| Franchise USA Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead`; Meta `Lead` via USA dataset `1531247935333023` | Working for GA4/helper path; Meta browser runtime configured | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry, GTM Version `17`, fresh public runtime check | Attribution cleanup patched and verified with entry `37`; active Gravity Forms Google Analytics feed remains for Form 1; Meta Events Manager confirmation pending. |
+| Franchise USA Form 2 | `real_estate_site_submit` -> GA4 `generate_lead`; Meta `Lead` via USA dataset `1531247935333023` | Working for GA4/helper path; Meta browser runtime configured | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry, GTM Version `17`, fresh public runtime check | Attribution cleanup patched and verified with entry `36`; Meta Events Manager confirmation pending. |
 
-Bottom line: the main browser-side conversion event path is working on all live sites/forms checked. The parent plugin safeguard deployment, franchise GAConnector cleanup, and USA Meta dataset split are now complete. Remaining work is USA duplicate-source cleanup, parent mobile/post-change request QA, Meta Events Manager confirmation, and delayed processed GA4/BQ reporting confirmation.
+Bottom line: the main browser-side conversion event path is working on all live sites/forms checked. The parent plugin safeguard deployment, franchise GAConnector cleanup, USA Meta dataset split, and USA GTM legacy micro/click cleanup are now complete. Remaining work is USA Gravity Forms add-on duplicate-source cleanup, parent mobile/post-change request QA, Meta Events Manager confirmation, and delayed processed GA4/BQ reporting confirmation.
 
 ## Live URL Runtime Audit
 
@@ -41,7 +41,7 @@ Public `gtm.js` marker checks:
 |---|---|---|
 | `GTM-NZ6N7WNC` | Parent | `AW-802334988`, `G-T65G018LYB`, Meta pixel `918227085392601`, `school_inquiry_submit`, `generate_lead`. |
 | `GTM-TPJGHFS` | Franchise Canada | `AW-802334988`, `AW-11088792613`, `G-6EMKPZD7RD`, Meta pixel `918227085392601`, `franchise_inquiry_submit`, `real_estate_site_submit`, `generate_lead`. |
-| `GTM-5LZMHBZL` | Franchise USA | `AW-11088792613`, `G-YL1KQPWV0M`, Meta pixel `1531247935333023`, `franchise_inquiry_submit`, `real_estate_site_submit`, `cefa_franchise_us_inquiry_dispatch`, `cefa_franchise_us_site_dispatch`, `generate_lead`. Public runtime check after Version `16` found zero active occurrences of `918227085392601`. |
+| `GTM-5LZMHBZL` | Franchise USA | `AW-11088792613`, `G-YL1KQPWV0M`, Meta pixel `1531247935333023`, `franchise_inquiry_submit`, `real_estate_site_submit`, `cefa_franchise_us_inquiry_dispatch`, `cefa_franchise_us_site_dispatch`, `generate_lead`. Public runtime check after Version `17` found zero active occurrences of `918227085392601` and zero old click markers/labels. |
 
 ## WordPress / Gravity Forms Source Audit
 
@@ -186,7 +186,7 @@ Duplicate-source caveat:
 
 Meta update after this submission:
 
-- USA GTM Version `16` now maps the existing Form 1 dispatch event to Meta standard `Lead` on dataset `1531247935333023`.
+- USA GTM Version `16` mapped the existing Form 1 dispatch event to Meta standard `Lead` on dataset `1531247935333023`; Version `17` retained that final helper path.
 - The old shared Meta pixel block was removed from USA WordPress Insert Headers and Footers.
 
 ### Franchise USA Form 2 - Real Estate Site Submit
@@ -220,7 +220,7 @@ Post-patch verification:
 
 Meta update after this submission:
 
-- USA GTM Version `16` now maps the existing Form 2 dispatch event to Meta standard `Lead` on dataset `1531247935333023`.
+- USA GTM Version `16` mapped the existing Form 2 dispatch event to Meta standard `Lead` on dataset `1531247935333023`; Version `17` retained that final helper path.
 - Fresh headless Chrome verification after WP Engine cache purge saw Meta config for `1531247935333023` and zero old shared-dataset Meta requests.
 
 ## BigQuery / Reporting Export State
@@ -251,7 +251,7 @@ Interpretation:
 | Surface | Parent | Franchise Canada | Franchise USA |
 |---|---|---|---|
 | Live URL/form renders | Pass | Pass | Pass |
-| Correct GTM container present | Pass | Pass | Pass, Version `16` |
+| Correct GTM container present | Pass | Pass | Pass, Version `17` |
 | Website-side primary event present | Pass | Pass | Pass |
 | GA4 primary event sent/received | Pass processed | Pass realtime | Pass realtime |
 | Gravity Forms entry saves event ID | Previously verified; not re-submitted in this audit | Pass | Pass |

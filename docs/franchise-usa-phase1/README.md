@@ -26,9 +26,10 @@ Scope:
   - Form `1`: `franchise_inquiry_submit`
   - Form `2`: `real_estate_site_submit`
 - The helper payload uses `site_context=franchise_us`, `market=usa`, and `country=US`.
-- GTM Version `16` is live as `CEFA Franchise USA Meta dataset split - 2026-05-04`.
-- GTM Version `16` keeps the Version `15` helper-event and GA4 mapping, switches the USA Meta base pixel to dataset `1531247935333023`, and adds USA Meta `Lead` tags on the existing delayed dispatch events.
+- GTM Version `17` is live as `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`.
+- GTM Version `17` keeps the Version `15` helper-event and GA4 mapping, keeps the Version `16` USA Meta dataset split to `1531247935333023`, and pauses remaining active legacy micro/click tags from the old setup.
 - Legacy USA final conversion tags from the old Elementor/form-submit path were paused to avoid duplicate final conversions.
+- Legacy active GA4, Google Ads, and Meta email/phone/application-click tags are now paused so the live USA container is closer to the agreed helper-event launch state.
 - GA4 property `519783092` now has event-scoped custom dimensions registered for the low-cardinality helper payload fields.
 - Form `2` has browser-resource evidence of a GA4 `generate_lead` hit to `G-YL1KQPWV0M` with helper metadata and matching event ID.
 - GA4 Data API and realtime checks on 2026-05-03 did not yet show processed USA `generate_lead` rows, so report processing confirmation remains open.
@@ -41,6 +42,7 @@ Active:
 - USA GA4 helper-event mapping to `G-YL1KQPWV0M`.
 - USA Meta base pixel dataset `1531247935333023` through `GTM-5LZMHBZL`.
 - USA Meta standard `Lead` tags for Form `1` and Form `2` dispatch events with non-PII helper parameters and `eventID` from the helper payload.
+- Required infrastructure tags: Conversion Linker, Google/GA4 base tags, Google Ads remarketing, and GAConnector.
 - Non-PII helper payload fields only.
 - Hostname/context filters for `franchisecefa.com` and `www.franchisecefa.com`.
 - Browser/dataLayer source for both current live forms.

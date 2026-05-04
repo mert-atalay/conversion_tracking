@@ -10,7 +10,7 @@ Last updated: 2026-05-04
 | Properties | `franchise.cefa.ca`, `franchisecefa.com`, `www.franchisecefa.com` |
 | Systems checked | Live form URLs, GTM runtime scripts, GA4 Data API, GA4 Admin links, Supermetrics Google Ads reporting, WP Engine/WP-CLI, controlled live form submissions, USA Meta pixel runtime |
 | Live writes made | Yes: franchise WPCode bridge attribution cleanup patch deployed to Canada and USA on 2026-05-04; USA old inline Meta pixel removed from Insert Headers and Footers. |
-| Platform settings changed | Yes: USA GTM Version `16` was published to move Meta to USA dataset `1531247935333023`. No GA4 or Google Ads settings changed. |
+| Platform settings changed | Yes: USA GTM Version `16` was published to move Meta to USA dataset `1531247935333023`; USA GTM Version `17` was published to pause old active micro/click tags. No GA4 or Google Ads account settings changed. |
 
 This status covers franchise tracking readiness only. Paid-media optimization decisions belong in `docs/50-paid-media/`, and naming/UTM rules belong in `docs/40-naming-convention/`.
 
@@ -24,12 +24,12 @@ This status covers franchise tracking readiness only. Paid-media optimization de
 | Franchise Canada Google Ads | Partial | Google Ads reporting for account `3820636025` is readable; current evidence still shows `fr_application_submit` primary while `generate_lead (GA4)`, `fr_site_form_submit`, and `fr_inquiry_submit` are secondary. | Media owner must decide which franchise Canada action is primary for bidding. Do not change primary status from repo evidence alone. |
 | Franchise Canada Meta | Partial | Browser/network evidence from prior controlled tests showed Canada events received on pixel/dataset `918227085392601`. | Direct Events Manager custom-conversion confirmation is still pending. |
 | Franchise USA website source | Verified | Both current form URLs return `200`, load `GTM-5LZMHBZL`, and render WPCode bridge markers. The WPCode bridge now backfills missing GAConnector fields from cookies before Gravity Forms saves Form 1/Form 2 entries. | Continue monitoring. Duplicate-source cleanup remains separate. |
-| Franchise USA GTM runtime | Verified | `GTM-5LZMHBZL` Version `16` contains `franchise_inquiry_submit`, `real_estate_site_submit`, `cefa_franchise_us_inquiry_dispatch`, `cefa_franchise_us_site_dispatch`, `G-YL1KQPWV0M`, and Meta dataset `1531247935333023`. | Confirm Meta Events Manager receipt/custom conversions. |
+| Franchise USA GTM runtime | Verified | `GTM-5LZMHBZL` Version `17` contains the helper/dispatch path, `G-YL1KQPWV0M`, `AW-11088792613`, and Meta dataset `1531247935333023`; old active GA4/GAds/Meta click tags were paused. | Confirm Meta Events Manager receipt/custom conversions; decide USA Google Ads final submit action before adding Ads final helper tags. |
 | Franchise USA GA4 base collection | Verified | GA4 property `519783092` reports `page_view`, `session_start`, `first_visit`, `user_engagement`, `scroll`, `form_start`, `form_submit`, and `click` for host `franchisecefa.com` over `2026-05-01` through `2026-05-04`. | None for base traffic collection. |
 | Franchise USA GA4 final lead collection | Partial | Controlled Form 1 and Form 2 tests on 2026-05-04 pushed helper events and dispatch events with clean attribution payloads; GA4 realtime had passed in the live main-conversion audit. | Re-run processed GA4 Data API reports after processing delay. |
 | Franchise USA GA4 property settings | Verified | GA4 property `519783092` exists, timezone is `America/Los_Angeles`, and default currency is currently `CAD`. It is linked to Google Ads customers `3820636025` and `4159217891`. | Open question: confirm whether USA property currency should remain `CAD` or be changed to `USD` before reporting signoff. |
 | Franchise USA Google Ads | Partial | Google Ads reporting confirms USA-related imported conversion actions exist in both linked accounts. The checked USA final actions still have `0` all conversions. | Decide which account and conversion action should be the USA bidding/primary action before activating final Google Ads helper-event tags. |
-| Franchise USA Meta | Partial | USA dataset `1531247935333023` is now live through GTM Version `16`; old shared pixel `918227085392601` was removed from active USA WordPress header/body options; post-purge headless network check saw `1531247935333023` and zero old-dataset Meta requests. | Confirm Events Manager receipt and create/confirm USA-specific custom conversions / optimization event. |
+| Franchise USA Meta | Partial | USA dataset `1531247935333023` is now live through GTM Version `17`; old shared pixel `918227085392601` was removed from active USA WordPress header/body options; post-purge/runtime checks saw `1531247935333023` and zero old-dataset runtime occurrences. | Confirm Events Manager receipt and create/confirm USA-specific custom conversions / optimization event. |
 | Gravity Forms Measurement Protocol | Pending | MP remains allowed only as an audit-only layer. | If tested, send `franchise_us_inquiry_submit_server_audit`; do not send a second `generate_lead`. Use lowercase `location_interest` and no PII/high-cardinality values. |
 
 ## 2026-05-04 GAConnector Cleanup Patch
@@ -73,6 +73,27 @@ Verification:
 | Fresh headless Chrome network check | Saw Meta config request for `1531247935333023`; saw zero Meta requests for `918227085392601`. |
 
 Remaining Meta item: Events Manager must still be checked directly for dataset receipt and USA custom conversion / optimization-event setup.
+
+## 2026-05-04 Franchise USA GTM Helper-Only Cleanup
+
+What changed:
+
+- USA GTM container `GTM-5LZMHBZL` was published as Version `17`: `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`.
+- Paused old active Google Ads click tags: `75`, `88`, `92`.
+- Paused old active Meta click tags: `161`, `164`, `167`.
+- Paused old active GA4 click tags: `203`, `206`, `211`.
+- Kept required infrastructure active: Conversion Linker, Google/GA4 base tags, Google Ads remarketing, and `GA Connector - CRM (USA)`.
+- Kept final helper path active: helper dispatch tags, GA4 `generate_lead` tags, USA Meta base pixel `1531247935333023`, and USA Meta standard `Lead` tags.
+
+Verification:
+
+| Check | Result |
+|---|---|
+| GTM create/publish | Version `17` created and published with no compiler error. |
+| Public `gtm.js?id=GTM-5LZMHBZL` | Contains `1531247935333023`, `G-YL1KQPWV0M`, `AW-11088792613`, `cefa_franchise_us_inquiry_dispatch`, and `cefa_franchise_us_site_dispatch`. |
+| Old shared Meta dataset | `918227085392601` has zero active public-runtime occurrences. |
+| Legacy click markers | `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click` have zero active public-runtime occurrences. |
+| Legacy Google Ads click labels | `sn5lCJPslY4YEKWYxqcp`, `TiGLCJbslY4YEKWYxqcp`, and `aYItCI3slY4YEKWYxqcp` have zero active public-runtime occurrences. |
 
 ## Fresh Evidence From 2026-05-03
 

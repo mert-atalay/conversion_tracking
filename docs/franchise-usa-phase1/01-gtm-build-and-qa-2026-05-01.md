@@ -186,3 +186,54 @@ Remaining Meta signoff:
 
 - Confirm receipt in Meta Events Manager for dataset `1531247935333023`.
 - Create or confirm USA-specific custom conversions for the two standard `Lead` variants using helper parameters such as `site_context=franchise_us`, `form_family`, and `lead_type`.
+
+## Published GTM Version 17 - Helper-Only Launch Cleanup
+
+Published on 2026-05-04 after Version `16`.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `17`
+- Version name: `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`
+- Rollback target: Version `16`
+
+What changed:
+
+- Paused remaining active legacy micro/click tags from the old setup:
+  - Tag `75`: `Franchisor_GAds_Fr Email Click_ollo`
+  - Tag `88`: `Franchisor_GAds_Fr Application Click_ollo`
+  - Tag `92`: `Franchisor_GAds_Fr Phone Click_ollo`
+  - Tag `161`: `Franchisor_FB_Fr Email Click_ollo`
+  - Tag `164`: `Franchisor_FB_Fr Phone Click_ollo`
+  - Tag `167`: `Franchisor_FB_Fr Application Click_ollo`
+  - Tag `203`: `Franchisor_GA4_Fr Email Click_ollo`
+  - Tag `206`: `Franchisor_GA4_Fr Application Click_ollo`
+  - Tag `211`: `Franchisor_GA4_Fr Phone Click_ollo`
+- Kept required infrastructure active:
+  - Tag `82`: `Conversion Linker_ollo`
+  - Tag `86`: `Franchisor GAds_Fr Remarketing Tag_ollo`
+  - Tag `145`: `Franchisor GA4_Pageview_All Pages_ollo`
+  - Tag `155`: `Google Tag AW-11088792613`
+  - Tag `228`: `GA Connector - CRM (USA)`
+- Kept final helper-event path active:
+  - Tag `57`: `CEFA - Franchise USA - Meta Base Pixel (1531247935333023)`
+  - Tag `262`: `CEFA - Franchise USA - dispatch inquiry helper event`
+  - Tag `263`: `CEFA - Franchise USA - dispatch site helper event`
+  - Tag `264`: `CEFA - GA4 - Franchise USA - generate_lead - inquiry`
+  - Tag `265`: `CEFA - GA4 - Franchise USA - generate_lead - site`
+  - Tag `267`: `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`
+  - Tag `268`: `CEFA - Franchise USA - Meta Lead - Site Submit`
+
+Verification:
+
+- Version `17` was created and published with no GTM compiler error.
+- Public `gtm.js?id=GTM-5LZMHBZL` check after publish:
+  - `1531247935333023`: present
+  - `918227085392601`: zero active public runtime occurrences
+  - `cefa_franchise_us_inquiry_dispatch`: present
+  - `cefa_franchise_us_site_dispatch`: present
+  - `G-YL1KQPWV0M`: present
+  - `AW-11088792613`: present
+  - Legacy click markers `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click`: zero occurrences
+  - Legacy Google Ads click labels `sn5lCJPslY4YEKWYxqcp`, `TiGLCJbslY4YEKWYxqcp`, and `aYItCI3slY4YEKWYxqcp`: zero occurrences

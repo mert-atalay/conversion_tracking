@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` then moved USA Meta to dataset `1531247935333023`. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
+Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` moved USA Meta to dataset `1531247935333023`; GTM Version `17` then paused remaining active legacy micro/click tags. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
 
 Live main-conversion refresh on 2026-05-04:
 
@@ -15,6 +15,7 @@ Live main-conversion refresh on 2026-05-04:
 - WordPress still has Gravity Forms Google Analytics active with an active Form `1` feed. Keep this as a duplicate-source risk until disabled or proven audit-only.
 - GTM Version `16` published the USA Meta dataset split: base pixel `1531247935333023`, host-scoped pageview trigger, and standard Meta `Lead` tags for both dispatch events.
 - The old shared Meta pixel `918227085392601` was removed from the USA WordPress Insert Headers and Footers header/body options. A post-purge WordPress database search returned zero matches for that ID.
+- GTM Version `17` paused old active GA4, Google Ads, and Meta email/phone/application-click tags while keeping base infrastructure, GAConnector, helper dispatch, GA4 `generate_lead`, and Meta `Lead` tags active.
 
 ## Website Source
 
@@ -53,6 +54,18 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Confirm fresh public HTML has zero `918227085392601` occurrences after WP Engine cache purge.
 - [x] Confirm fresh headless browser network check has a `1531247935333023` Meta config request and zero `918227085392601` Meta requests.
 - [ ] Confirm Meta Events Manager receipt/custom conversions for dataset `1531247935333023`.
+
+## GTM Version 17 - Helper-Only Cleanup
+
+- [x] Publish USA GTM Version `17`.
+- [x] Pause old Google Ads click conversion tags `75`, `88`, and `92`.
+- [x] Pause old Meta click tags `161`, `164`, and `167`.
+- [x] Pause old GA4 click tags `203`, `206`, and `211`.
+- [x] Keep Conversion Linker, Google/GA4 base tags, Google Ads remarketing, and GAConnector active.
+- [x] Keep helper dispatch, GA4 `generate_lead`, Meta base, and Meta `Lead` tags active.
+- [x] Confirm public `gtm.js` still contains `1531247935333023`, `G-YL1KQPWV0M`, `AW-11088792613`, and both USA dispatch events.
+- [x] Confirm public `gtm.js` has zero old shared dataset `918227085392601` occurrences.
+- [x] Confirm public `gtm.js` has zero legacy click markers: `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click`.
 
 ## Post-Publish QA
 

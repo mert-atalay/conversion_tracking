@@ -75,12 +75,14 @@ Franchise USA is now separated at the browser/GTM runtime layer:
 
 - USA Meta dataset/pixel: `1531247935333023`
 - USA GTM container: `GTM-5LZMHBZL`
-- Published GTM version: `16` / `CEFA Franchise USA Meta dataset split - 2026-05-04`
+- Published GTM version: `17` / `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`
+- Version `17` retains the Version `16` USA Meta dataset split and pauses old active USA micro/click tags.
 - Old shared dataset/pixel removed from active USA WordPress header/body options: `918227085392601`
 
 Verified after publish:
 
 - Public USA `gtm.js` contains `1531247935333023` and no active public-runtime occurrence of `918227085392601`.
+- Public USA `gtm.js` has zero old active click markers/labels from the paused legacy GA4, Google Ads, and Meta click tags.
 - Fresh USA form-page HTML contains `GTM-5LZMHBZL` and no `918227085392601`.
 - WordPress DB search for `918227085392601` returned zero matches.
 - Fresh headless Chrome network check saw the USA Meta config request for `1531247935333023` and zero old shared-dataset Meta requests.
