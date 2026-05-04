@@ -75,9 +75,10 @@ Franchise USA is now separated at the browser/GTM runtime layer:
 
 - USA Meta dataset/pixel: `1531247935333023`
 - USA GTM container: `GTM-5LZMHBZL`
-- Published GTM version: `17` / `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`
-- Version `17` retains the Version `16` USA Meta dataset split and pauses old active USA micro/click tags.
+- Published GTM version: `18` / `CEFA Franchise USA Meta Lead reliability fix - 2026-05-04`
+- Version `18` retains the Version `16` USA Meta dataset split, retains the Version `17` old active USA micro/click tag cleanup, and adds a Meta `fbq` init fallback for the two USA `Lead` tags.
 - Old shared dataset/pixel removed from active USA WordPress header/body options: `918227085392601`
+- USA inquiry custom conversion created: `1915200622465036` / `USA Franchise Lead`
 
 Verified after publish:
 
@@ -89,7 +90,8 @@ Verified after publish:
 
 Still required:
 
-- Confirm dataset receipt and custom conversions inside Meta Events Manager.
+- Confirm dataset receipt inside Meta Events Manager.
+- Decide whether a separate USA site-submit custom conversion is needed, or whether site submit remains reporting-only for now.
 - Confirm which Meta campaign/ad set optimization events should move to the USA dataset.
 - Keep Canada on the shared dataset only as a controlled transition if active campaigns depend on it.
 
@@ -107,9 +109,9 @@ Ask GPT Pro only if we want a deeper transition strategy for:
 ## Next Franchise Work
 
 - [x] Run first read-only public audit after the new sites moved to live domains.
-- [ ] Confirm whether USA should be documented and configured against apex `franchisecefa.com`, `www.franchisecefa.com`, or both.
+- [x] Configure USA GTM/Meta hostname handling for both apex `franchisecefa.com` and `www.franchisecefa.com`.
 - [ ] Audit live `franchise.cefa.ca` GTM container and destination IDs with authenticated GTM access before making changes.
-- [ ] Audit live `franchisecefa.com` GTM container and destination IDs with authenticated GTM access before making changes.
+- [x] Audit and update live `franchisecefa.com` GTM container and destination IDs with authenticated GTM access.
 - [ ] Identify all franchise Canada forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Identify all franchise USA forms, CTAs, thank-you flows, and CRM handoffs.
 - [ ] Confirm GA4 property IDs for franchise Canada and franchise USA.

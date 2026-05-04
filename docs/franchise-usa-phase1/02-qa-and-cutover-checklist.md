@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` moved USA Meta to dataset `1531247935333023`; GTM Version `17` then paused remaining active legacy micro/click tags. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
+Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` moved USA Meta to dataset `1531247935333023`; GTM Version `17` then paused remaining active legacy micro/click tags; GTM Version `18` added a Meta `fbq` init fallback. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
 
 Live main-conversion refresh on 2026-05-04:
 
@@ -16,6 +16,8 @@ Live main-conversion refresh on 2026-05-04:
 - GTM Version `16` published the USA Meta dataset split: base pixel `1531247935333023`, host-scoped pageview trigger, and standard Meta `Lead` tags for both dispatch events.
 - The old shared Meta pixel `918227085392601` was removed from the USA WordPress Insert Headers and Footers header/body options. A post-purge WordPress database search returned zero matches for that ID.
 - GTM Version `17` paused old active GA4, Google Ads, and Meta email/phone/application-click tags while keeping base infrastructure, GAConnector, helper dispatch, GA4 `generate_lead`, and Meta `Lead` tags active.
+- GTM Version `18` updated the two USA Meta `Lead` tags with an `fbq` init fallback.
+- Meta custom conversion `1915200622465036` / `USA Franchise Lead` now exists on dataset `1531247935333023` for standard `Lead` plus the `/inquiry-thank-you/` success path.
 
 ## Website Source
 
@@ -53,7 +55,8 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Remove old shared Meta pixel `918227085392601` from USA WordPress Insert Headers and Footers options.
 - [x] Confirm fresh public HTML has zero `918227085392601` occurrences after WP Engine cache purge.
 - [x] Confirm fresh headless browser network check has a `1531247935333023` Meta config request and zero `918227085392601` Meta requests.
-- [ ] Confirm Meta Events Manager receipt/custom conversions for dataset `1531247935333023`.
+- [x] Create USA inquiry custom conversion `1915200622465036` / `USA Franchise Lead` for dataset `1531247935333023`.
+- [ ] Confirm Meta Events Manager live `Lead` receipt for dataset `1531247935333023`.
 
 ## GTM Version 17 - Helper-Only Cleanup
 
@@ -66,6 +69,15 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Confirm public `gtm.js` still contains `1531247935333023`, `G-YL1KQPWV0M`, `AW-11088792613`, and both USA dispatch events.
 - [x] Confirm public `gtm.js` has zero old shared dataset `918227085392601` occurrences.
 - [x] Confirm public `gtm.js` has zero legacy click markers: `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click`.
+
+## GTM Version 18 - Meta Lead Reliability
+
+- [x] Publish USA GTM Version `18`.
+- [x] Add `fbq` init fallback to Meta `Lead` tag `267`.
+- [x] Add `fbq` init fallback to Meta `Lead` tag `268`.
+- [x] Keep the USA dataset/pixel as `1531247935333023`.
+- [x] Create Meta custom conversion `1915200622465036` / `USA Franchise Lead`.
+- [ ] Confirm the next successful USA Form `1` submission appears as a `Lead` in Meta Events Manager for dataset `1531247935333023`.
 
 ## Post-Publish QA
 
@@ -81,7 +93,8 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Confirm USA-related imported Google Ads conversion actions exist through reporting-query evidence.
 - [ ] Confirm which Google Ads account and conversion action should be the USA bidding/primary action before activating Ads final helper-event tags.
 - [x] Confirm and activate USA Meta dataset/pixel `1531247935333023` in GTM Version `16`.
-- [ ] Confirm USA Meta Events Manager receipt and custom-conversion rules.
+- [x] Create USA Meta inquiry custom conversion `1915200622465036` / `USA Franchise Lead`.
+- [ ] Confirm USA Meta Events Manager receipt for standard `Lead` on dataset `1531247935333023`.
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
 - [ ] Disable or prove audit-only the active Gravity Forms Google Analytics Form `1` feed.
 - [x] Fix USA attribution mapping so helper payloads include populated UTM/click/GA client values when GAConnector cookies exist.

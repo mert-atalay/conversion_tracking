@@ -6,7 +6,7 @@ Last updated: 2026-05-04
 
 This file records what can now be done with the current Google access level for parent `cefa.ca`, Franchise Canada `franchise.cefa.ca`, and Franchise USA `www.franchisecefa.com`.
 
-This started as a planning document. Later on 2026-05-04, Franchise USA GTM Version `16` was published to move Meta browser tracking to the USA dataset `1531247935333023`, and Version `17` was published to pause old active USA micro/click tags. No GA4 or Google Ads account settings were changed by this update.
+This started as a planning document. Later on 2026-05-04, Franchise USA GTM Version `16` was published to move Meta browser tracking to the USA dataset `1531247935333023`, Version `17` was published to pause old active USA micro/click tags, and Version `18` was published to add a Meta Lead reliability fallback. No GA4 or Google Ads account settings were changed by this update.
 
 ## Current Access Summary
 
@@ -14,10 +14,10 @@ This started as a planning document. Later on 2026-05-04, Franchise USA GTM Vers
 |---|---|---|---|
 | GA4 Admin API | Verified for all 3 CEFA properties | Read property settings, list custom dimensions, list/admin-check key events and links, prepare GA4 cleanup/change plans. | Write operations are possible by scope but should be performed only after approval. |
 | GA4 Data API | Verified for all 3 CEFA properties | Query processed GA4 event data for parent, Franchise Canada, and Franchise USA. | GA4 reporting delay still applies; use BigQuery export where available for event-level parent checks. |
-| GTM API | Verified account/container read for parent and franchise accounts; USA publish verified | Audit containers, workspaces, tags, triggers, variables, versions, and destination mapping. USA GTM Versions `16` and `17` publishes succeeded. | User-permission listing is blocked by missing `tagmanager.manage.users` scope. Future container write/publish should still be treated as approval-required. |
+| GTM API | Verified account/container read for parent and franchise accounts; USA publish verified | Audit containers, workspaces, tags, triggers, variables, versions, and destination mapping. USA GTM Versions `16`, `17`, and `18` publishes succeeded. | User-permission listing is blocked by missing `tagmanager.manage.users` scope. Future container write/publish should still be treated as approval-required. |
 | Google Ads API | Verified read plus validate-only conversion-action mutate for parent and franchise accounts | Read conversion actions, confirm primary/secondary status, prepare validate-only changes before live mutate. | Live Ads mutations still require explicit user approval and a before/after table. |
 | BigQuery | Verified query access | Query GA4 export, marts, rule registry, dashboard views, and reconciliation tables. | Parent/franchise business-truth marts are still stale after 2026-03-29 and need refresh/reconnect work. |
-| Meta | Partial for USA via GTM; no Meta API/UI access | USA browser runtime now sends to dataset `1531247935333023` through GTM. | Meta Events Manager/API access is still required for final custom conversion and optimization-event signoff. |
+| Meta | Partial for USA via GTM and Events Manager UI/API | USA browser runtime now sends to dataset `1531247935333023` through GTM, and USA custom conversion `1915200622465036` / `USA Franchise Lead` was created. | Meta Events Manager receipt for live `Lead` still needs confirmation before optimization-event signoff. |
 
 ## Verified Google Surfaces
 
@@ -36,7 +36,7 @@ This started as a planning document. Later on 2026-05-04, Franchise USA GTM Vers
 | Parent | `4591216764` | `GTM-NZ6N7WNC` | Container read verified | Audit helper-event trigger, GA4 tag, Google Ads conversion tag, Meta tag, micro-event tags, and duplicate suppression. |
 | Parent legacy | `4591216764` | `GTM-PPV9ZRZ` | Container read verified | Reference-only audit; do not restore as active final source. |
 | Franchise Canada | `6004334435` | `GTM-TPJGHFS` | Container read verified | Audit helper/dispatch events, GA4, Google Ads, Meta, and LinkedIn destination mapping. |
-| Franchise USA | `6004334435` | `GTM-5LZMHBZL` | Container read/write/publish verified | USA helper/dispatch events, GA4 mapping, Meta dataset split, and legacy micro/click cleanup are configured through Version `17`; Ads final helper-event tags remain pending account/action decision. |
+| Franchise USA | `6004334435` | `GTM-5LZMHBZL` | Container read/write/publish verified | USA helper/dispatch events, GA4 mapping, Meta dataset split, legacy micro/click cleanup, and Meta Lead fallback are configured through Version `18`; Ads final helper-event tags remain pending account/action decision. |
 
 ### Google Ads
 
@@ -85,16 +85,16 @@ Canada decision to make:
 
 | Step | Status | Action | Output |
 |---|---|---|---|
-| 1 | Complete | Audit `GTM-5LZMHBZL` Version 15 helper/dispatch and GA4 mapping for USA forms; publish Version `16` for USA Meta dataset split; publish Version `17` to pause old active micro/click tags. | USA GTM mapping table plus Version `17` cleanup evidence. |
+| 1 | Complete | Audit `GTM-5LZMHBZL` Version 15 helper/dispatch and GA4 mapping for USA forms; publish Version `16` for USA Meta dataset split; publish Version `17` to pause old active micro/click tags; publish Version `18` for Meta Lead reliability. | USA GTM mapping table plus Version `18` evidence. |
 | 2 | Ready | Confirm current USA Google Ads action `Application Submit (USA)` and hidden GA4-imported `generate_lead`. | USA Ads action signoff. |
 | 3 | Ready | Query GA4 Data API for processed USA helper events and confirm whether browser evidence has reached reporting. | USA GA4 receipt report. |
 | 4 | Ready | Review GA4 property currency `CAD` for `CEFA Franchise - USA.` and decide whether this is acceptable. | USA GA4 currency recommendation. |
 | 5 | Approval required | If approved, activate or adjust USA Google Ads final helper-event mapping. | Before/after Ads/GTM change log. |
-| 6 | Partially complete | USA moved to separate Meta dataset `1531247935333023` through GTM Version `16` and retained it through Version `17`; old shared WordPress pixel source was removed. | Meta Events Manager receipt/custom-conversion confirmation remains. |
+| 6 | Partially complete | USA moved to separate Meta dataset `1531247935333023` through GTM Version `16`, retained it through Version `18`, old shared WordPress pixel source was removed, and custom conversion `1915200622465036` / `USA Franchise Lead` was created. | Meta Events Manager receipt for live standard `Lead` remains. |
 
 USA decision to make:
 
-- USA has now been separated at the browser/GTM runtime layer with dataset `1531247935333023`; confirm Meta Events Manager and campaign optimization before treating it as fully signed off.
+- USA has now been separated at the browser/GTM runtime layer with dataset `1531247935333023`; `USA Franchise Lead` custom conversion exists, but live Meta Events Manager receipt and campaign optimization selection still need confirmation before treating it as fully signed off.
 - GA4 currency `CAD` should be reviewed because this property is USA-specific.
 
 ## Recommended Execution Order
@@ -133,7 +133,7 @@ Safe without approval:
 
 | Gap | Priority | Needed |
 |---|---:|---|
-| Meta Events Manager/API | High | Access to parent and franchise datasets/pixels/custom conversions. |
+| Meta Events Manager/API | High | USA custom conversion is created; still need parent/Canada dataset checks plus USA live Events Manager receipt and optimization-event confirmation. |
 | GTM user-permission admin visibility | Low | Add `tagmanager.manage.users` scope only if we need to inspect/manage user permissions. Not required for tag/container audits. |
 | Production automation auth | Medium | Use workload identity or approved secrets management; do not rely on local user ADC for production automation. |
 | Current business-truth source refresh | High | Refresh/reconnect parent inquiry and franchise lead-source marts after 2026-03-29. |

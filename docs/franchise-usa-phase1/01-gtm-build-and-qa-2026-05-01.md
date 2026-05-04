@@ -185,7 +185,8 @@ Verification:
 Remaining Meta signoff:
 
 - Confirm receipt in Meta Events Manager for dataset `1531247935333023`.
-- Create or confirm USA-specific custom conversions for the two standard `Lead` variants using helper parameters such as `site_context=franchise_us`, `form_family`, and `lead_type`.
+- USA-specific inquiry custom conversion was created on 2026-05-04 as `1915200622465036` / `USA Franchise Lead`.
+- Site-submit custom conversion is still optional/pending because the current request was for the franchise inquiry submission event.
 
 ## Published GTM Version 17 - Helper-Only Launch Cleanup
 
@@ -237,3 +238,37 @@ Verification:
   - `AW-11088792613`: present
   - Legacy click markers `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click`: zero occurrences
   - Legacy Google Ads click labels `sn5lCJPslY4YEKWYxqcp`, `TiGLCJbslY4YEKWYxqcp`, and `aYItCI3slY4YEKWYxqcp`: zero occurrences
+
+## Published GTM Version 18 - Meta Lead Reliability Fix
+
+Published on 2026-05-04 after Version `17`.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `18`
+- Version name: `CEFA Franchise USA Meta Lead reliability fix - 2026-05-04`
+- Rollback target: Version `17`
+
+What changed:
+
+- Updated tag `267` / `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`.
+- Updated tag `268` / `CEFA - Franchise USA - Meta Lead - Site Submit`.
+- Both tags still send Meta standard `Lead` to dataset `1531247935333023`.
+- Both tags include a local `fbq` init fallback so the `Lead` call can queue if the dispatch event fires before the base pixel is fully ready.
+
+Meta custom conversion created:
+
+- Name: `USA Franchise Lead`
+- ID: `1915200622465036`
+- Meta dataset/pixel: `1531247935333023`
+- Ad account context: `act_505300888223754`
+- Rule: standard Meta `Lead` plus URL path containing `inquiry-thank-you`
+- Purpose: USA franchise inquiry optimization/reporting candidate inside the USA-only dataset.
+
+Verification:
+
+- Meta Events Manager UI/API access was available through the authenticated browser session.
+- Existing custom conversions were checked first to avoid creating a duplicate named `USA Franchise Lead`.
+- The custom conversion was created successfully by API response with ID `1915200622465036`.
+- A post-Version-18 controlled browser test reached the USA helper dataLayer and GA4 path in earlier tests, but browser CDP did not expose a `facebook.com/tr?ev=Lead` beacon. Treat Meta Events Manager live receipt as still pending until the event appears in the Meta UI.

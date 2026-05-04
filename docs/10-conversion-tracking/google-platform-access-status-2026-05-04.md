@@ -6,17 +6,17 @@ Last updated: 2026-05-04
 
 Document the current local access state for GA4, Google Tag Manager, and Google Ads across the CEFA parent and franchise tracking surfaces.
 
-This file records access verification only. It does not approve live platform edits, bidding changes, conversion-action changes, or tag publication.
+This file records access verification only. It does not approve live bidding changes, Ads conversion-action changes, or GA4 cleanup changes. A later USA Meta/GTM update is noted where it has already been completed and documented elsewhere.
 
 ## Scope
 
 | Field | Value |
 |---|---|
 | Workstream | Conversion tracking |
-| Platforms | GA4 Admin API, GA4 Data API, Google Tag Manager API, Google Ads API |
+| Platforms | GA4 Admin API, GA4 Data API, Google Tag Manager API, Google Ads API, Meta Events Manager/API where available |
 | Google identity | `mert.atalay@cefa.ca` |
 | Google Cloud project | `marketing-api-488017` |
-| Live platform writes made by this update | No |
+| Live platform writes made by this update | Yes, for Franchise USA only: GTM Version `18` and Meta custom conversion `1915200622465036` / `USA Franchise Lead`. No GA4 or Google Ads settings changed. |
 
 ## Current Verified Access
 
@@ -30,6 +30,7 @@ This file records access verification only. It does not approve live platform ed
 | Google Ads OAuth scope | Verified | OAuth token includes Google Ads `adwords` scope. |
 | Google Ads API developer token | Verified locally | Developer token accepted by Google Ads API. Token is stored only in local protected config, not in git. |
 | Google Ads customer read access | Verified | Customer and conversion-action reads work for parent and franchise accounts. |
+| Meta Events Manager/API | Partial for Franchise USA | Authenticated Events Manager session exposed dataset `1531247935333023` / `CEFA Franchise USA`; new custom conversion `1915200622465036` / `USA Franchise Lead` was created. Parent and Canada Meta signoff remain separate. |
 
 ## Local Config
 
@@ -102,8 +103,8 @@ This file records access verification only. It does not approve live platform ed
 
 | Item | Status | Notes |
 |---|---|---|
-| Meta Events Manager/API access | Pending | Not part of Google access; still needed for Meta custom conversion and optimization-event confirmation. |
-| Long-lived production auth for automation | Pending | Local user ADC is fixed for Codex/operator work. Production automation should use workload identity, service accounts where API-supported, or approved secrets management. |
+| Meta Events Manager/API access | Partial | USA custom conversion exists on dataset `1531247935333023`, but live Events Manager receipt for `Lead` is still pending. Parent and Canada Meta custom-conversion/optimization-event confirmation is still pending. |
+| Long-lived production auth for automation | Pending | Local user ADC is fixed for operator work. Production automation should use workload identity, service accounts where API-supported, or approved secrets management. |
 | USA GA4 currency | Open question | `CEFA Franchise - USA.` currently uses `CAD`; confirm whether this is intentional before final USA reporting signoff. |
 
 ## Next Actions
@@ -111,5 +112,5 @@ This file records access verification only. It does not approve live platform ed
 1. Use Google Ads API read access to produce a final parent conversion-action signoff table.
 2. Verify the parent GTM helper-event Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C` after the version `7` label correction.
 3. Do the same conversion-action decision for Franchise Canada and Franchise USA.
-4. Resolve Meta access separately.
+4. Resolve remaining Meta access/signoff separately: parent, Canada, and USA live `Lead` receipt.
 5. After approval, make platform changes in small batches with documented before/after values.
