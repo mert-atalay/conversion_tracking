@@ -21,6 +21,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - [Franchise transition final pack](../franchise-transition-final-pack-v1/00-executive-summary-and-final-decision.md)
 - [Business truth and tracking data gaps, 2026-05-03](./business-truth-and-tracking-data-gaps-2026-05-03.md)
 - [Parent current state and remaining work, 2026-05-04](./parent-current-state-and-remaining-work-2026-05-04.md)
+- [Google platform access status, 2026-05-04](./google-platform-access-status-2026-05-04.md)
 
 ## Current Rules
 
