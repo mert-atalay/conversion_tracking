@@ -27,6 +27,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - [WP Engine WP-CLI access POC, 2026-05-04](./wpengine-wpcli-access-poc-2026-05-04.md)
 - [Live conversion tracking recheck, 2026-05-04](./live-conversion-tracking-recheck-2026-05-04.md)
 - [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md)
+- [Ad launch readiness test, 2026-05-04](./ad-launch-readiness-test-2026-05-04.md)
 
 ## Current Rules
 
