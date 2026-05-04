@@ -8,19 +8,19 @@ Scope:
 - Franchise Canada: `https://franchise.cefa.ca`
 - Franchise USA: `https://franchisecefa.com` and `https://www.franchisecefa.com`
 
-No backend settings, GTM publishing, GA4 settings, Google Ads settings, or Meta settings were changed during this audit. Controlled live form submissions were made for Franchise Canada and Franchise USA to verify the primary conversion events after launch.
+Initial audit note: no backend settings, GTM publishing, GA4 settings, Google Ads settings, or Meta settings were changed during the first audit pass. Later on 2026-05-04, two targeted live fixes were deployed: parent `cefa-conversion-tracking` was updated to `0.4.3`, and the franchise WPCode bridge was patched to backfill/clean existing GAConnector hidden attribution fields before Gravity Forms saves the entry.
 
 ## Executive Status
 
 | Site | Main conversion event | Live status | Evidence level | Remaining issue |
 |---|---|---|---|---|
-| Parent `cefa.ca` | `school_inquiry_submit` -> GA4 `generate_lead` | Working | GA4 processed report, public runtime, GTM JS, WP plugin/feed check | Live parent plugin is still `0.4.1`; repo has later safeguard package `0.4.3` not deployed. |
+| Parent `cefa.ca` | `school_inquiry_submit` -> GA4 `generate_lead` | Working | GA4 processed report, public runtime, GTM JS, WP plugin/feed check | Plugin deployment gap resolved: live now runs `cefa-conversion-tracking` `0.4.3`. Mobile/post-change Ads request QA still pending. |
 | Franchise Canada Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | None blocking main conversion. Attribution/gclid behavior needs cleanup review. |
-| Franchise Canada Form 2 | `real_estate_site_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | Same-session GAConnector `gclid` used the earlier inquiry-test click ID. |
-| Franchise USA Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | Helper payload is missing attribution values; active Gravity Forms Google Analytics feed remains for Form 1. |
-| Franchise USA Form 2 | `real_estate_site_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | Helper payload is missing attribution values. |
+| Franchise Canada Form 2 | `real_estate_site_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | GAConnector stale-`gclid` cleanup patched and verified with entry `46`. |
+| Franchise USA Form 1 | `franchise_inquiry_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | Attribution cleanup patched and verified with entry `37`; active Gravity Forms Google Analytics feed remains for Form 1. |
+| Franchise USA Form 2 | `real_estate_site_submit` -> GA4 `generate_lead` | Working | Live submission, dataLayer, network, GA4 realtime, Gravity Forms entry | Attribution cleanup patched and verified with entry `36`. |
 
-Bottom line: the main browser-side conversion event path is working on all live sites/forms checked. The remaining work is not "main event missing"; it is attribution completeness, USA duplicate-source cleanup, parent plugin safeguard deployment, and delayed processed GA4/BQ reporting confirmation.
+Bottom line: the main browser-side conversion event path is working on all live sites/forms checked. The parent plugin safeguard deployment and franchise GAConnector cleanup are now complete. Remaining work is USA duplicate-source cleanup, parent mobile/post-change request QA, Meta UI confirmation, and delayed processed GA4/BQ reporting confirmation.
 
 ## Live URL Runtime Audit
 
@@ -47,7 +47,7 @@ Public `gtm.js` marker checks:
 
 | Site | Tracking plugin state | Gravity Forms feed state |
 |---|---|---|
-| Parent `cefa.ca` | `cefa-conversion-tracking` active `0.4.1`; `cefa-school-manager` active `1.0.18`; Gravity Forms active `2.10.1`. | No Gravity Forms Google Analytics feed found. Only active feed found was Mailchimp Form 1. |
+| Parent `cefa.ca` | `cefa-conversion-tracking` active `0.4.3`; `cefa-school-manager` active `1.0.18`; Gravity Forms active `2.10.1`. | No Gravity Forms Google Analytics feed found. Only active feed found was Mailchimp Form 1. |
 | Franchise Canada | `cefa-franchise-mcp-control` active `0.1.12`; Gravity Forms active `2.10.1`. | No active Gravity Forms add-on feed rows found. |
 | Franchise USA | `cefa-franchise-mcp-control` active `0.1.13`; Gravity Forms active `2.10.1`; Gravity Forms Google Analytics active `2.4.1`. | Active `gravityformsgoogleanalytics` feed exists for Form 1. This is a duplicate-source risk until disabled or proven audit-only. |
 
@@ -142,6 +142,13 @@ Attribution caveat:
 - Browser cookies showed `_gcl_aw` had the current site-submit `gclid`, but `gaconnector_gclid` still held the earlier inquiry-test `gclid`.
 - This is an attribution cleanup item, not a main conversion-event failure.
 
+Post-patch verification:
+
+- The franchise WPCode bridge now backfills existing hidden attribution fields `14` through `30` before Gravity Forms saves the entry.
+- For `gclid`, the bridge prefers the current Google `_gcl_aw` value over a stale `gaconnector_gclid` or stale hidden field `29`.
+- A controlled Form 2 retest intentionally left hidden field `29` stale before submit. The resulting dataLayer payload and Gravity Forms entry `46` saved `gclid=QA-FRCA-PATCH-SITE-20260504`, matching the current landing URL / `_gcl_aw` value.
+- Entry `46` also saved clean separate values for `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRCA-PATCH-SITE-20260504`, and `30=1065795917.1777927212`.
+
 ### Franchise USA Form 1 - Franchise Inquiry
 
 Source URL:
@@ -164,7 +171,13 @@ Attribution caveat:
 
 - Helper payload attribution values were blank: `lc_source`, `lc_medium`, `lc_campaign`, `gclid`, and `ga_client_id`.
 - Gravity Forms entry did not return the same attribution field keys checked on Canada (`14`, `15`, `16`, `29`, `30`).
-- USA attribution capture still needs cleanup before attribution signoff.
+- This attribution gap was open during the initial audit and was resolved by the post-patch retest below.
+
+Post-patch verification:
+
+- A controlled Form 1 retest started with blank GAConnector hidden fields and intentionally stale hidden field `29`.
+- The resulting `franchise_inquiry_submit` payload carried clean attribution values: `lc_source=qa_tracking`, `lc_medium=live_patch`, `lc_campaign=gaconnector_backfill_20260504`, `gclid=QA-FRUS-PATCH-INQ-20260504`, and `ga_client_id=1930300797.1777927657`.
+- Gravity Forms entry `37` saved the same attribution fields plus matching `cefa_conversion_tracking_event_id=b8ac84bf-c7a2-458e-8af6-68a06fb75e97`.
 
 Duplicate-source caveat:
 
@@ -192,7 +205,13 @@ Status: pass for the main conversion event.
 Attribution caveat:
 
 - A clean isolated browser context had GAConnector cookies populated with `QA-FRUS-SITE-20260504`, but the helper dataLayer payload still showed blank attribution values.
-- This confirms the USA helper payload is not yet reading/passing attribution the same way Canada does.
+- This confirmed the pre-patch USA helper payload was not yet reading/passing attribution the same way Canada did; the post-patch retest below resolved the gap for Form 2.
+
+Post-patch verification:
+
+- A controlled Form 2 retest started with blank GAConnector hidden fields and intentionally stale hidden field `29`.
+- The resulting `real_estate_site_submit` payload carried clean attribution values: `lc_source=qa_tracking`, `lc_medium=live_patch`, `lc_campaign=gaconnector_backfill_20260504`, `gclid=QA-FRUS-PATCH-SITE-20260504`, and `ga_client_id=1618510533.1777927481`.
+- Gravity Forms entry `36` saved the same attribution fields plus matching `cefa_conversion_tracking_event_id=e91e2fb5-8a9c-4369-b1d7-736b9c4a165e`.
 
 ## BigQuery / Reporting Export State
 
@@ -211,13 +230,11 @@ Interpretation:
 
 ## Remaining Action Plan
 
-1. Parent: deploy `cefa-conversion-tracking` `0.4.3` or newer when approved, then run one controlled Form 4 test to confirm the `event_id` safeguard.
-2. Franchise Canada: keep the helper/GTM primary conversion path as live; review GAConnector `gclid` overwrite/last-click behavior before attribution signoff.
-3. Franchise USA: fix attribution payload capture so helper events and Gravity Forms entries include the required UTM/click/GA client fields.
-4. Franchise USA: disable or convert the active Gravity Forms Google Analytics Form 1 feed to audit-only so it cannot compete with the helper/GTM final conversion path.
-5. GA4: re-run processed Data API reports after the franchise submissions have had time to process.
-6. BigQuery: enable or verify GA4 export datasets for Franchise Canada and Franchise USA if dashboard/reporting parity is required.
-7. Meta: separately confirm Events Manager receipt/custom conversions because this audit confirmed browser/GTM-side markers but not Meta UI/API reporting.
+1. Parent: run one controlled mobile Form 4 test and confirm the post-change Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
+2. Franchise USA: disable or convert the active Gravity Forms Google Analytics Form 1 feed to audit-only so it cannot compete with the helper/GTM final conversion path.
+3. GA4: re-run processed Data API reports after the franchise submissions have had time to process.
+4. BigQuery: enable or verify GA4 export datasets for Franchise Canada and Franchise USA if dashboard/reporting parity is required.
+5. Meta: separately confirm Events Manager receipt/custom conversions because this audit confirmed browser/GTM-side markers but not Meta UI/API reporting.
 
 ## Signoff
 
@@ -229,5 +246,5 @@ Interpretation:
 | GA4 primary event sent/received | Pass processed | Pass realtime | Pass realtime |
 | Gravity Forms entry saves event ID | Previously verified; not re-submitted in this audit | Pass | Pass |
 | CRM/Synuma delivery marker | Not re-tested in this audit | Pass | Pass |
-| Attribution fields complete | Mostly pass from previous parent work | Partial: `gclid` behavior needs cleanup | Fail/partial: payload fields blank |
+| Attribution fields complete | Mostly pass from previous parent work | Pass for patched Form 2 retest | Pass for patched Form 1 and Form 2 retests |
 | Duplicate source risk | Low; no GF GA feed found | Low; no GF add-on feed found | Medium; GF GA Form 1 feed still active |

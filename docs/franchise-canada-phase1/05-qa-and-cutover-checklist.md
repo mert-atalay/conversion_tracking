@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. Controlled live Form 1 and Form 2 submissions on 2026-05-04 both reached their thank-you pages, pushed the expected helper events, created Gravity Forms entries, saved matching `cefa_conversion_tracking_event_id` values, and appeared in GA4 realtime as `generate_lead`. Form 2 attribution still needs cleanup review because GAConnector kept the earlier same-session `gclid` in field `29` while the landing URL reflected the later Form 2 click ID.
+Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca` plus the 2026-05-04 GAConnector cleanup patch. Controlled live Form 1 and Form 2 submissions on 2026-05-04 both reached their thank-you pages, pushed the expected helper events, created Gravity Forms entries, saved matching `cefa_conversion_tracking_event_id` values, and appeared in GA4 realtime as `generate_lead`. The later Form 2 retest verified the stale same-session `gclid` issue is fixed by preferring the current Google `_gcl_aw` value before Gravity Forms saves the entry.
 
 Admin/reporting recheck on 2026-05-01:
 
@@ -26,7 +26,8 @@ Live main-conversion refresh on 2026-05-04:
 - Form 1 controlled submission emitted `franchise_inquiry_submit` with event ID `bbf3bbef-2154-48d9-b036-8f54e4bee3e3`; Gravity Forms entry `44` saved the same event ID and a `cefa_synuma_lead_id`.
 - Form 2 controlled submission emitted `real_estate_site_submit` with event ID `740e7413-9cbc-4410-a19f-53a5e0e34e80`; Gravity Forms entry `45` saved the same event ID and a `cefa_synuma_lead_id`.
 - GA4 realtime for property `259747921` showed `2` `generate_lead` events after the Form 1 and Form 2 tests.
-- Form 2 saved GAConnector fields `14`, `15`, `16`, `29`, and `30`, but field `29` used the earlier Form 1 `gclid`; attribution signoff remains open even though the main conversion event passed.
+- Initial Form 2 saved GAConnector fields `14`, `15`, `16`, `29`, and `30`, but field `29` used the earlier Form 1 `gclid`; this triggered the cleanup patch.
+- Post-patch Form 2 retest saved Gravity Forms entry `46` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRCA-PATCH-SITE-20260504`, and `30=1065795917.1777927212`; the dataLayer `real_estate_site_submit` payload carried the same current click ID and clean separate attribution parameters.
 
 ## Before GTM Build
 
@@ -42,7 +43,7 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Confirm GAConnector scripts/cookies load on staging runtime.
 - [x] Confirm `gclid` can populate hidden field `29` in runtime tests.
 - [x] Confirm real Form 1 entry/runtime saves clean fields `14` through `30`.
-- [ ] Confirm real Form 2 entry saves clean/current fields `14` through `30` after Version 52. It saved the fields on 2026-05-04, but field `29` used the earlier same-session `gclid`.
+- [x] Confirm real Form 2 entry saves clean/current fields `14` through `30` after the GAConnector cleanup patch.
 - [x] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
 - [x] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
 - [x] Confirm Meta dataset decision for Canada transition.
@@ -53,7 +54,7 @@ Live main-conversion refresh on 2026-05-04:
 
 - [x] Plugin code supports Franchise Canada hostnames `cefafranchise.kinsta.cloud` and `franchise.cefa.ca`.
 - [x] Plugin code supports Form `1` and Form `2` confirmed-success payload contracts.
-- [x] Plugin code reads GAConnector fields `14` through `30` and does not overwrite them.
+- [x] Plugin code reads GAConnector fields `14` through `30`, backfills missing/placeholder values from GAConnector cookies, and overwrites stale `gclid` only when the current Google `_gcl_aw` cookie proves a newer click ID.
 - [x] Deploy temporary WPCode fallback bridge on live Franchise Canada.
 - [x] Form 1 success emits exactly one `franchise_inquiry_submit`.
 - [x] Form 2 success emits exactly one `real_estate_site_submit`.

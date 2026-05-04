@@ -31,6 +31,7 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 			add_action(
 				'gform_pre_submission_' . $form_id,
 				static function () use ( $form_id ): void {
+					cefa_franchise_ct_backfill_attribution_post_fields();
 					cefa_franchise_ct_ensure_posted_event_id( $form_id );
 				},
 				5
@@ -170,6 +171,51 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 	}
 
 	/**
+	 * Backfill the existing GAConnector hidden fields from first-party cookies.
+	 *
+	 * This does not change business/CRM fields. It only fills the tracking-only
+	 * hidden fields already present on Forms 1 and 2.
+	 *
+	 * @return void
+	 */
+	function cefa_franchise_ct_backfill_attribution_post_fields(): void {
+		foreach ( cefa_franchise_ct_attribution_fields() as $key => $field_id ) {
+			$value = cefa_franchise_ct_cookie_attribution_value( $key );
+
+			if ( '' === $value ) {
+				continue;
+			}
+
+			$post_key = 'input_' . $field_id;
+
+			if ( 'gclid' === $key && '' !== cefa_franchise_ct_current_gclid() ) {
+				$_POST[ $post_key ] = $value; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				continue;
+			}
+
+			if ( cefa_franchise_ct_should_write_post_field( $post_key ) ) {
+				$_POST[ $post_key ] = $value; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			}
+		}
+	}
+
+	/**
+	 * Determine whether a tracking POST field is missing or placeholder-like.
+	 *
+	 * @param string $post_key POST key.
+	 * @return bool
+	 */
+	function cefa_franchise_ct_should_write_post_field( string $post_key ): bool {
+		if ( ! isset( $_POST[ $post_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return true;
+		}
+
+		$value = strtolower( trim( sanitize_text_field( wp_unslash( $_POST[ $post_key ] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		return '' === $value || in_array( $value, array( 'undefined', 'null', '(not set)', 'not set' ), true );
+	}
+
+	/**
 	 * Ensure the Gravity Forms entry has a tracking event ID in entry meta.
 	 *
 	 * @param array<string, mixed> $entry   Gravity Forms entry.
@@ -305,7 +351,7 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 		}
 
 		foreach ( cefa_franchise_ct_attribution_fields() as $key => $field_id ) {
-			$payload[ $key ] = cefa_franchise_ct_entry_value( $entry, $field_id );
+			$payload[ $key ] = cefa_franchise_ct_entry_attribution_value( $entry, $key, $field_id );
 		}
 
 		return $payload;
@@ -339,6 +385,55 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 	}
 
 	/**
+	 * Return the GAConnector cookie mapping for the existing hidden fields.
+	 *
+	 * @return array<string, string>
+	 */
+	function cefa_franchise_ct_attribution_cookie_map(): array {
+		return array(
+			'lc_source'    => 'gaconnector_lc_source',
+			'lc_medium'    => 'gaconnector_lc_medium',
+			'lc_campaign'  => 'gaconnector_lc_campaign',
+			'lc_content'   => 'gaconnector_lc_content',
+			'lc_term'      => 'gaconnector_lc_term',
+			'lc_channel'   => 'gaconnector_lc_channel',
+			'lc_landing'   => 'gaconnector_lc_landing',
+			'lc_referrer'  => 'gaconnector_lc_referrer',
+			'fc_source'    => 'gaconnector_fc_source',
+			'fc_medium'    => 'gaconnector_fc_medium',
+			'fc_campaign'  => 'gaconnector_fc_campaign',
+			'fc_content'   => 'gaconnector_fc_content',
+			'fc_term'      => 'gaconnector_fc_term',
+			'fc_channel'   => 'gaconnector_fc_channel',
+			'fc_referrer'  => 'gaconnector_fc_referrer',
+			'gclid'        => 'gaconnector_gclid',
+			'ga_client_id' => 'gaconnector_GA_Client_ID',
+		);
+	}
+
+	/**
+	 * Read an attribution value from the saved entry and fall back to cookies.
+	 *
+	 * @param array<string, mixed> $entry    Gravity Forms entry.
+	 * @param string               $key      Attribution key.
+	 * @param string               $field_id Field ID.
+	 * @return string
+	 */
+	function cefa_franchise_ct_entry_attribution_value( array $entry, string $key, string $field_id ): string {
+		$value = cefa_franchise_ct_entry_value( $entry, $field_id );
+
+		if ( 'gclid' === $key && '' !== cefa_franchise_ct_current_gclid() ) {
+			return cefa_franchise_ct_current_gclid();
+		}
+
+		if ( '' !== $value && ! in_array( strtolower( $value ), array( 'undefined', 'null', '(not set)', 'not set' ), true ) ) {
+			return $value;
+		}
+
+		return cefa_franchise_ct_cookie_attribution_value( $key );
+	}
+
+	/**
 	 * Read and sanitize a Gravity Forms entry value.
 	 *
 	 * @param array<string, mixed> $entry    Gravity Forms entry.
@@ -349,6 +444,91 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 		$max_length = in_array( $field_id, array( '20', '21', '28' ), true ) ? 1000 : 220;
 
 		return substr( sanitize_text_field( (string) rgar( $entry, $field_id ) ), 0, $max_length );
+	}
+
+	/**
+	 * Read a sanitized attribution value from the current request cookies.
+	 *
+	 * @param string $key Attribution key.
+	 * @return string
+	 */
+	function cefa_franchise_ct_cookie_attribution_value( string $key ): string {
+		if ( 'gclid' === $key ) {
+			$current_gclid = cefa_franchise_ct_current_gclid();
+
+			return '' !== $current_gclid ? $current_gclid : cefa_franchise_ct_read_cookie( 'gaconnector_gclid', 220 );
+		}
+
+		if ( 'ga_client_id' === $key ) {
+			$client_id = cefa_franchise_ct_read_cookie( 'gaconnector_GA_Client_ID', 220 );
+
+			return '' !== $client_id ? $client_id : cefa_franchise_ct_ga_client_id_from_cookie();
+		}
+
+		$map = cefa_franchise_ct_attribution_cookie_map();
+
+		if ( empty( $map[ $key ] ) ) {
+			return '';
+		}
+
+		$max_length = in_array( $key, array( 'lc_landing', 'lc_referrer', 'fc_referrer' ), true ) ? 1000 : 220;
+
+		return cefa_franchise_ct_read_cookie( $map[ $key ], $max_length );
+	}
+
+	/**
+	 * Prefer the current Google Ads click ID from Google's own first-party cookie.
+	 *
+	 * @return string
+	 */
+	function cefa_franchise_ct_current_gclid(): string {
+		$gcl_aw = cefa_franchise_ct_read_cookie( '_gcl_aw', 500 );
+
+		if ( '' === $gcl_aw ) {
+			return '';
+		}
+
+		$parts = explode( '.', $gcl_aw, 3 );
+
+		if ( count( $parts ) < 3 ) {
+			return '';
+		}
+
+		return substr( sanitize_text_field( $parts[2] ), 0, 220 );
+	}
+
+	/**
+	 * Parse GA client ID from the `_ga` cookie when GAConnector did not expose it.
+	 *
+	 * @return string
+	 */
+	function cefa_franchise_ct_ga_client_id_from_cookie(): string {
+		$ga_cookie = cefa_franchise_ct_read_cookie( '_ga', 220 );
+
+		if ( '' === $ga_cookie ) {
+			return '';
+		}
+
+		if ( 1 !== preg_match( '/^GA\d+\.\d+\.(.+)$/', $ga_cookie, $matches ) ) {
+			return '';
+		}
+
+		return substr( sanitize_text_field( $matches[1] ), 0, 220 );
+	}
+
+	/**
+	 * Read and sanitize a cookie.
+	 *
+	 * @param string $cookie_name Cookie name.
+	 * @param int    $max_length  Maximum value length.
+	 * @return string
+	 */
+	function cefa_franchise_ct_read_cookie( string $cookie_name, int $max_length ): string {
+		if ( ! isset( $_COOKIE[ $cookie_name ] ) ) {
+			return '';
+		}
+
+		return substr( sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ), 0, $max_length );
 	}
 
 	/**

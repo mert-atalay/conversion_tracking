@@ -16,7 +16,7 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 | Primary website event | `school_inquiry_submit` |
 | Active GTM container | `GTM-NZ6N7WNC` |
 | GA4 property | `properties/267558140` / `Main Site - GA4` |
-| Live writes made by this update | GTM version `7` published; no Google Ads, GA4, Meta, or WordPress writes. |
+| Live writes made by this update | GTM version `7` published earlier; WordPress plugin `cefa-conversion-tracking` updated to `0.4.3` on 2026-05-04. No Google Ads, GA4, or Meta setting writes were made during the plugin update. |
 
 ## Current Verified Status
 
@@ -35,7 +35,7 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 | GA4 key event | Verified from existing repo docs | `generate_lead` is a GA4 key event; `validation_error` is not. |
 | Google Ads link | Verified from existing repo docs | GA4 property `267558140` is linked to Google Ads customer `4159217891`. |
 | Google Ads direct conversion label | Verified | Live GTM version `7` uses label `cFt-CMrLufgCEIzSyv4C`, which maps to the existing `Inquiry Submit_ollo` action. No new Google Ads conversion action was created. |
-| Live plugin package version | Partial | Live sampled HTML loads `cefa-conversion-tracking.js?ver=0.4.1`; repo plugin header is now `0.4.3`. Deploy `0.4.3` before treating repo/live as fully synchronized. |
+| Live plugin package version | Verified | WP-CLI reports `cefa-conversion-tracking` active `0.4.3`; sampled live HTML loads `cefa-conversion-tracking/assets/js/cefa-conversion-tracking.js?ver=0.4.3`. |
 
 ## Done
 
@@ -52,22 +52,22 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 - Parent GTM live version `7` maps `school_inquiry_submit` to GA4 `generate_lead`, Meta `Inquiry Submit`, and the existing Google Ads `Inquiry Submit_ollo` action.
 - A 2026-05-04 GTM publish corrected the direct Google Ads helper-event tag from the `Contact Form Submit_ollo` label to the existing `Inquiry Submit_ollo` label.
 - Repo plugin `0.4.3` now rejects school/program/day metadata values if they appear in the event ID field, after BigQuery showed one helper `generate_lead` row where `event_id` equaled `school_selected_id`.
+- Live `cefa.ca` now runs plugin `0.4.3`; the sampled inquiry page renders `GTM-NZ6N7WNC` and helper asset `cefa-conversion-tracking.js?ver=0.4.3`.
 - Local-listing UTM rules for GBP/Yelp have been documented under the naming-convention workstream.
 
 ## Left
 
 | Priority | Status | Item | Why it matters |
 |---|---|---|---|
-| 1 | Pending deployment | Deploy repo plugin `0.4.3` to live. | Prevents school/program/day metadata from being accepted as `event_id` if Field `32.4` is prefilled incorrectly. |
-| 2 | Pending | Run one mobile browser Form 4 submission QA after plugin/GTM updates. | Mobile is the one remaining parent production QA scenario listed as open. |
-| 3 | Pending | Verify one post-change Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`. | Confirms the existing `Inquiry Submit_ollo` learning path is receiving the helper event. |
-| 4 | Pending | Confirm Meta Events Manager custom conversion and optimization-event status. | Meta delivery/learning depends on the correct event and dataset configuration. |
-| 5 | Pending | Reconcile `school_inquiry_submit` through GTM, GA4, Google Ads, Meta, and BigQuery after the latest production traffic window. | Confirms the full path, not just browser and GA4 export evidence. |
-| 6 | Pending | Refresh or reconnect current parent business-truth inquiry marts after 2026-03-29. | Platform/GA4 conversions are not final inquiry truth until CRM/KinderTales/collector-backed reporting is current. |
-| 7 | Pending | Review and archive obsolete old GTM tags/triggers only after proving they are not used by production. | Prevents accidental deletion of still-needed reporting or legacy references. |
-| 8 | Pending | Review old GA4 key events/custom dimensions after production is stable. | Cleanup should not break historical reporting or Ads imports. |
-| 9 | Future | Build Phase 1B server-side/audit path: collector, Meta CAPI, Measurement Protocol audit-only, and then sGTM. | Strengthens attribution and resilience after browser tracking and business truth are stable. |
-| 10 | Future | Build machine-readable school/program crosswalks under `data/reference/`. | Needed for durable joins across GA4, BigQuery, GBP, CRM, ads, and reporting. |
+| 1 | Pending | Run one mobile browser Form 4 submission QA after plugin/GTM updates. | Mobile is the one remaining parent production QA scenario listed as open. |
+| 2 | Pending | Verify one post-change Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`. | Confirms the existing `Inquiry Submit_ollo` learning path is receiving the helper event. |
+| 3 | Pending | Confirm Meta Events Manager custom conversion and optimization-event status. | Meta delivery/learning depends on the correct event and dataset configuration. |
+| 4 | Pending | Reconcile `school_inquiry_submit` through GTM, GA4, Google Ads, Meta, and BigQuery after the latest production traffic window. | Confirms the full path, not just browser and GA4 export evidence. |
+| 5 | Pending | Refresh or reconnect current parent business-truth inquiry marts after 2026-03-29. | Platform/GA4 conversions are not final inquiry truth until CRM/KinderTales/collector-backed reporting is current. |
+| 6 | Pending | Review and archive obsolete old GTM tags/triggers only after proving they are not used by production. | Prevents accidental deletion of still-needed reporting or legacy references. |
+| 7 | Pending | Review old GA4 key events/custom dimensions after production is stable. | Cleanup should not break historical reporting or Ads imports. |
+| 8 | Future | Build Phase 1B server-side/audit path: collector, Meta CAPI, Measurement Protocol audit-only, and then sGTM. | Strengthens attribution and resilience after browser tracking and business truth are stable. |
+| 9 | Future | Build machine-readable school/program crosswalks under `data/reference/`. | Needed for durable joins across GA4, BigQuery, GBP, CRM, ads, and reporting. |
 
 ## Current Guardrails
 
@@ -82,6 +82,8 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 
 - Live HTML sample: `https://cefa.ca/submit-an-inquiry-today/?location=abbotsford-highstreet`
 - Live HTML sample: `https://cefa.ca/thank-you/?location=abbotsford-highstreet&inquiry=true`
+- WP-CLI parent plugin check: `cefa-conversion-tracking,active,0.4.3`
+- Live HTML sample after deploy: `GTM-NZ6N7WNC` and `cefa-conversion-tracking.js?ver=0.4.3`
 - BigQuery GA4 export: `marketing-api-488017.analytics_267558140.events_*`
 - Google / GTM / Ads API audit:
   - `docs/10-conversion-tracking/parent-google-gtm-ads-signoff-2026-05-04.md`
@@ -94,9 +96,8 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 
 Do the remaining parent work in this order:
 
-1. Deploy plugin `0.4.3`.
-2. Run mobile Form 4 QA.
-3. Verify the post-change Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
-4. Confirm Meta custom conversion / optimization status.
-5. Refresh the parent business-truth inquiry marts and reconcile against helper events.
-6. Only then clean old GTM/GA4 artifacts and start Phase 1B server-side work.
+1. Run mobile Form 4 QA.
+2. Verify the post-change Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
+3. Confirm Meta custom conversion / optimization status.
+4. Refresh the parent business-truth inquiry marts and reconcile against helper events.
+5. Only then clean old GTM/GA4 artifacts and start Phase 1B server-side work.

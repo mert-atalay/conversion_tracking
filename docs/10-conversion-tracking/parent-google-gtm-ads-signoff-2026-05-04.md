@@ -6,7 +6,7 @@ Last updated: 2026-05-04
 
 Document the current parent `cefa.ca` Google-side implementation state after the live-domain cutover.
 
-This file is based on platform API checks, one approved GTM publish, and a repo-side plugin safeguard. No Google Ads conversion action was created, renamed, or mutated. No GA4 setting change, WordPress deployment, or Meta change was made by this update.
+This file is based on platform API checks, one approved GTM publish, and a repo-side plugin safeguard. No Google Ads conversion action was created, renamed, or mutated. No GA4 setting change or Meta change was made by this update. Later on 2026-05-04, the parent WordPress plugin was deployed to live as `0.4.3`.
 
 ## Scope
 
@@ -19,8 +19,8 @@ This file is based on platform API checks, one approved GTM publish, and a repo-
 | GA4 property | `267558140` / `Main Site - GA4` |
 | Google Ads account | `4159217891` / `CEFA $3000` |
 | Meta pixel seen in GTM | `918227085392601` |
-| Live plugin asset observed | `cefa-conversion-tracking.js?ver=0.4.1` |
-| Repo plugin after this update | `0.4.3` |
+| Live plugin asset observed | Initially `cefa-conversion-tracking.js?ver=0.4.1`; post-deploy sample shows `cefa-conversion-tracking.js?ver=0.4.3` |
+| Repo/live plugin after deployment | `0.4.3` |
 
 ## Current Live Page Evidence
 
@@ -32,7 +32,7 @@ Read-only HTML checks on:
 Verified:
 
 - Live pages load `GTM-NZ6N7WNC`.
-- Live pages load `cefa-conversion-tracking.js?ver=0.4.1`.
+- Initial read-only sample loaded `cefa-conversion-tracking.js?ver=0.4.1`; post-deploy sample loaded `cefa-conversion-tracking.js?ver=0.4.3`.
 - The old parent container `GTM-PPV9ZRZ` was not observed in the sampled live HTML.
 
 ## GTM Live Container Audit
@@ -184,7 +184,7 @@ Why this was added:
 - `school_selected_id`, school slug, program ID, program name, and days are metadata.
 - If Form 4 field `32.4` is ever prefilled incorrectly with a school/program/day value, the plugin should generate/persist a fresh event ID instead of accepting that value.
 
-Live WordPress still appears to serve plugin asset `0.4.1` from sampled pages. The `0.4.3` safeguard is not live until the updated plugin is deployed.
+The `0.4.3` safeguard was deployed later on 2026-05-04. WP-CLI reports `cefa-conversion-tracking,active,0.4.3`, and sampled live HTML loads `cefa-conversion-tracking.js?ver=0.4.3`.
 
 ## Signoff Status
 
@@ -195,16 +195,15 @@ Live WordPress still appears to serve plugin asset `0.4.1` from sampled pages. T
 | Google Ads direct conversion mapping | Pass | Live GTM version `7` uses the existing `Inquiry Submit_ollo` label `cFt-CMrLufgCEIzSyv4C` on the `school_inquiry_submit` trigger. |
 | Google Ads bidding action settings | Pass structurally | `Inquiry Submit_ollo` is enabled, primary, included, and valued at `150 CAD`; the GTM tag must point to it. |
 | Meta browser mapping | Partial | GTM has pixel and lead-event tags with matching event ID, but Events Manager/custom-conversion optimization still needs platform verification. |
-| Event ID lifecycle | Partial | Mostly clean in BigQuery, but one exported row reused school ID as event ID. Repo `0.4.3` now guards against this; live deployment still pending. |
+| Event ID lifecycle | Partial | Mostly clean in BigQuery, but one exported row reused school ID as event ID. Repo/live plugin `0.4.3` now guards against this; post-change controlled submit QA is still pending. |
 
 ## Recommended Next Changes
 
 Remaining next changes:
 
-1. Deploy plugin `0.4.3` to live `cefa.ca`.
-2. Run one controlled parent Form 4 submission after the plugin update.
-3. Verify in browser/network that the Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
-4. Re-check GA4 and BigQuery after processing delay.
-5. Verify Meta Events Manager receives the parent custom event with matching `eventID`.
+1. Run one controlled parent Form 4 submission after the plugin update.
+2. Verify in browser/network that the Ads request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
+3. Re-check GA4 and BigQuery after processing delay.
+4. Verify Meta Events Manager receives the parent custom event with matching `eventID`.
 
 Do not change Google Ads primary/secondary settings yet. The current `Inquiry Submit_ollo` action remains the parent bidding action; GTM now fires its label from the helper-event path.

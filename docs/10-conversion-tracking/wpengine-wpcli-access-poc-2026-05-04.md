@@ -52,7 +52,7 @@ Relevant active plugins:
 
 | Plugin | Status | Version |
 |---|---|---:|
-| `cefa-conversion-tracking` | active | `0.4.1` |
+| `cefa-conversion-tracking` | active | Initially `0.4.1`; later updated to `0.4.3` on 2026-05-04 |
 | `cefa-mcp-abilities` | active | `1.3.0` |
 | `cefa-owly-chatbot` | active | `3.2.60` |
 | `cefa-school-manager` | active | `1.0.18` |
@@ -62,9 +62,8 @@ Relevant active plugins:
 Interpretation:
 
 - Parent can be updated through WP Engine SSH/WP-CLI.
-- The live parent conversion plugin is still `0.4.1`.
-- Repo plugin package is `0.4.3`.
-- Next controlled parent plugin deployment can use the parent target and `--user=8`.
+- The live parent conversion plugin was successfully updated to `0.4.3` later on 2026-05-04 using the parent target and `--user=8`.
+- Future controlled parent plugin deployments can use the same parent target and `--user=8`.
 
 ### Franchise Canada `franchise.cefa.ca`
 
@@ -197,4 +196,3 @@ Post-deploy parent validation must include:
 - Do not update franchise plugins while doing parent plugin work.
 - Do not treat this SSH/WP-CLI path as a replacement for browser/GA4/GTM/Ads QA after deployment.
 - Keep the Google Ads learning path unchanged: parent still maps to existing `Inquiry Submit_ollo`.
-

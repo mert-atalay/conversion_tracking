@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-04
 
-Update note: this read-only recheck was followed by controlled live Franchise Canada and Franchise USA submissions later on 2026-05-04. For the current main conversion event signoff, use [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md).
+Update note: this read-only recheck was followed by controlled live Franchise Canada and Franchise USA submissions later on 2026-05-04. It was then followed by a parent plugin deployment and franchise GAConnector cleanup patch. For the current main conversion event signoff, use [Live main conversion event audit, 2026-05-04](./live-main-conversion-event-audit-2026-05-04.md).
 
 ## Purpose
 
@@ -14,7 +14,7 @@ No live WordPress plugin update, GTM publish, Google Ads mutation, GA4 setting c
 
 | Site | Status | Main finding |
 |---|---|---|
-| Parent `cefa.ca` | Mostly good, one deployment gap | GTM now points `school_inquiry_submit` to existing Google Ads `Inquiry Submit_ollo`; live plugin is still `0.4.1`, so repo safeguard `0.4.3` is not deployed yet. |
+| Parent `cefa.ca` | Mostly good | GTM now points `school_inquiry_submit` to existing Google Ads `Inquiry Submit_ollo`; later on 2026-05-04 the live plugin was updated from `0.4.1` to `0.4.3`. |
 | Franchise Canada `franchise.cefa.ca` | Partially verified | Site loads the franchise bridge and GTM; GA4 has at least one helper-plugin `generate_lead`; no Gravity Forms Google Analytics feed was found. |
 | Franchise USA `franchisecefa.com` | Needs follow-up | Site loads the franchise bridge and GTM, but GA4 Data API returned no rows for the target franchise events; an active Gravity Forms Google Analytics feed exists for Form `1`. |
 
@@ -25,13 +25,13 @@ No live WordPress plugin update, GTM publish, Google Ads mutation, GA4 setting c
 | Check | Result |
 |---|---|
 | WP-CLI siteurl | `https://cefa.ca` |
-| Active conversion plugin | `cefa-conversion-tracking` `0.4.1` |
+| Active conversion plugin | Initially `cefa-conversion-tracking` `0.4.1`; later updated to `0.4.3` on 2026-05-04. |
 | Repo package ready | `0.4.3` |
 | Gravity Forms | active `2.10.1` |
 | School Manager | active `1.0.18` |
 | MCP Adapter | active `0.5.0` |
 | Public HTML GTM container | `GTM-NZ6N7WNC` |
-| Public HTML helper asset | `cefa-conversion-tracking.js?ver=0.4.1` |
+| Public HTML helper asset | Initially `cefa-conversion-tracking.js?ver=0.4.1`; post-deploy sample shows `cefa-conversion-tracking.js?ver=0.4.3`. |
 
 ### GTM / Google Ads Label Check
 
@@ -90,7 +90,7 @@ Interpretation:
 
 - BigQuery confirms helper events are exporting.
 - The one historical `generate_lead` row where `event_id` equals `school_selected_id` is still present in the export window.
-- Repo plugin `0.4.3` guards against that failure mode, but live is still `0.4.1`, so deploy is still needed.
+- Repo plugin `0.4.3` guards against that failure mode and was deployed later on 2026-05-04.
 
 ### Gravity Forms Add-On Feed Check
 
@@ -204,18 +204,17 @@ Interpretation:
 
 ## Current Recommendation
 
-1. Parent: deploy `cefa-conversion-tracking` `0.4.3` through the verified WP Engine parent target.
-2. Parent: run one controlled Form `4` submission after deployment.
-3. Parent: verify the network request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
-4. Parent: confirm the new submitted `event_id` does not equal `school_selected_id`.
-5. Franchise Canada: run controlled Form `1` and Form `2` QA, then confirm GA4/Ads/Meta mapping.
-6. Franchise USA: audit the active Gravity Forms Google Analytics feed before deciding whether to keep, disable, or convert it to audit-only.
-7. Franchise USA: run controlled Form `1` and Form `2` QA because GA4 Data API currently shows no target rows.
+1. Parent: run one controlled mobile Form `4` submission after deployment.
+2. Parent: verify the network request uses `AW-802334988/cFt-CMrLufgCEIzSyv4C`.
+3. Parent: confirm the new submitted `event_id` does not equal `school_selected_id`.
+4. Franchise Canada: re-run processed GA4 reporting after the patched Form `2` submission has processed.
+5. Franchise USA: audit the active Gravity Forms Google Analytics feed before deciding whether to keep, disable, or convert it to audit-only.
+6. Franchise USA: re-run processed GA4 reporting after the patched Form `1` and Form `2` submissions have processed.
 
 ## Signoff State
 
 | Site | Browser helper source | GTM public mapping | GA4 processed evidence | Ads final mapping | Main blocker |
 |---|---|---|---|---|---|
-| Parent | Pass | Pass | Pass | Pass for existing `Inquiry Submit_ollo` label | Plugin `0.4.3` not deployed and post-change controlled submit still needed. |
-| Franchise Canada | Pass markers | Pass markers | Partial | Not fully signed off | Controlled post-live QA still needed. |
-| Franchise USA | Pass markers | Pass markers | Fail / no rows in checked window | Not fully signed off | Active GF GA feed and no processed GA4 rows for target events. |
+| Parent | Pass | Pass | Pass | Pass for existing `Inquiry Submit_ollo` label | Plugin `0.4.3` is deployed; post-change mobile controlled submit still needed. |
+| Franchise Canada | Pass markers | Pass markers | Partial | Not fully signed off | Processed reporting after patched submission still pending. |
+| Franchise USA | Pass markers | Pass markers | Realtime/live helper passed after patch; processed rows pending | Not fully signed off | Active GF GA feed and processed GA4 recheck still pending. |

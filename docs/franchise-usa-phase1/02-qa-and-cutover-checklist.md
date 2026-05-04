@@ -2,14 +2,16 @@
 
 Last updated: 2026-05-04
 
-Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. Remaining issues are attribution payload completeness and the active Gravity Forms Google Analytics Form `1` feed.
+Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
 
 Live main-conversion refresh on 2026-05-04:
 
 - Form 1 controlled submission emitted `franchise_inquiry_submit` and `cefa_franchise_us_inquiry_dispatch` with event ID `cd1297db-30a6-46ab-b22a-169f01230878`; Gravity Forms entry `34` saved the same event ID and a `cefa_synuma_lead_id`.
 - Form 2 controlled submission emitted `real_estate_site_submit` and `cefa_franchise_us_site_dispatch` with event ID `c6492cf5-655e-4af0-abef-c6af792eff66`; Gravity Forms entry `35` saved the same event ID and a `cefa_synuma_lead_id`.
 - GA4 realtime for property `519783092` showed `2` `generate_lead` events after the Form 1 and Form 2 tests.
-- A clean isolated browser context showed GAConnector cookies populated for Form 2, but the helper dataLayer payload still had blank attribution values. Attribution capture remains open.
+- Initial clean isolated browser testing showed GAConnector cookies populated, but helper dataLayer attribution values were blank; this triggered the cleanup patch.
+- Post-patch Form 1 retest saved Gravity Forms entry `37` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRUS-PATCH-INQ-20260504`, and `30=1930300797.1777927657`; the `franchise_inquiry_submit` payload carried the same clean attribution values.
+- Post-patch Form 2 retest saved Gravity Forms entry `36` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRUS-PATCH-SITE-20260504`, and `30=1618510533.1777927481`; the `real_estate_site_submit` payload carried the same clean attribution values.
 - WordPress still has Gravity Forms Google Analytics active with an active Form `1` feed. Keep this as a duplicate-source risk until disabled or proven audit-only.
 
 ## Website Source
@@ -53,7 +55,7 @@ Live main-conversion refresh on 2026-05-04:
 - [ ] Confirm USA Meta dataset/pixel before activating Meta final helper-event tags.
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
 - [ ] Disable or prove audit-only the active Gravity Forms Google Analytics Form `1` feed.
-- [ ] Fix USA attribution mapping so helper payloads include populated UTM/click/GA client values when GAConnector cookies exist.
+- [x] Fix USA attribution mapping so helper payloads include populated UTM/click/GA client values when GAConnector cookies exist.
 
 ## Measurement Protocol Audit Test
 
