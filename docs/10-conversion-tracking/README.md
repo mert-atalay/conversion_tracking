@@ -24,6 +24,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - [Google platform access status, 2026-05-04](./google-platform-access-status-2026-05-04.md)
 - [Current access implementation plan, 2026-05-04](./current-access-implementation-plan-2026-05-04.md)
 - [Parent Google / GTM / Ads signoff, 2026-05-04](./parent-google-gtm-ads-signoff-2026-05-04.md)
+- [WP Engine WP-CLI access POC, 2026-05-04](./wpengine-wpcli-access-poc-2026-05-04.md)
 
 ## Current Rules
 
