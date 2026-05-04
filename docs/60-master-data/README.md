@@ -8,6 +8,7 @@ This folder is for canonical and partial reference data across schools, programs
 - [Canonical school/program taxonomy status](../canonical-school-program-taxonomy-2026-05-03.md)
 - [Master data, taxonomy, conversion, and metrics reference](./cefa-master-data-taxonomy-and-measurement-reference-2026-05-03.md)
 - [School dimension warehouse coverage, 2026-05-03](./school-dimension-warehouse-coverage-2026-05-03.md)
+- [School form programs Google Sheet source, 2026-05-04](./school-form-programs-google-sheet-source-2026-05-04.md)
 
 ## Current Rules
 
@@ -27,6 +28,7 @@ This folder is for canonical and partial reference data across schools, programs
 - Gravity routing missing for South Surrey - Morgan Crossing East, Surrey - Cloverdale, Surrey - Panorama North, and Surrey - Sullivan Ridge.
 - School code missing for Calgary - South, North Vancouver - Capilano Mall, and Surrey - Sunnyside.
 - CRM/KinderTales journey-code mapping for programs is still pending.
+- The school form programs Google Sheet has 51 school rows and needs reconciliation against the 53-row BigQuery school dimension before it becomes a canonical crosswalk.
 - Raw/restricted GreenRope opportunity audit tables, normalized opportunity tables, field dictionary, phase taxonomy/path snapshots, and daily aggregate refresh automation are still pending.
 - Rule-registry upload workflow is still pending even though the current BigQuery registry/view is seeded.
 

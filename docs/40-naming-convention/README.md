@@ -35,6 +35,12 @@ Key contracts:
   - Covers GBP/Yelp website and inquiry-form UTM rules.
   - The rule is approved for documentation use, but live listing updates still require field availability and school-slug verification.
 
+## Related Master Data Inputs
+
+- [School form programs Google Sheet source](../60-master-data/school-form-programs-google-sheet-source-2026-05-04.md)
+  - Status: `Partial`
+  - Use as a parent-school program and form URL input for future parent `ProgramTag` dropdowns after reconciliation against the canonical school dimension.
+
 ## BigQuery / Dashboard Registry
 
 - Current naming-convention rule references are available to dashboards through `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`.
