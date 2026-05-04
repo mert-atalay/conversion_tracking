@@ -9,7 +9,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Workbook remains the human source of truth unless CEFA approves a new naming version.
 - Latest reviewed Drive package, final v3 / v20 candidate: [Drive folder](https://drive.google.com/drive/folders/1OYm5c2hA7UZF3AXk5XvOvIcMq6g-P_qN) and [v20 workbook](https://docs.google.com/spreadsheets/d/1A2WmOmADovTHV69zt9kA5KtBWoatAJOD/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
-  - The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until the budget campaign-name/key formulas, URL/UTM source mapping, dropdown validation, and current-campaign rename table are fixed.
+  - Formula placement in the budget tabs was fixed in the live Drive workbook on 2026-05-04. The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until URL/UTM source mapping, dropdown validation, location/form URL reconciliation, and the current-campaign rename table are fixed.
 - Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
   - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
