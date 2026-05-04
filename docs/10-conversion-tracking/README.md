@@ -23,6 +23,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - [Parent current state and remaining work, 2026-05-04](./parent-current-state-and-remaining-work-2026-05-04.md)
 - [Google platform access status, 2026-05-04](./google-platform-access-status-2026-05-04.md)
 - [Current access implementation plan, 2026-05-04](./current-access-implementation-plan-2026-05-04.md)
+- [Parent Google / GTM / Ads signoff, 2026-05-04](./parent-google-gtm-ads-signoff-2026-05-04.md)
 
 ## Current Rules
 

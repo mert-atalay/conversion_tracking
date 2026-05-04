@@ -72,7 +72,8 @@ This file records access verification only. It does not approve live platform ed
 
 | Conversion action | ID | Status | Primary for goal | Include in conversions | Notes |
 |---|---:|---|---:|---:|---|
-| `Inquiry Submit_ollo` | `789472714` | `ENABLED` | `true` | `true` | Current enabled parent lead-form action; needs final alignment with helper-event GTM path. |
+| `Inquiry Submit_ollo` | `789472714` | `ENABLED` | `true` | `true` | Current intended parent lead-form bidding action. Its Google Ads label is `cFt-CMrLufgCEIzSyv4C`. |
+| `Contact Form Submit_ollo` | `788781971` | `ENABLED` | `true` | `false` | The 2026-05-04 GTM audit found the live helper-event Ads tag currently uses this action's label `5_KbCJO3j_gCEIzSyv4C`; correct GTM before Ads signoff. |
 | `generate_lead (GA4)` | `6540439360` | `ENABLED` | `false` | `false` | GA4-imported action exists but is secondary/not included. |
 | `Phone Click_ollo` | `789475090` | `ENABLED` | `true` | `false` | Enabled but not included in conversions metric. |
 | `Email Click_ollo` | `789488589` | `ENABLED` | `true` | `false` | Enabled but not included in conversions metric. |
@@ -108,7 +109,7 @@ This file records access verification only. It does not approve live platform ed
 ## Next Actions
 
 1. Use Google Ads API read access to produce a final parent conversion-action signoff table.
-2. Decide whether parent should optimize on the enabled Google Ads webpage action, the GA4-imported `generate_lead`, or a revised final action.
+2. Correct the parent GTM helper-event Ads label so `school_inquiry_submit` fires `Inquiry Submit_ollo`, not `Contact Form Submit_ollo`.
 3. Do the same conversion-action decision for Franchise Canada and Franchise USA.
 4. Resolve Meta access separately.
 5. After approval, make platform changes in small batches with documented before/after values.

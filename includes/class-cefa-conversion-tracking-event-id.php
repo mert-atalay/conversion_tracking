@@ -50,7 +50,7 @@ final class CEFA_Conversion_Tracking_Event_ID {
 				$value = sanitize_text_field( wp_unslash( $_POST[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$value = self::normalize_event_id( $value );
 
-				if ( '' !== $value ) {
+				if ( '' !== $value && ! self::event_id_conflicts_with_posted_values( $value, $form_config ) ) {
 					return $value;
 				}
 			}
@@ -99,7 +99,7 @@ final class CEFA_Conversion_Tracking_Event_ID {
 		foreach ( self::event_id_entry_fields( $form_config ) as $field_id ) {
 			$event_id = self::normalize_event_id( (string) rgar( $entry, $field_id ) );
 
-			if ( '' !== $event_id ) {
+			if ( '' !== $event_id && ! self::event_id_conflicts_with_entry_values( $event_id, $entry, $form_config ) ) {
 				return $event_id;
 			}
 		}
@@ -107,7 +107,7 @@ final class CEFA_Conversion_Tracking_Event_ID {
 		$entry_key = self::event_id_entry_key( $form_config );
 		$event_id  = self::normalize_event_id( (string) rgar( $entry, $entry_key ) );
 
-		if ( '' !== $event_id ) {
+		if ( '' !== $event_id && ! self::event_id_conflicts_with_entry_values( $event_id, $entry, $form_config ) ) {
 			return $event_id;
 		}
 
@@ -115,7 +115,13 @@ final class CEFA_Conversion_Tracking_Event_ID {
 			return '';
 		}
 
-		return self::normalize_event_id( (string) gform_get_meta( (int) $entry['id'], $entry_key ) );
+		$event_id = self::normalize_event_id( (string) gform_get_meta( (int) $entry['id'], $entry_key ) );
+
+		if ( '' !== $event_id && ! self::event_id_conflicts_with_entry_values( $event_id, $entry, $form_config ) ) {
+			return $event_id;
+		}
+
+		return '';
 	}
 
 	/**
@@ -197,6 +203,96 @@ final class CEFA_Conversion_Tracking_Event_ID {
 		return isset( $form_config['event_id_meta_key'] )
 			? sanitize_key( (string) $form_config['event_id_meta_key'] )
 			: CEFA_Conversion_Tracking_Config::EVENT_ID_META_KEY;
+	}
+
+	/**
+	 * Check whether an event ID candidate is actually one of the form metadata values.
+	 *
+	 * @param string               $event_id    Event ID candidate.
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return bool
+	 */
+	private static function event_id_conflicts_with_posted_values( string $event_id, array $form_config = array() ): bool {
+		foreach ( self::metadata_field_ids( $form_config ) as $field_id ) {
+			foreach ( self::field_post_keys( $field_id ) as $key ) {
+				if ( ! isset( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					continue;
+				}
+
+				$value = sanitize_text_field( wp_unslash( $_POST[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+				if ( self::same_token( $event_id, $value ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check whether an entry event ID candidate is actually one of the entry metadata values.
+	 *
+	 * @param string               $event_id    Event ID candidate.
+	 * @param array<string, mixed> $entry       Gravity Forms entry.
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return bool
+	 */
+	private static function event_id_conflicts_with_entry_values( string $event_id, array $entry, array $form_config = array() ): bool {
+		foreach ( self::metadata_field_ids( $form_config ) as $field_id ) {
+			if ( in_array( $field_id, self::event_id_entry_fields( $form_config ), true ) ) {
+				continue;
+			}
+
+			if ( self::same_token( $event_id, (string) rgar( $entry, $field_id ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Metadata field IDs whose values must never be reused as event IDs.
+	 *
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return string[]
+	 */
+	private static function metadata_field_ids( array $form_config = array() ): array {
+		$field_map = is_array( $form_config['field_map'] ?? null ) ? $form_config['field_map'] : array();
+
+		return array_values( array_unique( array_filter( array_map( 'strval', $field_map ) ) ) );
+	}
+
+	/**
+	 * POST key variants for a Gravity Forms field ID.
+	 *
+	 * @param string $field_id Gravity Forms field ID.
+	 * @return string[]
+	 */
+	private static function field_post_keys( string $field_id ): array {
+		return array_values(
+			array_unique(
+				array(
+					'input_' . $field_id,
+					'input_' . str_replace( '.', '_', $field_id ),
+				)
+			)
+		);
+	}
+
+	/**
+	 * Compare normalized scalar tracking tokens.
+	 *
+	 * @param string $left  First token.
+	 * @param string $right Second token.
+	 * @return bool
+	 */
+	private static function same_token( string $left, string $right ): bool {
+		$left  = trim( $left );
+		$right = trim( $right );
+
+		return '' !== $left && '' !== $right && $left === $right;
 	}
 
 	/**

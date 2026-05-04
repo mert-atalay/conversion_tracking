@@ -34,7 +34,8 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 | GA4 custom definitions | Verified from existing repo docs | Parent helper low-cardinality dimensions are registered in GA4 property `267558140`. |
 | GA4 key event | Verified from existing repo docs | `generate_lead` is a GA4 key event; `validation_error` is not. |
 | Google Ads link | Verified from existing repo docs | GA4 property `267558140` is linked to Google Ads customer `4159217891`. |
-| Live plugin package version | Partial | Live sampled HTML loads `cefa-conversion-tracking.js?ver=0.4.1`; repo plugin header is `0.4.2`. Confirm whether 0.4.2 should be deployed to production before treating repo/live as fully synchronized. |
+| Google Ads direct conversion label | Failing | Live GTM helper-event Ads tag uses label `5_KbCJO3j_gCEIzSyv4C`, which maps to `Contact Form Submit_ollo`; the intended parent bidding action `Inquiry Submit_ollo` uses label `cFt-CMrLufgCEIzSyv4C`. |
+| Live plugin package version | Partial | Live sampled HTML loads `cefa-conversion-tracking.js?ver=0.4.1`; repo plugin header is now `0.4.3`. Deploy `0.4.3` before treating repo/live as fully synchronized. |
 
 ## Done
 
@@ -48,15 +49,18 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 - Micro-events are available website-side: `parent_inquiry_cta_click`, `find_a_school_click`, `phone_click`, `email_click`, `form_start`, `form_submit_click`, and `validation_error`.
 - BigQuery export evidence shows helper-plugin GA4 `generate_lead` and `validation_error` rows with no duplicate helper `generate_lead` event IDs in the latest checked seven-day export window.
 - GA4 custom dimensions exist for the parent helper payload.
+- Parent GTM live version `5` maps `school_inquiry_submit` to GA4 `generate_lead`, Meta `Inquiry Submit`, and a Google Ads direct conversion tag.
+- A 2026-05-04 Ads API audit found the direct Google Ads helper-event tag is pointing at the `Contact Form Submit_ollo` label instead of the intended `Inquiry Submit_ollo` label.
+- Repo plugin `0.4.3` now rejects school/program/day metadata values if they appear in the event ID field, after BigQuery showed one helper `generate_lead` row where `event_id` equaled `school_selected_id`.
 - Local-listing UTM rules for GBP/Yelp have been documented under the naming-convention workstream.
 
 ## Left
 
 | Priority | Status | Item | Why it matters |
 |---|---|---|---|
-| 1 | Pending | Confirm whether repo plugin `0.4.2` should be deployed to live, or document that live `0.4.1` is intentionally current. | Repo and live should not drift before final signoff. |
-| 2 | Pending | Run one mobile browser Form 4 submission QA. | Mobile is the one remaining parent production QA scenario listed as open. |
-| 3 | Pending | Confirm Google Ads conversion action primary/secondary status in Ads UI/API before bidding signoff. | Browser tracking can be working while Ads bidding still uses the wrong primary action. |
+| 1 | Pending approval | Correct the parent GTM Google Ads conversion label from `5_KbCJO3j_gCEIzSyv4C` to `cFt-CMrLufgCEIzSyv4C`. | The current direct helper-event Ads tag maps to `Contact Form Submit_ollo`, not `Inquiry Submit_ollo`. |
+| 2 | Pending deployment | Deploy repo plugin `0.4.3` to live. | Prevents school/program/day metadata from being accepted as `event_id` if Field `32.4` is prefilled incorrectly. |
+| 3 | Pending | Run one mobile browser Form 4 submission QA after plugin/GTM updates. | Mobile is the one remaining parent production QA scenario listed as open. |
 | 4 | Pending | Confirm Meta Events Manager custom conversion and optimization-event status. | Meta delivery/learning depends on the correct event and dataset configuration. |
 | 5 | Pending | Reconcile `school_inquiry_submit` through GTM, GA4, Google Ads, Meta, and BigQuery after the latest production traffic window. | Confirms the full path, not just browser and GA4 export evidence. |
 | 6 | Pending | Refresh or reconnect current parent business-truth inquiry marts after 2026-03-29. | Platform/GA4 conversions are not final inquiry truth until CRM/KinderTales/collector-backed reporting is current. |
@@ -79,6 +83,8 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 - Live HTML sample: `https://cefa.ca/submit-an-inquiry-today/?location=abbotsford-highstreet`
 - Live HTML sample: `https://cefa.ca/thank-you/?location=abbotsford-highstreet&inquiry=true`
 - BigQuery GA4 export: `marketing-api-488017.analytics_267558140.events_*`
+- Google / GTM / Ads API audit:
+  - `docs/10-conversion-tracking/parent-google-gtm-ads-signoff-2026-05-04.md`
 - Existing parent docs:
   - `docs/parent-production-cutover-checklist.md`
   - `docs/live-conversion-tracking-status-2026-05-01.md`
@@ -88,9 +94,9 @@ This file summarizes what is done and what is still left for parent `cefa.ca` co
 
 Do the remaining parent work in this order:
 
-1. Decide/deploy plugin version alignment for live `0.4.1` vs repo `0.4.2`.
-2. Run mobile Form 4 QA.
-3. Confirm Google Ads primary/secondary action status.
+1. Correct the GTM direct Google Ads conversion label so helper `school_inquiry_submit` fires `Inquiry Submit_ollo`.
+2. Deploy plugin `0.4.3`.
+3. Run mobile Form 4 QA.
 4. Confirm Meta custom conversion / optimization status.
 5. Refresh the parent business-truth inquiry marts and reconcile against helper events.
 6. Only then clean old GTM/GA4 artifacts and start Phase 1B server-side work.
