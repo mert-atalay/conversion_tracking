@@ -9,27 +9,32 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Workbook remains the human source of truth unless CEFA approves a new naming version.
 - Latest reviewed Drive package, final v3 / v20 candidate: [Drive folder](https://drive.google.com/drive/folders/1OYm5c2hA7UZF3AXk5XvOvIcMq6g-P_qN) and [v20 workbook](https://docs.google.com/spreadsheets/d/1A2WmOmADovTHV69zt9kA5KtBWoatAJOD/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
-  - Formula placement in the budget tabs was fixed in the live Drive workbook on 2026-05-04. The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until URL/UTM source mapping, dropdown validation, location/form URL reconciliation, and the current-campaign rename table are fixed.
+  - Formula placement in the budget tabs was fixed in the live Drive workbook on 2026-05-04. The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until URL/UTM source mapping, dropdown validation, location/form URL reconciliation, and the active-object rename inventory is reviewed by CEFA.
 - Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
   - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
 
 ## Current Naming Version
 
-Current Meta naming version: `NC1`.
+Current live Meta naming version: `NC1`.
+Current proposed Meta naming version for review/renaming: `NC2`.
 Current local listing UTM version: `ll1`.
-Budget-driven Meta naming v19 is a candidate future version, not the approved current version.
+Budget-driven Meta naming v20/final-v3 and the active-object inventory are the current NC2 planning surfaces, not live rename approval.
 
 Key contracts:
 
-- Campaign: `CEFA | {ScopeTag} | {FundingTag} | {ActivationTag} | {SchoolOrGroup} | META | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
+- Campaign: `CEFA | {BudgetScope} | {Activation} | {LocationOrGroup} | META | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
 - Ad set: `{Persona} | {AudienceType} | {Geo} | {Placement}`
-- Meta ad: `{FormatTag} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
+- Meta ad: `{FormatTag} | {ProgramOrTopic} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
 - Creative group key: `{school_slug}__{scope}__{funding}__{activation}__{theme}__{format}__{concept}__cr##__v#`
-- UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_slug}&utm_content={ad_slug_or_data_key}`
+- UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_key}&utm_content={ad_data_key}&utm_term={ad_set_key}`
 
 ## Current Files
 
+- [Meta naming NC2 active last-30 inventory](./meta-naming-nc2-active-last-30-inventory-2026-05-04.md)
+  - Status: `Verified` for live Meta reads and active object IDs/names; `Partial` for proposed NC2 names.
+  - Covers CEFA Early Learning and CEFA Franchisor campaigns, ad sets, and ads that delivered from 2026-04-05 through 2026-05-04.
+  - Links the active object inventory CSV with current names, object IDs, proposed NC2 names, and review flags.
 - [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
   - Status: `Partial`
   - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.

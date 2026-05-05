@@ -73,8 +73,9 @@ Last updated: 2026-05-04
    - `META_IMPORT_READY` does not expose a final `URL Tags` column or separate `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, and `utm_term` fields.
    - The workbook should generate URL tags from stable keys, not from Meta dynamic names.
 
-4. Current-campaign rename table is missing.
+4. Current-campaign rename table still needs workbook import/review.
    - The workbook does not include the current campaign-name normalization table requested for campaigns such as `Victoria Heights | LSM | prospecting | lifetime`, `Reshift Franchise Acquisition - US New`, `New Leads campaign`, and `New Sales campaign`.
+   - A repo-level active-object inventory now covers delivered campaign, ad set, and ad names/IDs from 2026-04-05 through 2026-05-04: [Meta naming NC2 active last-30 inventory](./meta-naming-nc2-active-last-30-inventory-2026-05-04.md).
    - Keep the rename table separate from the import-ready table so historical cleanup does not accidentally become a new campaign import.
 
 5. Parent program tags need display-label and machine-token separation.
@@ -115,4 +116,4 @@ Last updated: 2026-05-04
 
 Do not share final v3/v20 as the team source of truth yet.
 
-Use it as the best current structural draft because the dynamic-copy direction is right and the main budget formula placement bug is now fixed. Fix dropdown validation, URL/UTM output, location/form URL mapping, and the campaign rename table before treating it as the candidate `NC2` workbook.
+Use it as the best current structural draft because the dynamic-copy direction is right and the main budget formula placement bug is now fixed. Fix dropdown validation, URL/UTM output, location/form URL mapping, and add/import the reviewed active-object rename inventory before treating it as the candidate `NC2` workbook.
