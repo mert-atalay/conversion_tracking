@@ -72,6 +72,42 @@ Use IDs as the stable source of truth for historical joins. Names can change.
 | Ad set | `adset_id` | `ad_set_key` / CSV `proposed_key` when `object_level=ad_set` |
 | Ad | `ad_id` | `ad_data_key` / CSV `proposed_key` when `object_level=ad` |
 
+## ID Inventory Contract
+
+`Verified`
+
+The inventory CSV is the current GitHub-backed ID crosswalk for Meta rename planning. Use it as the object handle list before any future live rename, bulk upload, n8n workflow, QA export, or conversion-tracking join.
+
+| CSV field | Campaign rows | Ad set rows | Ad rows |
+| --- | --- | --- | --- |
+| `object_level` | `campaign` | `ad_set` | `ad` |
+| `object_id` | Campaign ID | Ad set ID | Ad ID |
+| `current_name` | Current campaign name | Current ad set name | Current ad name |
+| `parent_campaign_id` | Same campaign ID | Parent campaign ID | Parent campaign ID |
+| `parent_campaign_name` | Same campaign name | Parent campaign name | Parent campaign name |
+| `parent_adset_id` | Blank | Same ad set ID | Parent ad set ID |
+| `parent_adset_name` | Blank | Same ad set name | Parent ad set name |
+| `proposed_nc2_name` | Proposed campaign name | Proposed ad set name | Proposed ad name |
+| `proposed_key` | Proposed `campaign_key` | Proposed `ad_set_key` | Proposed `ad_data_key` |
+| `naming_status` | Rename-planning status | Rename-planning status | Rename-planning status |
+
+Practical rule: never identify a live object for renaming by name alone. Filter or import by the matching ID column first, then compare `current_name -> proposed_nc2_name`.
+
+## Rename Workflow Guardrail
+
+`Pending`
+
+No live Meta rename has been approved yet. When CEFA is ready to rename objects:
+
+1. Export the affected rows from the inventory CSV by `account_alias` and `object_level`.
+2. Review `object_id`, `current_name`, `proposed_nc2_name`, `proposed_key`, and `naming_status`.
+3. Do not rename rows marked `needs_review` until the underlying creative/copy source is checked.
+4. Build any Meta bulk sheet, n8n job, or API request with IDs included:
+   - Campaign rename rows must include `campaign_id`.
+   - Ad set rename rows must include `adset_id` and `parent_campaign_id`.
+   - Ad rename rows must include `ad_id`, `parent_adset_id`, and `parent_campaign_id`.
+5. Keep an export of the approved `old_name -> new_name` mapping with IDs before changing anything live.
+
 ## Inventory Summary
 
 `Verified`
@@ -100,7 +136,9 @@ Use IDs as the stable source of truth for historical joins. Names can change.
 Use the inventory CSV as the active Meta object crosswalk for the current transition:
 
 - Keep `campaign_id`, `adset_id`, and `ad_id` in all conversion-tracking exports and QA tables.
+- Keep `parent_campaign_id` and `parent_adset_id` on ad-level rows so conversions can be reconciled across account, campaign, ad set, and ad dimensions after names change.
 - Use proposed `campaign_key`, `ad_set_key`, and `ad_data_key` for future UTMs only after the row is reviewed and approved.
+- Store old/current names and proposed names as labels, not primary join keys.
 - Do not backfill historical reporting by name alone.
 - Do not use `needs_review` ad-level proposed names for final creative naming until the creative/copy source is checked.
 

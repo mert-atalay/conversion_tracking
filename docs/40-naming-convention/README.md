@@ -28,13 +28,14 @@ Key contracts:
 - Meta ad: `{FormatTag} | {ProgramOrTopic} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
 - Creative group key: `{school_slug}__{scope}__{funding}__{activation}__{theme}__{format}__{concept}__cr##__v#`
 - UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_key}&utm_content={ad_data_key}&utm_term={ad_set_key}`
+- Rename/join handle: use `campaign_id`, `adset_id`, and `ad_id` from the active-object inventory. Do not use current names as the only live object selector.
 
 ## Current Files
 
 - [Meta naming NC2 active last-30 inventory](./meta-naming-nc2-active-last-30-inventory-2026-05-04.md)
   - Status: `Verified` for live Meta reads and active object IDs/names; `Partial` for proposed NC2 names.
   - Covers CEFA Early Learning and CEFA Franchisor campaigns, ad sets, and ads that delivered from 2026-04-05 through 2026-05-04.
-  - Links the active object inventory CSV with current names, object IDs, proposed NC2 names, and review flags.
+  - Links the active object inventory CSV with current names, campaign/ad set/ad IDs, parent campaign/ad set IDs, proposed NC2 names, and review flags.
 - [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
   - Status: `Partial`
   - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.
@@ -62,6 +63,7 @@ Key contracts:
 
 - Do not silently change token meanings.
 - Do not use Drive/SharePoint creative filenames as visible Meta ad names.
+- Do not rename live Meta objects by name lookup alone; use IDs from the active-object inventory.
 - API-created or imported Meta objects must default to paused unless explicitly approved.
 - Paid-media agents should link here before creating or reviewing campaign/ad naming.
 
