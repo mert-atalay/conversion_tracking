@@ -10,6 +10,10 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Latest reviewed Drive package, final v3 / v20 candidate: [Drive folder](https://drive.google.com/drive/folders/1OYm5c2hA7UZF3AXk5XvOvIcMq6g-P_qN) and [v20 workbook](https://docs.google.com/spreadsheets/d/1A2WmOmADovTHV69zt9kA5KtBWoatAJOD/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
   - Formula placement in the budget tabs was fixed in the live Drive workbook on 2026-05-04. The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until URL/UTM source mapping, dropdown validation, location/form URL reconciliation, and the active-object rename inventory is reviewed by CEFA.
+- Current POC control sheet: [CEFA Paid Media Build Control Center - POC v1 - 2026-05-05](https://docs.google.com/spreadsheets/d/11mlcPQy_nz-XvjgSotl0cCWAJr2BS8REK6Ex2nOIMYI/edit).
+  - Status: `Partial`
+  - Created as the simpler team-facing control surface for copy, creative, budget reference, ID-backed destinations, build manifest rows, QA, and future n8n/import output.
+  - This is not a live launch or budget-edit tool.
 - Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
   - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
@@ -50,6 +54,9 @@ Key contracts:
   - Status: `Verified` for live Google Ads reads and active object IDs/names; `Partial` for proposed GADS1 names.
   - Covers CEFA $3000 and CEFA Franchisor campaigns, ad groups, asset groups, and ads that delivered from 2026-04-05 through 2026-05-04.
   - Links the active object inventory CSV with current names, campaign/ad group/asset group/ad IDs, proposed GADS1 names, and review flags.
+- [Paid media build control center POC](./paid-media-build-control-center-poc-2026-05-05.md)
+  - Status: `Partial`
+  - Documents the new native Google Sheet POC for team copy/creative intake, budget sync, ID-backed object destinations, build manifest QA, and future n8n/import output.
 - [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
   - Status: `Partial`
   - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.
