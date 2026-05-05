@@ -18,6 +18,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 
 Current live Meta naming version: `NC1`.
 Current proposed Meta naming version for review/renaming: `NC2`.
+Current proposed Google Ads naming version for review/renaming: `GADS1`.
 Current local listing UTM version: `ll1`.
 Budget-driven Meta naming v20/final-v3 and the active-object inventory are the current NC2 planning surfaces, not live rename approval.
 
@@ -26,8 +27,12 @@ Key contracts:
 - Campaign: `CEFA | {BudgetScope} | {Activation} | {LocationOrGroup} | META | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
 - Ad set: `{Persona} | {AudienceType} | {Geo} | {Placement}`
 - Meta ad: `{FormatTag} | {ProgramOrTopic} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
+- Google Ads campaign: `CEFA | {BudgetScope} | {Activation} | {LocationOrGroup} | GOOGLE | {Channel} | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
+- Google Ads search ad group: `{PersonaOrIntent} | {KeywordTheme} | {GeoOrMarket} | {MatchStrategy}`
+- Google Ads PMax asset group: `Asset Group | {GeoOrMarket} | PMax`
 - Creative group key: `{school_slug}__{scope}__{funding}__{activation}__{theme}__{format}__{concept}__cr##__v#`
 - UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_key}&utm_content={ad_data_key}&utm_term={ad_set_key}`
+- Google Ads UTM: `utm_source=google&utm_medium=cpc&utm_campaign={campaign_key}&utm_content={ad_build_key}&utm_term={keyword_or_ad_group_key}`
 - Rename/join handle: use `campaign_id`, `adset_id`, and `ad_id` from the active-object inventory. Do not use current names as the only live object selector.
 - Build/import handle: use a row-level build manifest that maps creative, copy, URL tags, program/topic, campaign/ad set/ad IDs, QA, and approval status before any Meta import or n8n write.
 
@@ -41,6 +46,10 @@ Key contracts:
   - Status: `Partial`
   - Defines the row-level workbook/n8n contract required before mapping CEFA creative and copy into Meta campaign/ad set/ad create, update, or rename rows.
   - Requires ID-based object matching, parent program-token dropdowns, separate franchise topics, generated URL tags, QA gates, approval status, and `PAUSED` import defaults.
+- [Google Ads naming GADS1 active last-30 inventory](./google-ads-naming-gads1-active-last-30-inventory-2026-05-04.md)
+  - Status: `Verified` for live Google Ads reads and active object IDs/names; `Partial` for proposed GADS1 names.
+  - Covers CEFA $3000 and CEFA Franchisor campaigns, ad groups, asset groups, and ads that delivered from 2026-04-05 through 2026-05-04.
+  - Links the active object inventory CSV with current names, campaign/ad group/asset group/ad IDs, proposed GADS1 names, and review flags.
 - [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
   - Status: `Partial`
   - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.
@@ -69,8 +78,11 @@ Key contracts:
 - Do not silently change token meanings.
 - Do not use Drive/SharePoint creative filenames as visible Meta ad names.
 - Do not rename live Meta objects by name lookup alone; use IDs from the active-object inventory.
+- Do not rename live Google Ads objects by name lookup alone; use customer, campaign, ad group, asset group, and ad IDs from the Google Ads inventory.
+- Do not treat Google Ads ads as having a Meta-style visible ad name; use `ad_id` plus a build key for ad-level tracking and bulk edits.
 - Do not build Meta import rows directly from creative files or copy text alone; use the build manifest contract so every row has destination, copy, creative, URL tag, QA, and approval fields.
 - API-created or imported Meta objects must default to paused unless explicitly approved.
+- API-created or bulk-created Google Ads campaigns, ad groups, asset groups, and ads must default to paused unless explicitly approved.
 - Paid-media agents should link here before creating or reviewing campaign/ad naming.
 
 ## Suggested Next Files
