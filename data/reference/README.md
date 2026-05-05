@@ -18,6 +18,11 @@ This folder is for small, reviewable, machine-readable reference data used by th
   - Use: active Meta object crosswalk for naming review, UTM planning, and conversion-tracking joins.
   - ID contract: `object_id` is the campaign ID when `object_level=campaign`, the ad set ID when `object_level=ad_set`, and the ad ID when `object_level=ad`. Ad set and ad rows also carry `parent_campaign_id`; ad rows also carry `parent_adset_id`.
   - Guardrail: this is normalized reference data, not a raw Meta export, not a secret source, and not approval to make live Meta changes.
+- [cefa-meta-creative-build-manifest-template-2026-05-04.csv](./cefa-meta-creative-build-manifest-template-2026-05-04.csv)
+  - Status: `Partial`
+  - Scope: header-only template for future CEFA Meta creative-to-ad build/import rows.
+  - Use: workbook, Google Sheet, or n8n manifest schema for mapping approved copy and creative assets to campaign/ad set/ad IDs, generated names, URL tags, QA, approvals, and post-import audit fields.
+  - Guardrail: this is a template contract, not an import-ready file and not approval to make live Meta changes.
 
 ## Planned Files
 

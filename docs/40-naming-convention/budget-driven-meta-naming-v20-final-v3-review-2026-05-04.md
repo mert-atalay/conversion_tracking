@@ -92,6 +92,11 @@ Last updated: 2026-05-04
    - `META_AD_BUILD_MB` / `META_IMPORT_READY` can still show `OK` if required fields and placeholders are present.
    - Length warnings should be visible in stakeholder review and import QA.
 
+8. Creative-to-ad build rows need an explicit manifest contract before bulk upload.
+   - The current workbook structure separates copy, creative, build, and import areas, but it still needs a governed row-level contract that says which creative/copy combination maps to which campaign/ad set/ad ID.
+   - The new contract is documented in [Meta creative build import manifest contract](./meta-creative-build-import-manifest-2026-05-04.md).
+   - The workbook should not generate `META_IMPORT_READY` rows from creative files or copy text alone. It should pass through a build manifest with destination IDs, parent program tokens, franchise topics, URL tags, generated names, QA status, approval status, and `PAUSED` defaults.
+
 ## Recommended Fix Pattern
 
 - Keep `AM:AQ` as user/dropdown fields: `Activation`, `Objective`, `Funnel`, `Theme`, `Seq`. This is now fixed in the live workbook.
@@ -105,6 +110,14 @@ Last updated: 2026-05-04
   - `Destination URL Type`
   - `Final Destination URL`
   - `URL Tags`
+- Add row-level build/import fields from the manifest contract:
+  - `action`
+  - `campaign_id`, `adset_id`, and `ad_id` when updating or renaming existing objects
+  - `program_label` and `program_token` for parent rows
+  - `franchise_topic` for franchise rows
+  - `qa_status`, `qa_errors`, `qa_warnings`
+  - `approval_status`
+  - `publish_status`
 - Add UTM fields:
   - `utm_source=meta`
   - `utm_medium=paid_social`
@@ -117,3 +130,5 @@ Last updated: 2026-05-04
 Do not share final v3/v20 as the team source of truth yet.
 
 Use it as the best current structural draft because the dynamic-copy direction is right and the main budget formula placement bug is now fixed. Fix dropdown validation, URL/UTM output, location/form URL mapping, and add/import the reviewed active-object rename inventory before treating it as the candidate `NC2` workbook.
+
+Also add the build/import manifest contract before using the workbook for real creative deployment. This is the layer that will let CEFA give Codex or n8n a set of creatives, copy, and budget instructions without accidentally mapping them to the wrong campaign/ad set or creating active objects.

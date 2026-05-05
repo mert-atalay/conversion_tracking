@@ -137,6 +137,7 @@ Use the inventory CSV as the active Meta object crosswalk for the current transi
 
 - Keep `campaign_id`, `adset_id`, and `ad_id` in all conversion-tracking exports and QA tables.
 - Keep `parent_campaign_id` and `parent_adset_id` on ad-level rows so conversions can be reconciled across account, campaign, ad set, and ad dimensions after names change.
+- Use these IDs as destination fields in the [Meta creative build import manifest contract](./meta-creative-build-import-manifest-2026-05-04.md) before creating or updating ads from new CEFA creatives.
 - Use proposed `campaign_key`, `ad_set_key`, and `ad_data_key` for future UTMs only after the row is reviewed and approved.
 - Store old/current names and proposed names as labels, not primary join keys.
 - Do not backfill historical reporting by name alone.
