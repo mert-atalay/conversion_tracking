@@ -26,6 +26,9 @@ Last updated: 2026-05-06
 - `GOOGLE_IMPORT_READY` now outputs the expanded Google RSA structure with 15 headline fields and 4 description fields.
 - The original master tabs for copy templates, rendered copy, creative assets, and build manifest are now hidden backend consolidation tabs.
 - `CAMPAIGN_PICKER` gives MB and the team readable campaign choices such as `LSM-003 | Parent LSM | META | Cornerstone | Enrollment | 2026-07`; the generated slot value remains the budget-plan key. It now also includes Google parent/franchise picker columns.
+- `PARENT_COPY_CW`, `FRANCHISE_COPY_CW`, `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW`, `PARENT_CREATIVE_GD`, and `FRANCHISE_CREATIVE_GD` now start with `location_or_market` so content and design can see the target location/market before writing copy or preparing creative.
+- `PARENT_RENDER_MB` and `FRANCHISE_RENDER_MB` now start with three human selectors: `month`, `location_or_market`, and `copy_template_picker`. The hidden `campaign_picker`, `campaign_slot`, `copy_template_slot`, and `copy_render_slot` are still generated for stable formulas.
+- `COPY_TEMPLATE_PICKER` now presents copy templates with human-readable labels that start with copy angle, then program/topic, persona, offer, and headline preview. The old `PCT-*` / `FCT-*` slots remain hidden backend IDs.
 - The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, n8n phase-1 rule, and `campaign_slot` explanation.
 - Color coding is applied: green for safe input, yellow for approval/review, blue for generated/output, red for blockers, gray for source/admin/reference, and purple for n8n/future automation.
 - `META_OBJECT_INVENTORY` and `GOOGLE_ADS_OBJECT_INVENTORY` are hidden.
@@ -38,8 +41,9 @@ Last updated: 2026-05-06
 - CopyAngle tokens now include the standard writing/naming options `Attention`, `Interest`, `Desire`, `Action`, `Trust`, `Program Fit`, `Curriculum`, `Safety`, `Convenience`, `Social Proof`, `Urgency`, `Diversification`, `Investment`, `Market Opportunity`, `Real Estate`, and `Retargeting`.
 - `CAMPAIGN_SELECTOR` now outputs the full budget-driven campaign slot, source, scope, platform, location, generated name, generated key, activation, objective, funnel, theme, month, sequence, and QA fields.
 - `CREATIVE_ASSET_REGISTRY_GD` was remapped so master creative rows read final filename, QA status, approval status, owner, and notes from the correct generated/user columns.
+- `CREATIVE_ASSET_REGISTRY_GD` was rechecked after adding the first-column location selector; the hidden master formula now keeps platform asset ID columns blank until sync and maps `creative_group_key`, filename, QA, approval, owner, and notes into the correct columns.
 - `META_IMPORT_READY` and `GOOGLE_IMPORT_READY` now filter from `BUILD_MANIFEST_MB` using `qa_status=OK`, `approval_status=Approved`, and `PAUSED` status columns.
-- A temporary parent LSM Meta POC row for Cornerstone generated a paused Meta import-ready row, then the test inputs were cleared so final import tabs are empty.
+- A temporary parent LSM Meta POC row for Cornerstone generated a paused Meta import-ready row from the new `month` + `location_or_market` + readable `copy_template_picker` flow, then the test inputs were cleared so final import tabs are empty.
 - A temporary franchise render/creative POC row confirmed franchise copy and creative filenames use `franchise_topic`, not parent program tokens, then the test inputs were cleared.
 - A temporary Google parent Search/RSA POC row generated a paused `GOOGLE_IMPORT_READY` row with 15 RSA headlines and 4 descriptions, then the test inputs were cleared so final import tabs are empty.
 - Final readback found no `ACTIVE` status in the checked Meta/Google import outputs.
@@ -63,10 +67,10 @@ Last updated: 2026-05-06
 
 | Team | Primary tab | Edit model |
 | --- | --- | --- |
-| Content writer - Meta | `PARENT_COPY_CW`, `FRANCHISE_COPY_CW` | Fill owner, platform, scope, persona, offer type, copy angle, copy text, CTA, language, and notes. Parent copy uses `program_label`; franchise copy uses `franchise_topic`. Optional preview location/market fields render placeholders for writing context. |
-| Content writer - Google | `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW` | Fill Google-specific RSA copy: up to 15 headlines, 4 descriptions, path fields, preview location/market, copy angle, QA/approval. Do not use the Meta copy tabs for Google RSA copy. |
-| Media / MB | `PARENT_RENDER_MB`, `FRANCHISE_RENDER_MB` | Select the readable campaign picker and copy template slot, then approve final rendered copy. Campaign keys, rendered copy, and QA fields are generated. |
-| Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Fill only the practical creative fields: campaign picker, business line/topic, format, concept, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
+| Content writer - Meta | `PARENT_COPY_CW`, `FRANCHISE_COPY_CW` | Start with `location_or_market`, then fill owner, scope, persona, offer type, copy angle, copy text, CTA, language, and notes. Parent copy uses `program_label`; franchise copy uses `franchise_topic`. Slot/key fields are generated and hidden. |
+| Content writer - Google | `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW` | Start with `location_or_market`, then fill Google-specific RSA copy: up to 15 headlines, 4 descriptions, path fields, copy angle, QA/approval. Do not use the Meta copy tabs for Google RSA copy. |
+| Media / MB | `PARENT_RENDER_MB`, `FRANCHISE_RENDER_MB` | Select `month`, `location_or_market`, and the readable `copy_template_picker`, then approve final rendered copy. Campaign keys, hidden slots, rendered copy, and QA fields are generated. |
+| Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Start with `location_or_market`, then fill only the practical creative fields: format, concept/ad angle, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
 | Media / MB - Meta | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Meta-oriented build surfaces. Platform is locked to `META`; use these for Meta campaign/ad set/ad build rows. |
 | Media / MB - Google | `GOOGLE_PARENT_BUILD_MB`, `GOOGLE_FRANCHISE_BUILD_MB` | Google-oriented build surfaces. Use these for Google customer/campaign/ad group/asset group/search ad rows and expanded RSA import output. |
 | Reviewer | `STAKEHOLDER_REVIEW` | Review generated build rows only. This tab is not an upload surface. |
