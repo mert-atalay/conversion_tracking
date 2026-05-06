@@ -20,16 +20,22 @@ Last updated: 2026-05-06
 `Verified`
 
 - The existing v21 Google Sheet was repaired and finalized in place; no duplicate sheet was created.
-- The workbook has the v21 tabs for settings, location mapping, budget references, campaign selector, content copy, rendered copy, creative assets, carousel cards, build manifest, stakeholder review, Meta import output, Google import output, rename review, pixel/event QA, n8n plan, object destinations, import audit, QA report, and raw inventories.
+- The workbook now has simplified user-facing tabs for parent copy, franchise copy, parent rendered copy, franchise rendered copy, parent creative, franchise creative, parent builds, and franchise builds.
+- The original master tabs for copy templates, rendered copy, creative assets, and build manifest are now hidden backend consolidation tabs.
+- `CAMPAIGN_PICKER` gives MB and the team readable campaign choices such as `LSM-003 | Parent LSM | META | Cornerstone | Enrollment | 2026-07`; the generated slot value remains the budget-plan key.
 - The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, n8n phase-1 rule, and `campaign_slot` explanation.
 - Color coding is applied: green for safe input, yellow for approval/review, blue for generated/output, red for blockers, gray for source/admin/reference, and purple for n8n/future automation.
 - `META_OBJECT_INVENTORY` and `GOOGLE_ADS_OBJECT_INVENTORY` are hidden.
-- 34 protected ranges are active for generated, source, import, and admin-managed areas.
-- `COPY_TEMPLATE_CW` now generates `copy_template_slot` and `copy_template_key`; content writers do not manually fill those fields.
+- 45 protected ranges are active for generated, source, import, and admin-managed areas.
+- `PARENT_COPY_CW` and `FRANCHISE_COPY_CW` feed the hidden `COPY_TEMPLATE_CW` master tab. Content writers do not manually fill `copy_template_slot` or `copy_template_key`; those fields are generated.
+- `program_label` is the human-facing label. `program_token` is the generated naming/UTM-safe token and is hidden/protected in user-facing parent tabs.
+- Franchise-facing rows use `franchise_topic` and leave parent `program_label` / `program_token` empty in the master output.
 - Controlled dropdowns were added or tightened for copy angle, persona, CTA, language, business line, parent program token, franchise topic, offer type, creative visual concept, audience type, placement, destination URL type, aspect ratio, and file type.
 - `CAMPAIGN_SELECTOR` now outputs the full budget-driven campaign slot, source, scope, platform, location, generated name, generated key, activation, objective, funnel, theme, month, sequence, and QA fields.
+- `CREATIVE_ASSET_REGISTRY_GD` was remapped so master creative rows read final filename, QA status, approval status, owner, and notes from the correct generated/user columns.
 - `META_IMPORT_READY` and `GOOGLE_IMPORT_READY` now filter from `BUILD_MANIFEST_MB` using `qa_status=OK`, `approval_status=Approved`, and `PAUSED` status columns.
 - A temporary parent LSM Meta POC row for Cornerstone generated a paused Meta import-ready row, then the test inputs were cleared so final import tabs are empty.
+- A temporary franchise render/creative POC row confirmed franchise copy and creative filenames use `franchise_topic`, not parent program tokens, then the test inputs were cleared.
 - Final readback found no `ACTIVE` status in the checked Meta/Google import outputs.
 
 `Partial`
@@ -51,12 +57,39 @@ Last updated: 2026-05-06
 
 | Team | Primary tab | Edit model |
 | --- | --- | --- |
-| Content writer | `COPY_TEMPLATE_CW` | Fill owner, platform, scope, business line, persona, parent program or franchise topic, offer type, copy angle, copy text, CTA, language, and notes. `copy_template_slot`, `copy_template_key`, and QA columns are generated/protected. |
-| Media / MB | `COPY_RENDER_MB` | Select campaign slot and copy template, approve final rendered copy. Rendered copy fields are generated. |
-| Designer | `CREATIVE_ASSET_REGISTRY_GD` | Fill creative metadata, format, concept, file link, and asset notes. Filename/key/QA columns are generated. |
-| Media / MB | `BUILD_MANIFEST_MB` | Select campaign slot, platform, IDs, copy, creative, destination type, approval, and publish status. Generated keys, UTMs, names, and statuses are protected. |
+| Content writer | `PARENT_COPY_CW`, `FRANCHISE_COPY_CW` | Fill owner, platform, scope, persona, offer type, copy angle, copy text, CTA, language, and notes. Parent copy uses `program_label`; franchise copy uses `franchise_topic`. Generated slots/keys/QA columns are hidden or protected. |
+| Media / MB | `PARENT_RENDER_MB`, `FRANCHISE_RENDER_MB` | Select the readable campaign picker and copy template slot, then approve final rendered copy. Campaign keys, rendered copy, and QA fields are generated. |
+| Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Fill only the practical creative fields: campaign picker, business line/topic, format, concept, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
+| Media / MB | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Select campaign picker, action, platform, object IDs, rendered copy slot, creative slot, destination type, approval, and publish status. Hidden generated columns feed the master build manifest. |
 | Reviewer | `STAKEHOLDER_REVIEW` | Review generated build rows only. This tab is not an upload surface. |
 | Automation / MB | `META_IMPORT_READY`, `GOOGLE_IMPORT_READY`, `IMPORT_AUDIT`, `N8N_PLAN` | Generated/export/audit surfaces only. |
+
+## Frontend / Backend Split
+
+The visible tabs are intended to be the team operating surface:
+
+- `CAMPAIGN_PICKER`
+- `PARENT_COPY_CW`
+- `FRANCHISE_COPY_CW`
+- `PARENT_RENDER_MB`
+- `FRANCHISE_RENDER_MB`
+- `PARENT_CREATIVE_GD`
+- `FRANCHISE_CREATIVE_GD`
+- `PARENT_BUILD_MB`
+- `FRANCHISE_BUILD_MB`
+- `META_IMPORT_READY`
+- `GOOGLE_IMPORT_READY`
+
+The hidden tabs are backend consolidation surfaces:
+
+- `COPY_TEMPLATE_CW`
+- `COPY_RENDER_MB`
+- `CREATIVE_ASSET_REGISTRY_GD`
+- `BUILD_MANIFEST_MB`
+- `META_OBJECT_INVENTORY`
+- `GOOGLE_ADS_OBJECT_INVENTORY`
+
+This keeps the team workflow split by business line while preserving one controlled backend contract for Meta, Google, QA, and future n8n phase-1 automation.
 
 ## Guardrails
 
