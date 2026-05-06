@@ -1,8 +1,8 @@
 # Franchise USA QA And Cutover Checklist
 
-Last updated: 2026-05-04
+Last updated: 2026-05-06
 
-Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` moved USA Meta to dataset `1531247935333023`; GTM Version `17` then paused remaining active legacy micro/click tags; GTM Version `18` added a Meta `fbq` init fallback. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
+Status note: controlled live submissions were re-run on 2026-05-04 using the current production URLs. Form `1` and Form `2` both reached thank-you pages, pushed the expected helper and dispatch events, sent GA4 `generate_lead` hits to `G-YL1KQPWV0M`, appeared in GA4 realtime, and created Gravity Forms entries with matching `cefa_conversion_tracking_event_id` values. Main conversion event signoff is pass. The later GAConnector cleanup patch fixed the blank helper-payload attribution issue for both USA forms. GTM Version `16` moved USA Meta to dataset `1531247935333023`; GTM Version `17` then paused remaining active legacy micro/click tags; GTM Version `18` added a Meta `fbq` init fallback; GTM Version `19` added the USA attribution hidden-field writer for Form `1` and Form `2`. The remaining issue is the active Gravity Forms Google Analytics Form `1` feed.
 
 Live main-conversion refresh on 2026-05-04:
 
@@ -18,6 +18,8 @@ Live main-conversion refresh on 2026-05-04:
 - GTM Version `17` paused old active GA4, Google Ads, and Meta email/phone/application-click tags while keeping base infrastructure, GAConnector, helper dispatch, GA4 `generate_lead`, and Meta `Lead` tags active.
 - GTM Version `18` updated the two USA Meta `Lead` tags with an `fbq` init fallback.
 - Meta custom conversion `1915200622465036` / `USA Franchise Lead` now exists on dataset `1531247935333023` for standard `Lead` plus the `/inquiry-thank-you/` success path.
+- GTM Version `19` published trigger `269` and tag `270` to write GAConnector values into USA Form `1` and Form `2` hidden fields `14-30`.
+- Post-Version-19 browser checks confirmed Form `1` and Form `2` fields `14-30` are populated from URL UTMs, `gclid`, GAConnector cookies, and `_ga` client ID before submission.
 
 ## Website Source
 
@@ -79,6 +81,19 @@ Live main-conversion refresh on 2026-05-04:
 - [x] Create Meta custom conversion `1915200622465036` / `USA Franchise Lead`.
 - [ ] Confirm the next successful USA Form `1` submission appears as a `Lead` in Meta Events Manager for dataset `1531247935333023`.
 
+## GTM Version 19 - Attribution Hidden Field Writer
+
+- [x] Publish USA GTM Version `19`.
+- [x] Add DOM Ready trigger `269`, scoped to `franchisecefa.com` and the two live USA Gravity Forms pages.
+- [x] Add Custom HTML tag `270`, `CEFA - Franchise USA - GAConnector Hidden Field Writer`.
+- [x] Confirm tag `270` does not push `dataLayer`.
+- [x] Confirm tag `270` does not call `gtag`.
+- [x] Confirm tag `270` does not call `fbq`.
+- [x] Confirm Form `1` fields `14-30` populate from GAConnector/URL values.
+- [x] Confirm Form `2` fields `14-30` populate from GAConnector/URL values.
+- [ ] Submit controlled Form `1` entry and confirm saved Gravity Forms entry fields `14-30`.
+- [ ] Submit controlled Form `2` entry and confirm saved Gravity Forms entry fields `14-30`.
+
 ## Post-Publish QA
 
 - [x] Submit controlled Form 1 test after Version `15` propagation and confirm the helper and dispatch events.
@@ -98,6 +113,7 @@ Live main-conversion refresh on 2026-05-04:
 - [ ] Confirm whether the USA GA4 property currency should remain `CAD`.
 - [ ] Disable or prove audit-only the active Gravity Forms Google Analytics Form `1` feed.
 - [x] Fix USA attribution mapping so helper payloads include populated UTM/click/GA client values when GAConnector cookies exist.
+- [x] Fix USA browser hidden-field writer so Gravity Forms fields `14-30` are populated before submit.
 
 ## Measurement Protocol Audit Test
 
