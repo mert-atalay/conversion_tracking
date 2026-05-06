@@ -17,7 +17,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Current v21 final POC control sheet: [CEFA Paid Media Naming Convention Build Control - v21 Final POC - 2026-05-06](https://docs.google.com/spreadsheets/d/15MkgHS4YQLFMAsZDleJytIIsLn-bupUJBELWmykuN6U/edit).
   - Status: `Partial`
   - This is the current implementation candidate for team-facing content/design intake, generated naming keys, budget-driven campaign slots, ID-backed build manifest rows, protected import outputs, and n8n phase-1 validation/export planning.
-  - Status: `Verified` for the 2026-05-06 sheet repair, color coding, protected/generated ranges, hidden inventory tabs, corrected import-ready filters, and temporary paused Meta POC row test.
+  - Status: `Verified` for the 2026-05-06 sheet repair, color coding, protected/generated ranges, generated `copy_template_slot` / `copy_template_key`, controlled dropdowns, hidden inventory tabs, corrected import-ready filters, and temporary paused Meta POC row test.
   - This is not production rollout approval and not a live activation, budget-edit, live rename, deletion, or optimization-setting tool.
 - Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
   - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
@@ -103,6 +103,8 @@ Key contracts:
 - Do not rename live Google Ads objects by name lookup alone; use customer, campaign, ad group, asset group, and ad IDs from the Google Ads inventory.
 - Do not treat Google Ads ads as having a Meta-style visible ad name; use `ad_id` plus a build key for ad-level tracking and bulk edits.
 - Do not build Meta import rows directly from creative files or copy text alone; use the build manifest contract so every row has destination, copy, creative, URL tag, QA, and approval fields.
+- Content writers should not manually type `copy_template_slot` or `copy_template_key`; those are generated in the v21 control sheet.
+- `campaign_slot` is the budget-driven planned-campaign row key from `CAMPAIGN_SELECTOR`, not a live platform object ID. Use platform object IDs for live joins and imports.
 - API-created or imported Meta objects must default to paused unless explicitly approved.
 - API-created or bulk-created Google Ads campaigns, ad groups, asset groups, and ads must default to paused unless explicitly approved.
 - Paid-media agents should link here before creating or reviewing campaign/ad naming.

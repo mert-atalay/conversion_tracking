@@ -21,10 +21,12 @@ Last updated: 2026-05-06
 
 - The existing v21 Google Sheet was repaired and finalized in place; no duplicate sheet was created.
 - The workbook has the v21 tabs for settings, location mapping, budget references, campaign selector, content copy, rendered copy, creative assets, carousel cards, build manifest, stakeholder review, Meta import output, Google import output, rename review, pixel/event QA, n8n plan, object destinations, import audit, QA report, and raw inventories.
-- The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, and n8n phase-1 rule.
+- The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, n8n phase-1 rule, and `campaign_slot` explanation.
 - Color coding is applied: green for safe input, yellow for approval/review, blue for generated/output, red for blockers, gray for source/admin/reference, and purple for n8n/future automation.
 - `META_OBJECT_INVENTORY` and `GOOGLE_ADS_OBJECT_INVENTORY` are hidden.
-- 33 protected ranges are active for generated, source, import, and admin-managed areas.
+- 34 protected ranges are active for generated, source, import, and admin-managed areas.
+- `COPY_TEMPLATE_CW` now generates `copy_template_slot` and `copy_template_key`; content writers do not manually fill those fields.
+- Controlled dropdowns were added or tightened for copy angle, persona, CTA, language, business line, parent program token, franchise topic, offer type, creative visual concept, audience type, placement, destination URL type, aspect ratio, and file type.
 - `CAMPAIGN_SELECTOR` now outputs the full budget-driven campaign slot, source, scope, platform, location, generated name, generated key, activation, objective, funnel, theme, month, sequence, and QA fields.
 - `META_IMPORT_READY` and `GOOGLE_IMPORT_READY` now filter from `BUILD_MANIFEST_MB` using `qa_status=OK`, `approval_status=Approved`, and `PAUSED` status columns.
 - A temporary parent LSM Meta POC row for Cornerstone generated a paused Meta import-ready row, then the test inputs were cleared so final import tabs are empty.
@@ -49,7 +51,7 @@ Last updated: 2026-05-06
 
 | Team | Primary tab | Edit model |
 | --- | --- | --- |
-| Content writer | `COPY_TEMPLATE_CW` | Fill copy templates, placeholders, CTA, and copy notes. Formula QA columns are protected. |
+| Content writer | `COPY_TEMPLATE_CW` | Fill owner, platform, scope, business line, persona, parent program or franchise topic, offer type, copy angle, copy text, CTA, language, and notes. `copy_template_slot`, `copy_template_key`, and QA columns are generated/protected. |
 | Media / MB | `COPY_RENDER_MB` | Select campaign slot and copy template, approve final rendered copy. Rendered copy fields are generated. |
 | Designer | `CREATIVE_ASSET_REGISTRY_GD` | Fill creative metadata, format, concept, file link, and asset notes. Filename/key/QA columns are generated. |
 | Media / MB | `BUILD_MANIFEST_MB` | Select campaign slot, platform, IDs, copy, creative, destination type, approval, and publish status. Generated keys, UTMs, names, and statuses are protected. |
