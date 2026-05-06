@@ -14,6 +14,10 @@ This folder is for CEFA naming standards that affect paid media, creative files,
   - Status: `Partial`
   - Created as the simpler team-facing control surface for copy, creative, budget reference, ID-backed destinations, build manifest rows, QA, and future n8n/import output.
   - This is not a live launch or budget-edit tool.
+- Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
+  - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
+  - Status: `Partial` for the observed WhatsApp/browser add-on behavior, because the controlling setting or import column is not verified yet.
+  - Status: `Pending` for future ad-level tags, because eligibility was observed but export/import or API read/write behavior is not verified yet.
 - Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
   - Status: `Partial`
   - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
@@ -57,6 +61,9 @@ Key contracts:
 - [Paid media build control center POC](./paid-media-build-control-center-poc-2026-05-05.md)
   - Status: `Partial`
   - Documents the new native Google Sheet POC for team copy/creative intake, budget sync, ID-backed object destinations, build manifest QA, and future n8n/import output.
+- [Meta bulk import success pattern](./meta-bulk-import-success-pattern-2026-05-05.md)
+  - Status: `Verified` for the user-confirmed successful Franchise Canada video bulk import pattern.
+  - Records the reusable live-status-safe CSV pattern, the WhatsApp/browser add-on follow-up, and the pending ad-level tag opportunity.
 - [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
   - Status: `Partial`
   - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.
