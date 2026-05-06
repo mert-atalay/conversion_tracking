@@ -100,3 +100,46 @@ Remaining:
 
 - Confirm Meta Events Manager receipt for `Fr Application Submit` after platform processing delay.
 - Confirm processed GA4 and Google Ads reporting rows after standard processing delay.
+
+## Follow-Up Single-Fire Test
+
+Date: 2026-05-06
+
+Purpose:
+
+- Confirm the live configuration still fires the existing application-submit destination once after a fresh Form `1` submission.
+
+Test path:
+
+`https://franchise.cefa.ca/available-opportunities/franchising-inquiry/?utm_source=qa_tracking&utm_medium=single_fire&utm_campaign=frca_application_submit_once_20260506&gclid=QA-FRCA-ONCE-20260506`
+
+Final thank-you URL:
+
+`https://franchise.cefa.ca/inquiry-thank-you/?location=brampton-on&inquiry=true&cefa_tracking=1&cefa_tracking_event_id=bc97af9a-efd8-4ee7-9f59-306dab584675`
+
+Submitted test email:
+
+- `tracking.qa+frca-once-20260506@cefa.ca`
+
+DataLayer result:
+
+- `franchise_inquiry_submit`: `1`
+- `cefa_franchise_inquiry_dispatch`: `1`
+- Event ID: `bc97af9a-efd8-4ee7-9f59-306dab584675`
+- Location interest: `565`
+- Location interest name: `Brampton, ON`
+- `gclid`: `QA-FRCA-ONCE-20260506`
+- `lc_source`: `qa_tracking`
+- `lc_medium`: `single_fire`
+- `lc_campaign`: `frca_application_submit_once_20260506`
+
+Browser resource result:
+
+- Google Ads primary application-submit conversion fired once with conversion ID `11088792613` and label `cys-CIHslY4YEKWYxqcp`.
+- Secondary inquiry-submit label `MfYYCITslY4YEKWYxqcp` was not observed.
+- GA4 collection requests to `G-6EMKPZD7RD` were observed. The browser resource API did not expose the POST body, so processed GA4 event-name confirmation should still be checked in GA4 after processing.
+- Meta Pixel library loaded and the GTM-injected `Fr Application Submit` script was present/executed with the same event ID. Events Manager receipt still needs UI confirmation.
+
+Follow-up result:
+
+Status: browser single-fire pass for the application-submit Ads path.
