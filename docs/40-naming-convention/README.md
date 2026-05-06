@@ -14,6 +14,11 @@ This folder is for CEFA naming standards that affect paid media, creative files,
   - Status: `Partial`
   - Created as the simpler team-facing control surface for copy, creative, budget reference, ID-backed destinations, build manifest rows, QA, and future n8n/import output.
   - This is not a live launch or budget-edit tool.
+- Current v21 final POC control sheet: [CEFA Paid Media Naming Convention Build Control - v21 Final POC - 2026-05-06](https://docs.google.com/spreadsheets/d/15MkgHS4YQLFMAsZDleJytIIsLn-bupUJBELWmykuN6U/edit).
+  - Status: `Partial`
+  - This is the current implementation candidate for team-facing content/design intake, generated naming keys, budget-driven campaign slots, ID-backed build manifest rows, protected import outputs, and n8n phase-1 validation/export planning.
+  - Status: `Verified` for the 2026-05-06 sheet repair, color coding, protected/generated ranges, hidden inventory tabs, corrected import-ready filters, and temporary paused Meta POC row test.
+  - This is not production rollout approval and not a live activation, budget-edit, live rename, deletion, or optimization-setting tool.
 - Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
   - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
   - Status: `Partial` for the observed WhatsApp/browser add-on behavior, because the controlling setting or import column is not verified yet.
@@ -61,6 +66,9 @@ Key contracts:
 - [Paid media build control center POC](./paid-media-build-control-center-poc-2026-05-05.md)
   - Status: `Partial`
   - Documents the new native Google Sheet POC for team copy/creative intake, budget sync, ID-backed object destinations, build manifest QA, and future n8n/import output.
+- [Paid media build control center v21 final POC](./paid-media-build-control-center-v21-final-poc-2026-05-06.md)
+  - Status: `Partial`
+  - Documents the current v21 Google Sheet implementation candidate, including color-coded team roles, protected generated columns, import-ready guards, paused output defaults, and the 2026-05-06 verification pass.
 - [Meta bulk import success pattern](./meta-bulk-import-success-pattern-2026-05-05.md)
   - Status: `Verified` for the user-confirmed successful Franchise Canada video bulk import pattern.
   - Records the reusable live-status-safe CSV pattern, the WhatsApp/browser add-on follow-up, and the pending ad-level tag opportunity.
