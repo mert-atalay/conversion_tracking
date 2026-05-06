@@ -1,6 +1,6 @@
 # Live Conversion Tracking Status
 
-Last updated: 2026-05-03
+Last updated: 2026-05-05
 
 ## Scope
 
@@ -17,7 +17,7 @@ Checked properties:
 | Property | Website-side source | GTM/platform mapping | Status |
 | --- | --- | --- | --- |
 | `cefa.ca` | CEFA Conversion Tracking plugin | Active through `GTM-NZ6N7WNC` | Parent Phase 1A website/GTM path is working. |
-| `franchise.cefa.ca` | WPCode fallback bridge + GAConnector selector map | Active through `GTM-TPJGHFS` Version `52` | Canada Phase 1 website/GTM path is working for Forms 1 and 2. |
+| `franchise.cefa.ca` | WPCode fallback bridge + GAConnector selector map | Active through `GTM-TPJGHFS` Version `54` | Canada Phase 1 Form 1 continuity path maps to existing `Fr Application Submit` / `fr_application_submit`; post-v54 browser QA passed for Ads/GA4 and Meta script execution. |
 | `franchisecefa.com` | WPCode fallback bridge | `GTM-5LZMHBZL` Version `15` GA4 helper-event mapping | Forms 1 and 2 push confirmed-success helper and dispatch events on the current live URLs. Form 2 has browser-level GA4 `generate_lead` evidence; processed GA4 reports, Form 1 GA4 receipt, and Ads/Meta final activation remain pending. |
 
 ## Parent Canada Current State
@@ -86,7 +86,7 @@ Runtime:
 
 - Domain: `franchise.cefa.ca`
 - GTM: `GTM-TPJGHFS`
-- Published GTM version: `52` / `CEFA Franchise Canada Phase 1 helper-event mapping - 2026-05-01`
+- Published GTM version: `54` / `CEFA Franchise Canada legacy thank-you duplicate guard - 2026-05-05`
 - GA4 property: `259747921` / `CEFA Franchise`
 - Linked Google Ads customer: `3820636025`
 - Meta pixel/dataset kept on the existing shared franchise pixel: `918227085392601`
@@ -101,6 +101,8 @@ GTM implementation:
 - The dispatch layer prevents lost destination hits when the confirmed helper event arrives before destination libraries are fully ready.
 - Existing destination IDs were preserved instead of creating new platform learning surfaces.
 - GAConnector tag `GA Connector - CRM` was updated to map GAConnector cookie values into Gravity Forms hidden fields `14` through `30` for Form `1` and Form `2`.
+- 2026-05-05 correction: Form `1` helper submit now maps to Google Ads primary `fr_application_submit` (`AW-11088792613/cys-CIHslY4YEKWYxqcp`) and Meta `Fr Application Submit` on dataset `918227085392601`, because live ad sets/custom conversions optimize against `Fr Application Submit` rather than `Fr Inquiry Submit`.
+- 2026-05-05 duplicate guard: legacy `/thank-you` pageview trigger `38` was disabled and legacy Meta pageview tag `51` was paused.
 
 Form 1 / Franchise Inquiry:
 
@@ -112,11 +114,13 @@ Form 1 / Franchise Inquiry:
 - Confirmed non-PII lead metadata included location interest/name, investment range, opening timeline, school count goal, and ownership structure.
 - Confirmed attribution fields saved/pushed cleanly: `lc_source`, `lc_medium`, `lc_campaign`, `lc_content`, `lc_term`, `lc_channel`, `lc_landing`, `lc_referrer`, `fc_source`, `fc_medium`, `fc_campaign`, `fc_content`, `fc_term`, `fc_channel`, `fc_referrer`, `gclid`, and `ga_client_id`.
 - Confirmed GA4/Google measurement hit for `generate_lead`.
-- Confirmed Google Ads conversion hit for conversion ID `11088792613`, label `MfYYCITslY4YEKWYxqcp`.
-- Confirmed Meta custom event `Fr Inquiry Submit` on pixel `918227085392601` with matching `event_id`.
+- Historical controlled test before the 2026-05-05 continuity correction confirmed Google Ads conversion hit for conversion ID `11088792613`, label `MfYYCITslY4YEKWYxqcp`; this secondary `fr_inquiry_submit` tag is now paused.
+- Historical controlled test before the 2026-05-05 continuity correction confirmed Meta custom event `Fr Inquiry Submit` on pixel `918227085392601` with matching `event_id`; Form `1` now maps to `Fr Application Submit` for platform-learning continuity.
 - Confirmed LinkedIn conversion ID `11308340` with matching `event_id`.
 - Direct payload request after browser consumption returned `404`.
 - Thank-you reload did not push another final event.
+- Post-Version-54 controlled Form `1` browser QA verified event ID `ad5901f8-0dbb-4281-97cc-88dd0c2d86d3`, one `franchise_inquiry_submit`, one `cefa_franchise_inquiry_dispatch`, Google Ads primary label `cys-CIHslY4YEKWYxqcp`, GA4 `generate_lead`, no secondary Ads label `MfYYCITslY4YEKWYxqcp`, and Meta `Fr Application Submit` script execution.
+- Meta Events Manager receipt and delayed GA4/Google Ads processed reporting confirmation remain pending.
 
 Form 2 / Submit a Site:
 

@@ -1,6 +1,6 @@
 # Franchise Canada Phase 1 Tracking Plan
 
-Last updated: 2026-05-03
+Last updated: 2026-05-05
 
 This folder is the working implementation package for the new Canada franchise website tracking rollout.
 
@@ -32,11 +32,13 @@ Current live result:
 - GAConnector scripts and hidden fields `14` through `30` are visible.
 - The WPCode fallback bridge is visible on the Form `1` and Form `2` paths.
 - Controlled Form `1` and Form `2` submissions proved the confirmed-success dataLayer events and `event_id` entry-meta join.
-- GTM Version `52` maps the helper events through dispatch events to GA4, Google Ads, Meta, and LinkedIn destinations with existing IDs.
+- GTM Version `54` is live. It keeps the website event `franchise_inquiry_submit` neutral, but maps the final Form `1` submit to the existing learning/primary destinations: Meta `Fr Application Submit` on dataset `918227085392601` and Google Ads `fr_application_submit` using `AW-11088792613/cys-CIHslY4YEKWYxqcp`.
+- GTM Version `54` also disables the old `/thank-you` pageview application-submit trigger by changing trigger `38` to `Legacy DISABLED - Fr Application Submit_ollo`, and pauses the old pageview Meta tag `51`.
+- The secondary Google Ads `fr_inquiry_submit` tag is paused so Form `1` does not send both the old primary application action and the newer inquiry action as duplicate final conversions.
 - GA4 Data API has reported at least one processed `generate_lead` on host `franchise.cefa.ca`, and the low-cardinality helper payload custom dimensions are registered.
 - 2026-05-03 GA4 Data API refresh reported `4` processed `generate_lead` rows on host `franchise.cefa.ca`, including `1` helper-plugin row with franchise Canada metadata.
-- Google Ads primary/secondary status needs an explicit media-owner decision before bidding signoff; reporting evidence shows `fr_application_submit` is primary while `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` are secondary.
-- Meta Events Manager custom conversions still need direct UI/API confirmation inside the current shared dataset.
+- Google Ads primary/secondary direction is resolved for continuity: preserve existing primary `fr_application_submit`; keep `fr_inquiry_submit`, `fr_site_form_submit`, and imported `generate_lead (GA4)` secondary unless a later paid-media decision changes that.
+- Post-Version-54 controlled browser QA passed for the core continuity path: Form `1` pushed one `franchise_inquiry_submit`, GTM dispatched `cefa_franchise_inquiry_dispatch`, Google Ads fired the existing primary `fr_application_submit` label `AW-11088792613/cys-CIHslY4YEKWYxqcp`, GA4 fired `generate_lead`, and the secondary `fr_inquiry_submit` label `MfYYCITslY4YEKWYxqcp` was not observed. The Meta `Fr Application Submit` browser call executed; Events Manager receipt still needs UI/platform confirmation after processing delay.
 
 Use the old Canada GTM container as a reference only. The old container already contains useful IDs and micro-conversion examples, but it is built around old paths, old Elementor form selectors, and thank-you/pageview logic. The new staging site uses Gravity Forms and different page paths.
 
@@ -60,3 +62,4 @@ For Phase 1 browser tracking:
 - [QA and cutover checklist](./05-qa-and-cutover-checklist.md)
 - [Open GPT Pro questions](./06-open-gpt-pro-questions.md)
 - [Content freeze reset note](./07-content-freeze-reset-note-2026-04-30.md)
+- [Post-Version-54 Application Submit QA](./08-post-v54-application-submit-qa-2026-05-05.md)

@@ -1,6 +1,6 @@
 # Ad Launch Readiness Test
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Scope
 
@@ -19,7 +19,7 @@ No new live lead submissions were created during this pass. The evidence below u
 | Surface | Launch readiness | Decision |
 |---|---|---|
 | Parent `cefa.ca` | Ready for Google Ads launch/use | The helper path maps to the existing primary Google Ads action `Inquiry Submit_ollo` and GA4/BigQuery show helper events processing. Meta shared dataset has recent `Inquiry Submit` activity. |
-| Franchise Canada `franchise.cefa.ca` | Ready for Meta/GA4 reporting; not fully ready for Google Ads bidding without one decision | The helper events process in GA4 and the shared Meta dataset has recent `Fr Inquiry Submit` / `Fr Site Form Submit` activity. Google Ads currently sends the new helper inquiry event to secondary `fr_inquiry_submit`, while the existing primary bidding action remains `fr_application_submit` on the old trigger. |
+| Franchise Canada `franchise.cefa.ca` | Directionally ready after post-Version-54 browser QA | The helper event remains `franchise_inquiry_submit`, but GTM Version `54` now maps Form `1` to existing learning destinations: Google Ads primary `fr_application_submit` and Meta `Fr Application Submit`. Browser QA confirmed the Ads/GA4 path and Meta script execution. Meta Events Manager and delayed platform reporting confirmation remain before aggressive spend. |
 | Franchise USA `franchisecefa.com` | Ready for Meta/GA4 reporting; not ready for Google Ads final-submit bidding without one GTM change | USA helper events process in GA4 and Meta Events Manager shows standard `Lead` received on the new USA dataset. Google Ads has an existing primary `Application Submit (USA)` action, but the live USA GTM helper submit path does not yet fire a final Google Ads conversion tag. |
 
 ## Parent `cefa.ca`
@@ -56,32 +56,40 @@ Recommended bidding action:
 
 | Check | Result |
 |---|---|
-| Live GTM container | `GTM-TPJGHFS`, live Version `52`: `CEFA Franchise Canada Phase 1 helper-event mapping - 2026-05-01`. |
+| Live GTM container | `GTM-TPJGHFS`, live Version `54`: `CEFA Franchise Canada legacy thank-you duplicate guard - 2026-05-05`. |
 | Website events | `franchise_inquiry_submit` and `real_estate_site_submit`. |
 | GA4 mapping | Active tags send both helper dispatch events to GA4 `generate_lead` on `G-6EMKPZD7RD`. |
 | GA4 processed report | Last 7 days: helper `generate_lead` Form `1` / `franchise_inquiry` had `1` event and `1` key event. Non-helper `generate_lead` rows also exist. |
-| Meta Events Manager | Shared dataset `918227085392601` shows `Fr Inquiry Submit` active, `6` total events, last received roughly 3 hours before the UI check; `Fr Site Form Submit` active, `14` total events, last received roughly 2 hours before the UI check. |
+| Meta destination | Shared dataset `918227085392601`; GTM tag `52` now sends Form `1` as `Fr Application Submit` with helper `event_id`, matching custom conversion `Fr Application Submit_CAD` ID `1146840919855743`. Prior UI evidence for `Fr Inquiry Submit` is now historical/reference only. |
 | Gravity Forms add-on feed | No Gravity Forms Google Analytics feed found. |
 | Google Ads account | `3820636025` / `CEFA Franchisor`. |
-| Existing primary action | `fr_application_submit` / ID `6472168961` is `ENABLED`, `primary_for_goal=true`, `include_in_conversions_metric=true`, label `AW-11088792613/cys-CIHslY4YEKWYxqcp`. |
-| Current helper inquiry Ads tag | `franchise_inquiry_submit` fires secondary action `fr_inquiry_submit` / ID `6472168964`, label `AW-11088792613/MfYYCITslY4YEKWYxqcp`. |
+| Existing primary action | `fr_application_submit` / ID `6472168961` is `ENABLED`, `primary_for_goal=true`, `include_in_conversions_metric=true`, label `AW-11088792613/cys-CIHslY4YEKWYxqcp`; GTM tag `27` now fires this action from helper dispatch trigger `197`. |
+| Secondary inquiry Ads tag | `fr_inquiry_submit` / ID `6472168964`, label `AW-11088792613/MfYYCITslY4YEKWYxqcp`, is paused in GTM tag `28` to avoid duplicate final Ads hits. |
 | Current helper site Ads tag | `real_estate_site_submit` fires secondary action `fr_site_form_submit` / ID `6472168970`, label `AW-11088792613/vq7GCIrslY4YEKWYxqcp`. |
 | Google Ads recent reporting | Last 30 days: `fr_application_submit` had `4` all conversions and `2` conversions; `generate_lead (GA4)` had `4` all conversions and `0` conversions. |
+| Legacy duplicate guard | Old `/thank-you` pageview trigger `38` is renamed `Legacy DISABLED - Fr Application Submit_ollo` and only matches `__cefa_disabled_legacy_thank_you_application_submit__`; old Meta pageview tag `51` is paused. |
+| Post-Version-54 browser QA | Controlled Form `1` submit reached `/inquiry-thank-you/` with event ID `ad5901f8-0dbb-4281-97cc-88dd0c2d86d3`. Browser proof showed one `franchise_inquiry_submit`, one dispatch `cefa_franchise_inquiry_dispatch`, Google Ads label `cys-CIHslY4YEKWYxqcp`, GA4 `generate_lead`, no secondary Ads label `MfYYCITslY4YEKWYxqcp`, and Meta `Fr Application Submit` script execution. |
 
 ### Decision
 
-Franchise Canada is safe for Meta and GA4 reporting, but Google Ads bidding is not fully aligned to the new helper form path yet.
+Franchise Canada has been corrected for continuity in GTM, and the post-Version-54 browser QA passed for the core Ads/GA4 path.
 
-The issue is not that tracking is missing. The issue is which Google Ads conversion should receive the new confirmed form event:
+The prior issue was not missing tracking. The issue was destination mismatch:
 
 - Current primary learning action: `fr_application_submit`.
-- Current helper inquiry action: `fr_inquiry_submit`, which is secondary and not included in conversions.
+- Prior helper inquiry action: `fr_inquiry_submit`, which was secondary and not included in conversions.
 
-Recommended fix before scaling Google Ads franchise Canada:
+Implemented fix:
 
-1. Preserve learning by mapping the new `franchise_inquiry_submit` helper event to the existing primary action `fr_application_submit` label `AW-11088792613/cys-CIHslY4YEKWYxqcp`, or explicitly approve making `fr_inquiry_submit` primary.
-2. Keep `real_estate_site_submit` as secondary unless real-estate site submissions should be a bidding event.
-3. Keep Meta on the shared dataset during the transition to avoid a learning reset.
+1. Preserved learning by mapping the new `franchise_inquiry_submit` helper event to existing primary `fr_application_submit` label `AW-11088792613/cys-CIHslY4YEKWYxqcp`.
+2. Preserved Meta continuity by mapping the helper event to `Fr Application Submit` on shared dataset `918227085392601`.
+3. Kept `real_estate_site_submit` secondary unless real-estate site submissions are later approved as a bidding event.
+4. Kept Meta on the shared dataset during transition to avoid a learning reset.
+
+Remaining confirmation:
+
+1. Confirm `Fr Application Submit` receipt in Meta Events Manager after platform processing delay.
+2. Confirm delayed processed rows in GA4 and Google Ads reporting.
 
 ## Franchise USA `franchisecefa.com`
 
@@ -128,9 +136,8 @@ Recommended fix before scaling Google Ads franchise USA:
 
 | Priority | Surface | Action | Owner decision needed |
 |---:|---|---|---|
-| 1 | Franchise Canada Google Ads | Decide whether to map `franchise_inquiry_submit` to existing primary `fr_application_submit` or make `fr_inquiry_submit` primary. | Yes |
+| 1 | Franchise Canada delayed platform confirmation | Confirm Meta Events Manager receipt for `Fr Application Submit` and delayed processed GA4/Google Ads rows after the post-Version-54 browser QA. | No new strategy decision; platform reporting evidence needed |
 | 2 | Franchise USA Google Ads | Add a final helper Ads tag for `cefa_franchise_us_inquiry_dispatch`, preferably to existing primary `Application Submit (USA)`. | Yes |
 | 3 | Franchise USA duplicate source | Disable or prove audit-only the active Gravity Forms Google Analytics Form `1` feed. | Yes |
 | 4 | USA reporting | Decide whether GA4 property `CEFA Franchise - USA.` should stay `CAD` or move to `USD`. | Yes |
 | 5 | Parent | Start/continue ads using `Inquiry Submit_ollo`; monitor helper-filtered GA4 and BigQuery. | No blocker |
-
