@@ -21,21 +21,27 @@ Last updated: 2026-05-06
 
 - The existing v21 Google Sheet was repaired and finalized in place; no duplicate sheet was created.
 - The workbook now has simplified user-facing tabs for parent copy, franchise copy, parent rendered copy, franchise rendered copy, parent creative, franchise creative, parent builds, and franchise builds.
+- Google Ads now has separate user-facing copy and build tabs: `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW`, `GOOGLE_PARENT_BUILD_MB`, and `GOOGLE_FRANCHISE_BUILD_MB`.
+- Google Search RSA copy is no longer forced into the Meta copy shape. The Google copy tabs support 15 headline template fields, 4 description template fields, path fields, preview columns, QA, and approval.
+- `GOOGLE_IMPORT_READY` now outputs the expanded Google RSA structure with 15 headline fields and 4 description fields.
 - The original master tabs for copy templates, rendered copy, creative assets, and build manifest are now hidden backend consolidation tabs.
-- `CAMPAIGN_PICKER` gives MB and the team readable campaign choices such as `LSM-003 | Parent LSM | META | Cornerstone | Enrollment | 2026-07`; the generated slot value remains the budget-plan key.
+- `CAMPAIGN_PICKER` gives MB and the team readable campaign choices such as `LSM-003 | Parent LSM | META | Cornerstone | Enrollment | 2026-07`; the generated slot value remains the budget-plan key. It now also includes Google parent/franchise picker columns.
 - The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, n8n phase-1 rule, and `campaign_slot` explanation.
 - Color coding is applied: green for safe input, yellow for approval/review, blue for generated/output, red for blockers, gray for source/admin/reference, and purple for n8n/future automation.
 - `META_OBJECT_INVENTORY` and `GOOGLE_ADS_OBJECT_INVENTORY` are hidden.
-- 45 protected ranges are active for generated, source, import, and admin-managed areas.
+- 56 protected ranges are active for generated, source, import, and admin-managed areas.
 - `PARENT_COPY_CW` and `FRANCHISE_COPY_CW` feed the hidden `COPY_TEMPLATE_CW` master tab. Content writers do not manually fill `copy_template_slot` or `copy_template_key`; those fields are generated.
+- Meta copy tabs now include optional preview location/market fields so writers can render `{CityName}`, `{SchoolName}`, `{Province}`, `{MarketName}`, `{ProgramName}`, and `{FranchiseTopic}` in the same row before MB selects the final campaign.
 - `program_label` is the human-facing label. `program_token` is the generated naming/UTM-safe token and is hidden/protected in user-facing parent tabs.
 - Franchise-facing rows use `franchise_topic` and leave parent `program_label` / `program_token` empty in the master output.
 - Controlled dropdowns were added or tightened for copy angle, persona, CTA, language, business line, parent program token, franchise topic, offer type, creative visual concept, audience type, placement, destination URL type, aspect ratio, and file type.
+- CopyAngle tokens now include the standard writing/naming options `Attention`, `Interest`, `Desire`, `Action`, `Trust`, `Program Fit`, `Curriculum`, `Safety`, `Convenience`, `Social Proof`, `Urgency`, `Diversification`, `Investment`, `Market Opportunity`, `Real Estate`, and `Retargeting`.
 - `CAMPAIGN_SELECTOR` now outputs the full budget-driven campaign slot, source, scope, platform, location, generated name, generated key, activation, objective, funnel, theme, month, sequence, and QA fields.
 - `CREATIVE_ASSET_REGISTRY_GD` was remapped so master creative rows read final filename, QA status, approval status, owner, and notes from the correct generated/user columns.
 - `META_IMPORT_READY` and `GOOGLE_IMPORT_READY` now filter from `BUILD_MANIFEST_MB` using `qa_status=OK`, `approval_status=Approved`, and `PAUSED` status columns.
 - A temporary parent LSM Meta POC row for Cornerstone generated a paused Meta import-ready row, then the test inputs were cleared so final import tabs are empty.
 - A temporary franchise render/creative POC row confirmed franchise copy and creative filenames use `franchise_topic`, not parent program tokens, then the test inputs were cleared.
+- A temporary Google parent Search/RSA POC row generated a paused `GOOGLE_IMPORT_READY` row with 15 RSA headlines and 4 descriptions, then the test inputs were cleared so final import tabs are empty.
 - Final readback found no `ACTIVE` status in the checked Meta/Google import outputs.
 
 `Partial`
@@ -57,10 +63,12 @@ Last updated: 2026-05-06
 
 | Team | Primary tab | Edit model |
 | --- | --- | --- |
-| Content writer | `PARENT_COPY_CW`, `FRANCHISE_COPY_CW` | Fill owner, platform, scope, persona, offer type, copy angle, copy text, CTA, language, and notes. Parent copy uses `program_label`; franchise copy uses `franchise_topic`. Generated slots/keys/QA columns are hidden or protected. |
+| Content writer - Meta | `PARENT_COPY_CW`, `FRANCHISE_COPY_CW` | Fill owner, platform, scope, persona, offer type, copy angle, copy text, CTA, language, and notes. Parent copy uses `program_label`; franchise copy uses `franchise_topic`. Optional preview location/market fields render placeholders for writing context. |
+| Content writer - Google | `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW` | Fill Google-specific RSA copy: up to 15 headlines, 4 descriptions, path fields, preview location/market, copy angle, QA/approval. Do not use the Meta copy tabs for Google RSA copy. |
 | Media / MB | `PARENT_RENDER_MB`, `FRANCHISE_RENDER_MB` | Select the readable campaign picker and copy template slot, then approve final rendered copy. Campaign keys, rendered copy, and QA fields are generated. |
 | Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Fill only the practical creative fields: campaign picker, business line/topic, format, concept, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
-| Media / MB | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Select campaign picker, action, platform, object IDs, rendered copy slot, creative slot, destination type, approval, and publish status. Hidden generated columns feed the master build manifest. |
+| Media / MB - Meta | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Meta-oriented build surfaces. Platform is locked to `META`; use these for Meta campaign/ad set/ad build rows. |
+| Media / MB - Google | `GOOGLE_PARENT_BUILD_MB`, `GOOGLE_FRANCHISE_BUILD_MB` | Google-oriented build surfaces. Use these for Google customer/campaign/ad group/asset group/search ad rows and expanded RSA import output. |
 | Reviewer | `STAKEHOLDER_REVIEW` | Review generated build rows only. This tab is not an upload surface. |
 | Automation / MB | `META_IMPORT_READY`, `GOOGLE_IMPORT_READY`, `IMPORT_AUDIT`, `N8N_PLAN` | Generated/export/audit surfaces only. |
 
@@ -77,6 +85,10 @@ The visible tabs are intended to be the team operating surface:
 - `FRANCHISE_CREATIVE_GD`
 - `PARENT_BUILD_MB`
 - `FRANCHISE_BUILD_MB`
+- `GOOGLE_PARENT_RSA_CW`
+- `GOOGLE_FRANCHISE_RSA_CW`
+- `GOOGLE_PARENT_BUILD_MB`
+- `GOOGLE_FRANCHISE_BUILD_MB`
 - `META_IMPORT_READY`
 - `GOOGLE_IMPORT_READY`
 
@@ -90,6 +102,20 @@ The hidden tabs are backend consolidation surfaces:
 - `GOOGLE_ADS_OBJECT_INVENTORY`
 
 This keeps the team workflow split by business line while preserving one controlled backend contract for Meta, Google, QA, and future n8n phase-1 automation.
+
+The Google tabs are intentionally separate because Google Search and Google Ads Editor imports need different copy and object fields than Meta:
+
+- Customer ID
+- Campaign ID
+- Ad group ID
+- Asset group ID
+- Search/PMax campaign type
+- Keyword theme
+- Match strategy
+- 15 RSA headlines
+- 4 RSA descriptions
+- Path 1 and Path 2
+- Google-specific final URL suffix / UTM output
 
 ## Guardrails
 
