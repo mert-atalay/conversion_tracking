@@ -48,7 +48,9 @@ Last updated: 2026-05-07
 - A temporary franchise render/creative POC row confirmed franchise copy and creative filenames use `franchise_topic`, not parent program tokens, then the test inputs were cleared.
 - A temporary Google parent Search/RSA POC row generated a paused `GOOGLE_IMPORT_READY` row with 15 RSA headlines and 4 descriptions, then the test inputs were cleared so final import tabs are empty.
 - Final readback found no `ACTIVE` status in the checked Meta/Google import outputs.
-- On 2026-05-07, `STAKEHOLDER_REVIEW` was changed from build-manifest-only review to copy-first review. It now shows Meta and Google copy rows directly from `PARENT_COPY_CW`, `FRANCHISE_COPY_CW`, `GOOGLE_PARENT_RSA_CW`, and `GOOGLE_FRANCHISE_RSA_CW` as soon as copy text exists, even when render/build/creative/import steps are incomplete.
+- On 2026-05-07, review logic was changed from build-manifest-only review to copy-first review so copy can be reviewed as soon as it exists in the CW/RSA tabs, even when render/build/creative/import steps are incomplete.
+- On 2026-05-07, review was split by platform because Meta and Google need different review fields. `META_STAKEHOLDER_REVIEW` now shows Meta primary text, headline, description, CTA, QA, and approval. `GOOGLE_STAKEHOLDER_REVIEW` now shows Google RSA fields, including 15 headlines, 4 descriptions, paths, QA, and approval. The old `STAKEHOLDER_REVIEW` tab is now an index only.
+- For the first POC, copy review uses direct copy text from the CW/RSA tabs. Placeholder preview/rendering remains available in hidden/backend columns for future automation but is not required for writer input or stakeholder review. Existing sample rows were converted to literal April/May POC-style copy.
 
 `Partial`
 
@@ -75,7 +77,9 @@ Last updated: 2026-05-07
 | Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Start with `location_or_market`, then fill only the practical creative fields: format, concept/ad angle, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
 | Media / MB - Meta | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Meta-oriented build surfaces. Platform is locked to `META`; use these for Meta campaign/ad set/ad build rows. |
 | Media / MB - Google | `GOOGLE_PARENT_BUILD_MB`, `GOOGLE_FRANCHISE_BUILD_MB` | Google-oriented build surfaces. Use these for Google customer/campaign/ad group/asset group/search ad rows and expanded RSA import output. |
-| Reviewer | `STAKEHOLDER_REVIEW` | Review copy as soon as it is written in the CW/RSA tabs. Build, creative, approval, and import completion are not required for visibility. This tab is not an upload surface. |
+| Reviewer - Meta | `META_STAKEHOLDER_REVIEW` | Review Meta copy as soon as it is written in the Meta CW tabs. Build, creative, approval, and import completion are not required for visibility. This tab is not an upload surface. |
+| Reviewer - Google | `GOOGLE_STAKEHOLDER_REVIEW` | Review Google RSA copy separately from Meta. This tab includes the Google-specific headline, description, and path fields needed for Search/RSA review. |
+| Reviewer index | `STAKEHOLDER_REVIEW` | Index only. Points reviewers to the Meta or Google review tab. |
 | Automation / MB | `META_IMPORT_READY`, `GOOGLE_IMPORT_READY`, `IMPORT_AUDIT`, `N8N_PLAN` | Generated/export/audit surfaces only. |
 
 ## Frontend / Backend Split
@@ -95,6 +99,9 @@ The visible tabs are intended to be the team operating surface:
 - `GOOGLE_FRANCHISE_RSA_CW`
 - `GOOGLE_PARENT_BUILD_MB`
 - `GOOGLE_FRANCHISE_BUILD_MB`
+- `META_STAKEHOLDER_REVIEW`
+- `GOOGLE_STAKEHOLDER_REVIEW`
+- `STAKEHOLDER_REVIEW`
 - `META_IMPORT_READY`
 - `GOOGLE_IMPORT_READY`
 
@@ -133,3 +140,4 @@ The Google tabs are intentionally separate because Google Search and Google Ads 
 - Import/API-created platform objects must default to `PAUSED`.
 - `CAMPAIGN_RENAME_REVIEW` is review-only until CEFA approves a separate ID-backed rename batch.
 - For the April/May 2026 POC, keep visible month dropdowns limited to `2026-04` and `2026-05` until CEFA approves a wider rollout window.
+- For the April/May 2026 POC, write direct location/program-specific copy in the CW/RSA tabs. Do not require `{CityName}`, `{ProgramName}`, or other placeholder rendering for stakeholder review.
