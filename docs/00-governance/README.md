@@ -8,6 +8,7 @@ Start here when adding a new document, routing work to another agent, or decidin
 
 - [repo-map.md](./repo-map.md): folder map, workstream boundaries, and where each agent should write.
 - [source-of-truth-rules.md](./source-of-truth-rules.md): authority order and verification rules.
+- [data-taxonomy.md](./data-taxonomy.md): cross-workstream map of CEFA data sources, stable IDs, naming keys, conversion events, warehouse surfaces, and owning docs.
 - [agent-responsibilities.md](./agent-responsibilities.md): agent/workstream ownership boundaries.
 - [contribution-workflow.md](./contribution-workflow.md): how to add docs without mixing workstreams.
 

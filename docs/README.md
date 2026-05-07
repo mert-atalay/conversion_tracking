@@ -9,6 +9,7 @@ This directory is the governed documentation layer for the CEFA marketing measur
 - [Governance](./00-governance/README.md): repo rules, source-of-truth order, agent responsibilities, contribution workflow.
 - [Repository map](./00-governance/repo-map.md): where each type of update belongs.
 - [Source-of-truth rules](./00-governance/source-of-truth-rules.md): how to resolve conflicts between live systems, repo docs, local CEFA sources, and external best practices.
+- [Data taxonomy and source map](./00-governance/data-taxonomy.md): cross-workstream map for data sources, stable IDs, naming keys, conversion events, and reporting surfaces.
 - [Workstream update template](./_templates/workstream-update-template.md): template for substantial updates.
 
 ## Workstreams
