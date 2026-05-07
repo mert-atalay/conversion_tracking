@@ -18,6 +18,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
   - Status: `Partial`
   - This is the current implementation candidate for team-facing content/design intake, generated naming keys, budget-driven campaign slots, ID-backed build manifest rows, protected import outputs, and n8n phase-1 validation/export planning.
   - Status: `Verified` for the 2026-05-06 sheet repair, color coding, protected/generated ranges, generated `copy_template_slot` / `copy_template_key`, controlled dropdowns, hidden inventory tabs, simplified parent/franchise user-facing tabs, first-column `location_or_market` selectors for CW/GD tabs, readable `month` + `location_or_market` + `copy_template_picker` selectors for MB render tabs, angle-first copy-template picker labels, separate Google RSA copy/build tabs, copywriter preview-location rendering, standard `CopyAngle` dropdown values including `Attention`, corrected creative registry mapping, corrected import-ready filters, a temporary paused parent LSM Meta POC row test, a temporary franchise render/creative topic test, and a temporary paused Google Search/RSA import-ready test.
+  - Status: `Verified` for the 2026-05-07 copy-first `STAKEHOLDER_REVIEW` update and April/May 2026 POC month-dropdown restriction.
   - This is not production rollout approval and not a live activation, budget-edit, live rename, deletion, or optimization-setting tool.
 - Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
   - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
@@ -108,7 +109,9 @@ Key contracts:
 - Content writers should not manually type `copy_template_slot` or `copy_template_key`; those are generated in the v21 control sheet.
 - In v21 CW and GD user-facing tabs, the first column is `location_or_market` so writers/designers can see the target location or market before choosing copy or creative details.
 - In v21 MB render tabs, use `month`, `location_or_market`, and the readable `copy_template_picker`; hidden slot IDs still drive formulas and should not be manually edited.
+- For the first v21 POC, visible month dropdowns are limited to `2026-04` and `2026-05`; do not widen the month list until CEFA approves a broader rollout window.
 - The v21 `copy_template_picker` label starts with copy angle, then program/topic, persona, offer, and headline preview. Treat `PCT-*` and `FCT-*` as backend IDs, not user-facing copy choices.
+- `STAKEHOLDER_REVIEW` is copy-first. It should show Meta and Google copy from the CW/RSA tabs as soon as copy text exists, even when render, creative, build, approval, and import steps are incomplete.
 - `campaign_slot` is the budget-driven planned-campaign row key from `CAMPAIGN_SELECTOR`, not a live platform object ID. In user-facing v21 tabs, select the readable campaign picker label and let formulas extract the slot. Use platform object IDs for live joins and imports.
 - In v21 user-facing tabs, `program_label` is the human-readable parent program value and `program_token` is the generated naming/UTM-safe value. Franchise rows should use `franchise_topic` and should not force parent program tokens.
 - In v21 copywriter tabs, preview location/market fields are for writing context only. They render placeholders in the copywriter row, but MB campaign selection still controls final campaign-specific rendering.

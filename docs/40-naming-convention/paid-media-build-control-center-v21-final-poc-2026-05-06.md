@@ -1,6 +1,6 @@
 # Paid Media Build Control Center v21 Final POC
 
-Last updated: 2026-05-06
+Last updated: 2026-05-07
 
 ## Scope
 
@@ -28,6 +28,7 @@ Last updated: 2026-05-06
 - `CAMPAIGN_PICKER` gives MB and the team readable campaign choices such as `LSM-003 | Parent LSM | META | Cornerstone | Enrollment | 2026-07`; the generated slot value remains the budget-plan key. It now also includes Google parent/franchise picker columns.
 - `PARENT_COPY_CW`, `FRANCHISE_COPY_CW`, `GOOGLE_PARENT_RSA_CW`, `GOOGLE_FRANCHISE_RSA_CW`, `PARENT_CREATIVE_GD`, and `FRANCHISE_CREATIVE_GD` now start with `location_or_market` so content and design can see the target location/market before writing copy or preparing creative.
 - `PARENT_RENDER_MB` and `FRANCHISE_RENDER_MB` now start with three human selectors: `month`, `location_or_market`, and `copy_template_picker`. The hidden `campaign_picker`, `campaign_slot`, `copy_template_slot`, and `copy_render_slot` are still generated for stable formulas.
+- For the first POC, the visible `month` dropdown is limited to `2026-04` and `2026-05`. The render tabs still fall back to the selected location/market when the budget-driven campaign picker source uses a later planning month.
 - `COPY_TEMPLATE_PICKER` now presents copy templates with human-readable labels that start with copy angle, then program/topic, persona, offer, and headline preview. The old `PCT-*` / `FCT-*` slots remain hidden backend IDs.
 - The README now includes the release gate, allowed/not allowed actions, color legend, team workflow, parent/franchise token rules, import rule, rename rule, n8n phase-1 rule, and `campaign_slot` explanation.
 - Color coding is applied: green for safe input, yellow for approval/review, blue for generated/output, red for blockers, gray for source/admin/reference, and purple for n8n/future automation.
@@ -47,6 +48,7 @@ Last updated: 2026-05-06
 - A temporary franchise render/creative POC row confirmed franchise copy and creative filenames use `franchise_topic`, not parent program tokens, then the test inputs were cleared.
 - A temporary Google parent Search/RSA POC row generated a paused `GOOGLE_IMPORT_READY` row with 15 RSA headlines and 4 descriptions, then the test inputs were cleared so final import tabs are empty.
 - Final readback found no `ACTIVE` status in the checked Meta/Google import outputs.
+- On 2026-05-07, `STAKEHOLDER_REVIEW` was changed from build-manifest-only review to copy-first review. It now shows Meta and Google copy rows directly from `PARENT_COPY_CW`, `FRANCHISE_COPY_CW`, `GOOGLE_PARENT_RSA_CW`, and `GOOGLE_FRANCHISE_RSA_CW` as soon as copy text exists, even when render/build/creative/import steps are incomplete.
 
 `Partial`
 
@@ -73,7 +75,7 @@ Last updated: 2026-05-06
 | Designer | `PARENT_CREATIVE_GD`, `FRANCHISE_CREATIVE_GD` | Start with `location_or_market`, then fill only the practical creative fields: format, concept/ad angle, version, size, file extension, file URL, approval, owner, and notes. Filename/key/QA columns are generated. |
 | Media / MB - Meta | `PARENT_BUILD_MB`, `FRANCHISE_BUILD_MB` | Meta-oriented build surfaces. Platform is locked to `META`; use these for Meta campaign/ad set/ad build rows. |
 | Media / MB - Google | `GOOGLE_PARENT_BUILD_MB`, `GOOGLE_FRANCHISE_BUILD_MB` | Google-oriented build surfaces. Use these for Google customer/campaign/ad group/asset group/search ad rows and expanded RSA import output. |
-| Reviewer | `STAKEHOLDER_REVIEW` | Review generated build rows only. This tab is not an upload surface. |
+| Reviewer | `STAKEHOLDER_REVIEW` | Review copy as soon as it is written in the CW/RSA tabs. Build, creative, approval, and import completion are not required for visibility. This tab is not an upload surface. |
 | Automation / MB | `META_IMPORT_READY`, `GOOGLE_IMPORT_READY`, `IMPORT_AUDIT`, `N8N_PLAN` | Generated/export/audit surfaces only. |
 
 ## Frontend / Backend Split
@@ -130,3 +132,4 @@ The Google tabs are intentionally separate because Google Search and Google Ads 
 - Existing platform objects must be handled by ID, not by name-only matching.
 - Import/API-created platform objects must default to `PAUSED`.
 - `CAMPAIGN_RENAME_REVIEW` is review-only until CEFA approves a separate ID-backed rename batch.
+- For the April/May 2026 POC, keep visible month dropdowns limited to `2026-04` and `2026-05` until CEFA approves a wider rollout window.
