@@ -1,6 +1,6 @@
 # Paid Media Build Control Center v21 Final POC
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Scope
 
@@ -52,6 +52,7 @@ Last updated: 2026-05-07
 - On 2026-05-07, review was split by platform because Meta and Google need different review fields. `META_STAKEHOLDER_REVIEW` now shows Meta primary text, headline, description, CTA, QA, and approval. `GOOGLE_STAKEHOLDER_REVIEW` now shows Google RSA fields, including 15 headlines, 4 descriptions, paths, QA, and approval. The old `STAKEHOLDER_REVIEW` tab is now an index only.
 - For the first POC, copy review uses direct copy text from the CW/RSA tabs. Placeholder preview/rendering remains available in hidden/backend columns for future automation but is not required for writer input or stakeholder review. Existing sample rows were converted to literal April/May POC-style copy.
 - On 2026-05-07, seven parent LSM Meta copy templates were added to `PARENT_COPY_CW` as draft rows `PCT-005` through `PCT-011`: Attention, Montessori/Curriculum, Nearby/Convenience, New Location, CEFA Baby, Open House, and Summer Camp. These now appear in `META_STAKEHOLDER_REVIEW` and `COPY_TEMPLATE_PICKER`.
+- On 2026-05-08, `PCT-005` was updated as the first location-specific parent LSM Attention POC row. It uses `location_or_market=Kelowna - Spall`, city copy `Kelowna`, school/location copy `Kelowna Spall`, `program_label=All Programs`, `offer_type=application-submit`, `copy_angle=Attention`, `cta=LEARN_MORE`, and `approval_status=Draft`. The row is visible in `META_STAKEHOLDER_REVIEW` and should remain direct copy, not placeholder copy.
 
 `Partial`
 

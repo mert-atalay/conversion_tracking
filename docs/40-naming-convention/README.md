@@ -21,6 +21,7 @@ This folder is for CEFA naming standards that affect paid media, creative files,
   - Status: `Verified` for the 2026-05-07 copy-first `STAKEHOLDER_REVIEW` update and April/May 2026 POC month-dropdown restriction.
   - Status: `Verified` for the 2026-05-07 split of Meta and Google stakeholder review into separate platform-specific tabs, removal of the visible review-source field, hidden placeholder-preview columns on CW/RSA tabs, and direct-copy POC rule.
   - Status: `Verified` for the 2026-05-07 addition of seven draft parent LSM Meta copy templates in `PARENT_COPY_CW`, now visible in `META_STAKEHOLDER_REVIEW` and `COPY_TEMPLATE_PICKER`.
+  - Status: `Verified` for the 2026-05-08 parent LSM Attention POC row: `PARENT_COPY_CW` row `PCT-005` is filled for `Kelowna - Spall` with direct location copy (`Kelowna` city and `Kelowna Spall` school/location), `copy_angle=Attention`, `program_label=All Programs`, `offer_type=application-submit`, `cta=LEARN_MORE`, and `approval_status=Draft`.
   - This is not production rollout approval and not a live activation, budget-edit, live rename, deletion, or optimization-setting tool.
 - Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
   - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
@@ -115,6 +116,7 @@ Key contracts:
 - The v21 `copy_template_picker` label starts with copy angle, then program/topic, persona, offer, and headline preview. Treat `PCT-*` and `FCT-*` as backend IDs, not user-facing copy choices.
 - Stakeholder review is copy-first and platform-specific. Use `META_STAKEHOLDER_REVIEW` for Meta primary text/headline/description/CTA review and `GOOGLE_STAKEHOLDER_REVIEW` for Google RSA headline/description/path review. The old `STAKEHOLDER_REVIEW` tab is an index only.
 - For the April/May 2026 POC, CW/RSA tabs should use direct location/program-specific copy. Placeholder rendering is optional/future and should not be required for stakeholder review.
+- Current parent LSM Attention POC copy row is `PCT-005` for `Kelowna - Spall`. Treat it as the working example for location-specific direct copy: do not reintroduce `{CityName}` or `{SchoolName}` placeholders into this row.
 - `campaign_slot` is the budget-driven planned-campaign row key from `CAMPAIGN_SELECTOR`, not a live platform object ID. In user-facing v21 tabs, select the readable campaign picker label and let formulas extract the slot. Use platform object IDs for live joins and imports.
 - In v21 user-facing tabs, `program_label` is the human-readable parent program value and `program_token` is the generated naming/UTM-safe value. Franchise rows should use `franchise_topic` and should not force parent program tokens.
 - In v21 copywriter tabs, preview location/market fields are for writing context only. They render placeholders in the copywriter row, but MB campaign selection still controls final campaign-specific rendering.
