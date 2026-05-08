@@ -53,6 +53,7 @@ Last updated: 2026-05-08
 - For the first POC, copy review uses direct copy text from the CW/RSA tabs. Placeholder preview/rendering remains available in hidden/backend columns for future automation but is not required for writer input or stakeholder review. Existing sample rows were converted to literal April/May POC-style copy.
 - On 2026-05-07, seven parent LSM Meta copy templates were added to `PARENT_COPY_CW` as draft rows `PCT-005` through `PCT-011`: Attention, Montessori/Curriculum, Nearby/Convenience, New Location, CEFA Baby, Open House, and Summer Camp. These now appear in `META_STAKEHOLDER_REVIEW` and `COPY_TEMPLATE_PICKER`.
 - On 2026-05-08, `PCT-005` was updated as the first location-specific parent LSM Attention POC row. It uses `location_or_market=Kelowna - Spall`, city copy `Kelowna`, school/location copy `Kelowna Spall`, `program_label=All Programs`, `offer_type=application-submit`, `copy_angle=Attention`, `cta=LEARN_MORE`, and `approval_status=Draft`. The row is visible in `META_STAKEHOLDER_REVIEW` and should remain direct copy, not placeholder copy.
+- On 2026-05-08, Markham Ads Manager draft POC source rows were added for the selected Markham campaign/ad set. `PARENT_COPY_CW` row `PCT-012` contains direct Markham Esna Park Attention copy. `PARENT_RENDER_MB` row `PR-003` resolves the Markham copy and campaign picker. `PARENT_CREATIVE_GD` rows `PCTRV-001` through `PCTRV-003` reference the three local Markham creative files under `/Users/matthewbison/Desktop/brads/markham/All Ages/`. `PARENT_BUILD_MB` batch `markham_attention_poc_20260508` points to campaign ID `120229052675680400`, ad set ID `120229052675670400`, and target ad name `IMG | All Programs | Markham | Attention | v1`. This is draft-only; do not publish without MB approval.
 
 `Partial`
 
@@ -61,6 +62,7 @@ Last updated: 2026-05-08
 - Destination URL and school/form mapping still depend on `LOCATION_TOKEN_MAP` reconciliation before real import use.
 - n8n is not connected yet.
 - Platform asset IDs, Meta image hashes, Meta video IDs, Google asset IDs, and YouTube IDs still require upload/export sync before real import use.
+- Ads Manager browser execution for the Markham POC is pending because the Chrome plugin session stopped at Meta Business login. No Ads Manager draft or live platform change has been made from Chrome yet.
 
 `Pending`
 
