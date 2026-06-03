@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-06
 
+Governance note: Current owner is [Conversion tracking](../10-conversion-tracking/README.md). Update new franchise USA tracking summaries or final tracking decisions there. Status: `Current phase evidence`.
+
 This folder is the working implementation package for Franchise USA tracking.
 
 Scope:

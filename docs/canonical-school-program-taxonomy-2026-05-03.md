@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-03
 
+Governance note: Current owner is [Master data](./60-master-data/README.md). Update new school/program/location crosswalk work there. Status: `Current summary`.
+
 ## Short Answer
 
 We have solid partial information, but not the complete cross-system canonical table requested yet.

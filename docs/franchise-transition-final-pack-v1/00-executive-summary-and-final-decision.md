@@ -1,5 +1,7 @@
 # CEFA Franchise Transition Tracking — Final Strategic Recommendation
 
+Governance note: Current owner is [Conversion tracking](../10-conversion-tracking/README.md). Update new parent/franchise transition decisions there. Status: `Historical package`.
+
 ## Final decision
 
 Use a **sequenced transition**, not an abrupt rebuild.

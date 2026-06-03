@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-03
 
+Governance note: Current owner is [Master data](./60-master-data/README.md). Update new school/program reference and crosswalk work there. Status: `Current summary`.
+
 ## Purpose
 
 This file is the concrete known-values reference for CEFA parent conversion tracking joins. It documents what is currently verified and leaves unresolved cross-system IDs as `pending` instead of guessing.

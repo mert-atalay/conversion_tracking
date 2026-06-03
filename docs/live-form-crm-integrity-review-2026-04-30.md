@@ -4,6 +4,8 @@ Last updated: 2026-05-01
 
 ## Scope
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new form/CRM integrity or business-truth evidence there. Status: `Reference only`.
+
 The websites are live on their production domains. This review focused on whether the submission forms still render, submit, save the intended Gravity Forms values, and hand off CRM/Synuma attributes where the available tools can verify that.
 
 No backend settings, WordPress files, GTM containers, GA4 properties, Ads accounts, Meta datasets, or Gravity Forms settings were changed.

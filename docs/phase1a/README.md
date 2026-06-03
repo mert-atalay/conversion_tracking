@@ -1,5 +1,7 @@
 # Phase 1A Reference
 
+Governance note: Current owner is [Conversion tracking](../10-conversion-tracking/README.md). Update new parent Phase 1A summaries or final tracking decisions there. Status: `Current phase evidence`.
+
 This folder preserves the implementation decision behind the plugin.
 
 The current accepted boundary is hybrid:

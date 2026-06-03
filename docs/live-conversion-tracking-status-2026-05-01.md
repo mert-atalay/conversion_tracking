@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-05
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new live tracking status summaries there. Status: `Current summary`.
+
 ## Scope
 
 This note records the current production-domain state after the parent live cutover and the first franchise live tracking bridge pass.

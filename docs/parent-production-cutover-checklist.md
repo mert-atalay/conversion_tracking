@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-01
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new parent production cutover or signoff work there. Status: `Current summary`.
+
 This checklist records the parent-site `cefa.ca` conversion-tracking state after the new website moved to production.
 
 ## Current Live Baseline

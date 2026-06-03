@@ -4,6 +4,8 @@ Last updated: 2026-04-30
 
 ## Scope
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new controlled-submit or launch-readiness evidence there. Status: `Reference only`.
+
 The new CEFA websites are now live on their original domains. This second review allowed controlled public form submissions, but no backend changes were made.
 
 No website files, WordPress settings, GTM containers, GA4 properties, Google Ads conversion actions, Meta datasets, or Gravity Forms settings were changed.

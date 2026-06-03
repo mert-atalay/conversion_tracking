@@ -2,6 +2,8 @@
 
 Last updated: 2026-04-28
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new franchise tracking or Meta dataset decisions there. Status: `Reference only`.
+
 ## Purpose
 
 This document is a complete handoff for a second-pass GPT Pro review before we move from the completed parent-side staging work into franchise conversion tracking.

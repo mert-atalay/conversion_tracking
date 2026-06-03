@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-04
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new cross-property event or platform-boundary work there. Status: `Current summary`.
+
 This document keeps parent, franchise Canada, and franchise USA tracking decisions separated while allowing shared implementation patterns.
 
 ## Properties
