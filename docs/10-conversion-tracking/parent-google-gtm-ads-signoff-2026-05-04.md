@@ -149,6 +149,38 @@ Source: Google Ads API, customer `4159217891`.
 
 Last-30-day Google Ads action counts showed historical volume on `Inquiry Submit_ollo`, but the API returned no rows for `Inquiry Submit_ollo`, `Contact Form Submit_ollo`, or `generate_lead (GA4)` between 2026-05-01 and 2026-05-04. Treat that recent-window result as inconclusive because conversion lag and traffic/ad-click conditions may apply.
 
+### Google Ads Suggested Conversions / Confirm Or Block
+
+Additional read-only check on 2026-05-04 reviewed the Google Ads UI suggestions showing `Confirm or block` for:
+
+- `Application Click_Discovery`
+- `Inquiry Click_Discovery`
+- `Inquiry Click_Weekend/Evening care`
+- `Inquiry Click_Click_Baby/JK`
+- `Application Click_Baby/JK`
+- `Application Click_Weekend/Evening care`
+
+Decision: block / do not accept these suggested conversions for the parent Phase 1A setup.
+
+Reason:
+
+- The current parent final conversion is already `school_inquiry_submit` mapped to existing Google Ads action `Inquiry Submit_ollo`.
+- The current live GTM container `GTM-NZ6N7WNC` does not contain the listed Discovery / Baby-JK / Weekend-Evening conversion event names.
+- The old parent GTM container `GTM-PPV9ZRZ` contains legacy click-style logic such as `Inquiry Click_Discovery`, but that container is not live on `cefa.ca` and should stay reference-only.
+- These suggestions are click/application-intent events, not confirmed successful Form 4 submissions.
+- Accepting them would add parallel Google Ads conversion sources outside the clean helper-plugin contract and could confuse bidding/reporting.
+
+If CEFA later wants click-intent Google Ads conversions, create or import them deliberately as secondary/non-bidding micro-conversions from the helper-plugin events, not through Google's automatic suggested conversion names.
+
+Refreshed Google Ads API evidence:
+
+| Check | Result |
+|---|---|
+| `Inquiry Submit_ollo` action | `ENABLED`, primary, included in conversions, label `AW-802334988/cFt-CMrLufgCEIzSyv4C`. |
+| Listed suggested Discovery/Baby/Weekend actions | Not present as accepted conversion-action names in the parent account query. |
+| Current GTM `GTM-NZ6N7WNC` | Contains correct `cFt-CMrLufgCEIzSyv4C` label; does not contain old `Contact Form Submit_ollo` label `5_KbCJO3j_gCEIzSyv4C`. |
+| Last 30 days, 2026-04-05 to 2026-05-04 | `Inquiry Submit_ollo` reported `615.289941` conversions and `623.289941` all conversions. |
+
 ## GA4 And BigQuery Evidence
 
 Source: GA4 Data API for `properties/267558140`, date range 2026-05-01 to 2026-05-04.

@@ -1,6 +1,6 @@
 # CEFA Data Taxonomy And Source Map
 
-Last updated: 2026-05-07
+Last updated: 2026-05-10
 
 ## Purpose
 
@@ -47,7 +47,7 @@ Use the existing repo authority order from [source-of-truth-rules.md](./source-o
 | Website runtime | Parent `cefa.ca` WordPress | Parent inquiry pages, Form 4 runtime, helper plugin output, School Manager context | Form 4 entry ID, `event_id`, `school_selected_id`, `program_id` | page path, school slug, school name, program name | Emits neutral parent event through helper plugin after saved submission | GA4 export, BigQuery marts, dashboard views | `Verified` for current contract | [README](../../README.md), [conversion tracking README](../10-conversion-tracking/README.md) |
 | Website runtime | Franchise Canada `franchise.cefa.ca` | Canada franchise inquiry and real-estate/site forms | Gravity Forms entry ID, entry-meta `event_id`, Synuma lead ID when returned | market, location interest, form family | Emits `franchise_inquiry_submit` and `real_estate_site_submit` through WPCode/helper path | GA4, Google Ads, Meta, future warehouse reconciliation | `Partial` pending delayed platform confirmations | [event ownership matrix](../10-conversion-tracking/event-ownership-matrix-2026-05-05.md) |
 | Website runtime | Franchise USA `www.franchisecefa.com` | USA franchise inquiry and real-estate/site forms | Gravity Forms entry ID, entry-meta `event_id`, Synuma lead ID when returned | market, location interest, form family | Emits USA franchise helper events; Google Ads final mapping still pending | GA4, Meta USA dataset, future warehouse reconciliation | `Partial` | [event ownership matrix](../10-conversion-tracking/event-ownership-matrix-2026-05-05.md) |
-| Form/business truth | Gravity Forms parent Form 4 | Saved parent inquiry record | Form 4 entry ID, `32.1` school UUID, `32.2` program ID, `32.4` event ID | `32.5` school slug, `32.6` school name, `32.7` program name | Business truth behind parent final event | Parent inquiry marts after refresh; current marts are stale | `Verified` contract; `Partial` current reporting freshness | [business truth gaps](../10-conversion-tracking/business-truth-and-tracking-data-gaps-2026-05-03.md) |
+| Form/business truth | Gravity Forms parent Form 4 | Saved parent inquiry record; API-accessible Form 4 backfill | Form 4 entry ID, `32.1` school UUID, `32.2` program ID, `32.4` event ID | `32.5` school slug, `32.6` school name, `32.7` program name | Business truth behind parent final event | POC MTD serving snapshots; future governed parent inquiry marts | `Verified` field/API-backfill contract; `Partial` webhook and CRM reconciliation | [business truth gaps](../10-conversion-tracking/business-truth-and-tracking-data-gaps-2026-05-03.md) |
 | Form/business truth | Franchise Gravity Forms 1 and 2 | Franchise inquiry and site inquiry saved records | Form entry ID, helper entry-meta `event_id`, CRM lead ID when available | form family, lead intent, market/country | Business truth behind franchise helper events | Franchise lead-source mart after refresh; current mart is stale | `Partial` | [event ownership matrix](../10-conversion-tracking/event-ownership-matrix-2026-05-05.md) |
 | Website metadata | CEFA School Manager | Parent school/program/day rendering and Field 32 behavior | `school_uuid`, `program_id`, School Manager IDs where known | school/program/day labels, school slug | Provides parent selected school/program context; helper plugin must not overwrite business fields | Master-data crosswalk and dim school reconciliation | `Verified` operational surface; some IDs `Partial` | [master data README](../60-master-data/README.md) |
 | Tracking bridge | CEFA Conversion Tracking plugin | Neutral browser events, event ID lifecycle, duplicate guards, attribution backfill | `event_id`, one-time token, Form 4 field 32.4, franchise entry meta | `tracking_source=helper_plugin`, form family, lead intent | Website-side controlled event source | GA4/GTM/platform destinations; BigQuery GA4 export | `Verified` for documented contract | [README](../../README.md), [DataLayer contract](../phase1a/datalayer-contract.md) |
@@ -78,6 +78,14 @@ Use the existing repo authority order from [source-of-truth-rules.md](./source-o
 | Master reference | `mart_marketing.dim_school` | Current checked school dimension | `school_uuid`, `school_slug`, `canonical_location_id`, location fields | school display labels | Primary school join reference for parent tracking/reporting | dashboard and Looker marts/views | `Verified` 53-row coverage; some fields `Partial` | [school dimension coverage](../60-master-data/school-dimension-warehouse-coverage-2026-05-03.md) |
 | Master reference | School form programs Google Sheet | Parent school URLs, inquiry URLs, shown programs | sheet school ID, school slug | school/program display labels | Input for location/form URL and program dropdown validation | naming sheet and master-data reconciliation | `Partial` 51 vs 53 school rows | [school form programs source](../60-master-data/school-form-programs-google-sheet-source-2026-05-04.md) |
 | Dashboard rules | `cefa_core.measurement_rule_registry` and `vw_measurement_rule_registry_current` | Dashboard-readable rule references | `rule_family`, `rule_scope`, lifecycle/status fields | conversion/naming rule labels | Exposes current rules to dashboards; not source approval by itself | `mart_marketing.vw_measurement_rule_registry_current` | `Verified` seeded surface; upload workflow `Pending` | [dashboard source layer](../20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md) |
+
+### 2026-05-10 Parent Form 4 API Status
+
+- Parent Form 4 API backfill is verified through the form-specific route `/wp-json/gf/v2/forms/4/entries`.
+- Do not assume the generic Gravity route `/wp-json/gf/v2/entries?form_ids=4` behaves the same way for this site.
+- Current dashboard-safe backfill materializes sanitized rows only; webhook ingestion is still not verified.
+- Current safe identifiers are Form 4 entry ID, `32.1` school UUID, `32.2` program ID, `32.4` event ID, `32.5` school slug, `32.6` school name, `32.7` program name, and attribution fields `35-46`.
+- Gravity Forms is website submission evidence. It is not CRM opportunity truth, enrollment truth, or platform conversion truth without reconciliation.
 
 ## Canonical Identifier Taxonomy
 

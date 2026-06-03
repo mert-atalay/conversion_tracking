@@ -56,6 +56,9 @@ Key contracts:
 
 ## Current Files
 
+- [CEFA AI naming and conversion reference](./cefa-ai-naming-conversion-reference-2026-05-20.md)
+  - Status: `Verified` for repo-derived naming/conversion rules, 2026-05-20 live v21 sheet identity/tab-list verification, and 2026-06-03 consolidation of the latest documented conversion mapping state; `Partial` where the source docs still require platform template validation, URL reconciliation, delayed platform reporting, or platform confirmation.
+  - Use this as the compact AI handoff/reference for CEFA paid-media naming, creative/copy build rules, UTM rules, page URL rules, and conversion-tracking guardrails. It is not a replacement for the narrower source-of-truth docs.
 - [Meta naming NC2 active last-30 inventory](./meta-naming-nc2-active-last-30-inventory-2026-05-04.md)
   - Status: `Verified` for live Meta reads and active object IDs/names; `Partial` for proposed NC2 names.
   - Covers CEFA Early Learning and CEFA Franchisor campaigns, ad sets, and ads that delivered from 2026-04-05 through 2026-05-04.
