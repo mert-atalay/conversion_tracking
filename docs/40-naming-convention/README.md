@@ -7,32 +7,127 @@ This folder is for CEFA naming standards that affect paid media, creative files,
 - Local summary: `/Users/matthewbison/Desktop/cefa-nexus/CEFA/.agency/context/cefa-meta-naming-convention-2026-04-28.md`
 - Google Sheet mirror: documented in that local summary.
 - Workbook remains the human source of truth unless CEFA approves a new naming version.
+- Latest reviewed Drive package, final v3 / v20 candidate: [Drive folder](https://drive.google.com/drive/folders/1OYm5c2hA7UZF3AXk5XvOvIcMq6g-P_qN) and [v20 workbook](https://docs.google.com/spreadsheets/d/1A2WmOmADovTHV69zt9kA5KtBWoatAJOD/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
+  - Status: `Partial`
+  - Formula placement in the budget tabs was fixed in the live Drive workbook on 2026-05-04. The v20/final-v3 package has the right dynamic-copy direction, but it is not ready as the governed source of truth until URL/UTM source mapping, dropdown validation, location/form URL reconciliation, and the active-object rename inventory is reviewed by CEFA.
+- Current POC control sheet: [CEFA Paid Media Build Control Center - POC v1 - 2026-05-05](https://docs.google.com/spreadsheets/d/11mlcPQy_nz-XvjgSotl0cCWAJr2BS8REK6Ex2nOIMYI/edit).
+  - Status: `Partial`
+  - Created as the simpler team-facing control surface for copy, creative, budget reference, ID-backed destinations, build manifest rows, QA, and future n8n/import output.
+  - This is not a live launch or budget-edit tool.
+- Current v21 final POC control sheet: [CEFA Paid Media Naming Convention Build Control - v21 Final POC - 2026-05-06](https://docs.google.com/spreadsheets/d/15MkgHS4YQLFMAsZDleJytIIsLn-bupUJBELWmykuN6U/edit).
+  - Status: `Partial`
+  - This is the current implementation candidate for team-facing content/design intake, generated naming keys, budget-driven campaign slots, ID-backed build manifest rows, protected import outputs, and n8n phase-1 validation/export planning.
+  - Status: `Verified` for the 2026-05-06 sheet repair, color coding, protected/generated ranges, generated `copy_template_slot` / `copy_template_key`, controlled dropdowns, hidden inventory tabs, simplified parent/franchise user-facing tabs, first-column `location_or_market` selectors for CW/GD tabs, readable `month` + `location_or_market` + `copy_template_picker` selectors for MB render tabs, angle-first copy-template picker labels, separate Google RSA copy/build tabs, copywriter preview-location rendering, standard `CopyAngle` dropdown values including `Attention`, corrected creative registry mapping, corrected import-ready filters, a temporary paused parent LSM Meta POC row test, a temporary franchise render/creative topic test, and a temporary paused Google Search/RSA import-ready test.
+  - Status: `Verified` for the 2026-05-07 copy-first `STAKEHOLDER_REVIEW` update and April/May 2026 POC month-dropdown restriction.
+  - Status: `Verified` for the 2026-05-07 split of Meta and Google stakeholder review into separate platform-specific tabs, removal of the visible review-source field, hidden placeholder-preview columns on CW/RSA tabs, and direct-copy POC rule.
+  - Status: `Verified` for the 2026-05-07 addition of seven draft parent LSM Meta copy templates in `PARENT_COPY_CW`, now visible in `META_STAKEHOLDER_REVIEW` and `COPY_TEMPLATE_PICKER`.
+  - Status: `Verified` for the 2026-05-08 parent LSM Attention POC row: `PARENT_COPY_CW` row `PCT-005` is filled for `Kelowna - Spall` with direct location copy (`Kelowna` city and `Kelowna Spall` school/location), `copy_angle=Attention`, `program_label=All Programs`, `offer_type=application-submit`, `cta=LEARN_MORE`, and `approval_status=Draft`.
+  - Status: `Verified` for the 2026-05-08 Markham Ads Manager draft POC source rows: `PARENT_COPY_CW` row `PCT-012`, `PARENT_RENDER_MB` row `PR-003`, `PARENT_CREATIVE_GD` rows `PCTRV-001` through `PCTRV-003`, and `PARENT_BUILD_MB` batch `markham_attention_poc_20260508`. Browser execution is `Pending` because the Chrome Ads Manager session stopped at Meta Business login.
+  - This is not production rollout approval and not a live activation, budget-edit, live rename, deletion, or optimization-setting tool.
+- Latest successful Meta bulk import pattern: [Meta bulk import success pattern - 2026-05-05](./meta-bulk-import-success-pattern-2026-05-05.md).
+  - Status: `Verified` for user-confirmed successful Ads Manager bulk import of the Franchise Canada video refresh.
+  - Status: `Partial` for the observed WhatsApp/browser add-on behavior, because the controlling setting or import column is not verified yet.
+  - Status: `Pending` for future ad-level tags, because eligibility was observed but export/import or API read/write behavior is not verified yet.
+- Latest reviewed Drive package, candidate v19/NC2: [Drive folder](https://drive.google.com/drive/folders/1uVG9KM-C94covrmZqle20ja4NJKC3taZ) and [v19 workbook](https://docs.google.com/spreadsheets/d/1n4SehWNb6UfhNDkYtKyYOS19a-v_Eijq/edit?usp=drivesdk&ouid=100264075182330360487&rtpof=true&sd=true).
+  - Status: `Partial`
+  - The v19 package is reviewed as a budget-driven candidate. It should not replace NC1 until CEFA approves the campaign-pattern change and the Meta import status guardrail is resolved.
 
 ## Current Naming Version
 
-Current Meta naming version: `NC1`.
+Current live Meta naming version: `NC1`.
+Current proposed Meta naming version for review/renaming: `NC2`.
+Current proposed Google Ads naming version for review/renaming: `GADS1`.
 Current local listing UTM version: `ll1`.
+Budget-driven Meta naming v20/final-v3 and the active-object inventory are the current NC2 planning surfaces, not live rename approval.
 
 Key contracts:
 
-- Campaign: `CEFA | {ScopeTag} | {FundingTag} | {ActivationTag} | {SchoolOrGroup} | META | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
+- Campaign: `CEFA | {BudgetScope} | {Activation} | {LocationOrGroup} | META | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
 - Ad set: `{Persona} | {AudienceType} | {Geo} | {Placement}`
-- Meta ad: `{FormatTag} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
+- Meta ad: `{FormatTag} | {ProgramOrTopic} | {VisualConcept} | {CopyAngle} | v{AdVersion}`
+- Google Ads campaign: `CEFA | {BudgetScope} | {Activation} | {LocationOrGroup} | GOOGLE | {Channel} | {Objective} | {Funnel} | {Theme} | {YYYYMM} | {Seq}`
+- Google Ads search ad group: `{PersonaOrIntent} | {KeywordTheme} | {GeoOrMarket} | {MatchStrategy}`
+- Google Ads PMax asset group: `Asset Group | {GeoOrMarket} | PMax`
 - Creative group key: `{school_slug}__{scope}__{funding}__{activation}__{theme}__{format}__{concept}__cr##__v#`
-- UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_slug}&utm_content={ad_slug_or_data_key}`
+- UTM: `utm_source=meta&utm_medium=paid_social&utm_campaign={campaign_key}&utm_content={ad_data_key}&utm_term={ad_set_key}`
+- Google Ads UTM: `utm_source=google&utm_medium=cpc&utm_campaign={campaign_key}&utm_content={ad_build_key}&utm_term={keyword_or_ad_group_key}`
+- Rename/join handle: use `campaign_id`, `adset_id`, and `ad_id` from the active-object inventory. Do not use current names as the only live object selector.
+- Build/import handle: use a row-level build manifest that maps creative, copy, URL tags, program/topic, campaign/ad set/ad IDs, QA, and approval status before any Meta import or n8n write.
 
 ## Current Files
 
+- [CEFA AI naming and conversion reference](./cefa-ai-naming-conversion-reference-2026-05-20.md)
+  - Status: `Verified` for repo-derived naming/conversion rules, 2026-05-20 live v21 sheet identity/tab-list verification, and 2026-06-03 consolidation of the latest documented conversion mapping state; `Partial` where the source docs still require platform template validation, URL reconciliation, delayed platform reporting, or platform confirmation.
+  - Use this as the compact AI handoff/reference for CEFA paid-media naming, creative/copy build rules, UTM rules, page URL rules, and conversion-tracking guardrails. It is not a replacement for the narrower source-of-truth docs.
+- [Meta naming NC2 active last-30 inventory](./meta-naming-nc2-active-last-30-inventory-2026-05-04.md)
+  - Status: `Verified` for live Meta reads and active object IDs/names; `Partial` for proposed NC2 names.
+  - Covers CEFA Early Learning and CEFA Franchisor campaigns, ad sets, and ads that delivered from 2026-04-05 through 2026-05-04.
+  - Links the active object inventory CSV with current names, campaign/ad set/ad IDs, parent campaign/ad set IDs, proposed NC2 names, and review flags.
+- [Meta creative build import manifest contract](./meta-creative-build-import-manifest-2026-05-04.md)
+  - Status: `Partial`
+  - Defines the row-level workbook/n8n contract required before mapping CEFA creative and copy into Meta campaign/ad set/ad create, update, or rename rows.
+  - Requires ID-based object matching, parent program-token dropdowns, separate franchise topics, generated URL tags, QA gates, approval status, and `PAUSED` import defaults.
+- [Google Ads naming GADS1 active last-30 inventory](./google-ads-naming-gads1-active-last-30-inventory-2026-05-04.md)
+  - Status: `Verified` for live Google Ads reads and active object IDs/names; `Partial` for proposed GADS1 names.
+  - Covers CEFA $3000 and CEFA Franchisor campaigns, ad groups, asset groups, and ads that delivered from 2026-04-05 through 2026-05-04.
+  - Links the active object inventory CSV with current names, campaign/ad group/asset group/ad IDs, proposed GADS1 names, and review flags.
+- [Paid media build control center POC](./paid-media-build-control-center-poc-2026-05-05.md)
+  - Status: `Partial`
+  - Documents the new native Google Sheet POC for team copy/creative intake, budget sync, ID-backed object destinations, build manifest QA, and future n8n/import output.
+- [Paid media build control center v21 final POC](./paid-media-build-control-center-v21-final-poc-2026-05-06.md)
+  - Status: `Partial`
+  - Documents the current v21 Google Sheet implementation candidate, including color-coded team roles, protected generated columns, import-ready guards, paused output defaults, and the 2026-05-06 verification pass.
+- [Meta bulk import success pattern](./meta-bulk-import-success-pattern-2026-05-05.md)
+  - Status: `Verified` for the user-confirmed successful Franchise Canada video bulk import pattern.
+  - Records the reusable live-status-safe CSV pattern, the WhatsApp/browser add-on follow-up, and the pending ad-level tag opportunity.
+- [Budget-driven Meta naming v20 final-v3 review](./budget-driven-meta-naming-v20-final-v3-review-2026-05-04.md)
+  - Status: `Partial`
+  - Covers the final-v3 Drive package, dynamic copy improvements, and blocking workbook fixes before team rollout.
+- [Budget-driven Meta naming v19 review](./budget-driven-meta-naming-v19-review-2026-05-04.md)
+  - Status: `Partial`
+  - Covers the latest Drive package links, v19 naming rules, n8n phase-1 guardrails, and open approval risks.
 - [Local listing UTM rules - GBP and Yelp](./local-listing-utm-rules-gbp-yelp-2026-05-03.md)
   - Status: `Partial`
   - Covers GBP/Yelp website and inquiry-form UTM rules.
   - The rule is approved for documentation use, but live listing updates still require field availability and school-slug verification.
 
+## Related Master Data Inputs
+
+- [School form programs Google Sheet source](../60-master-data/school-form-programs-google-sheet-source-2026-05-04.md)
+  - Status: `Partial`
+  - Use as a parent-school program and form URL input for future parent `ProgramTag` dropdowns after reconciliation against the canonical school dimension.
+
+## BigQuery / Dashboard Registry
+
+- Current naming-convention rule references are available to dashboards through `marketing-api-488017.mart_marketing.vw_measurement_rule_registry_current`.
+- The BigQuery implementation is documented in [Dashboard source layer, GreenRope, and rule registry](../20-bigquery/dashboard-source-layer-greenrope-and-rule-registry-2026-05-03.md).
+- The workbook or mirrored Google Sheet remains the human source of truth for Meta NC1. Do not treat the dashboard registry as permission to change NC1 token meanings.
+
 ## Rules
 
 - Do not silently change token meanings.
 - Do not use Drive/SharePoint creative filenames as visible Meta ad names.
+- Do not rename live Meta objects by name lookup alone; use IDs from the active-object inventory.
+- Do not rename live Google Ads objects by name lookup alone; use customer, campaign, ad group, asset group, and ad IDs from the Google Ads inventory.
+- Do not treat Google Ads ads as having a Meta-style visible ad name; use `ad_id` plus a build key for ad-level tracking and bulk edits.
+- Do not force Google Ads Search/RSA copy into the Meta copy tabs. In v21, use `GOOGLE_PARENT_RSA_CW` and `GOOGLE_FRANCHISE_RSA_CW` for Google copy, because Google needs up to 15 headlines, 4 descriptions, and path fields.
+- Do not force Google Ads build rows into the Meta build tabs. In v21, use `GOOGLE_PARENT_BUILD_MB` and `GOOGLE_FRANCHISE_BUILD_MB` for Google customer/campaign/ad group/asset group workflows.
+- Do not build Meta import rows directly from creative files or copy text alone; use the build manifest contract so every row has destination, copy, creative, URL tag, QA, and approval fields.
+- Content writers should not manually type `copy_template_slot` or `copy_template_key`; those are generated in the v21 control sheet.
+- In v21 CW and GD user-facing tabs, the first column is `location_or_market` so writers/designers can see the target location or market before choosing copy or creative details.
+- In v21 MB render tabs, use `month`, `location_or_market`, and the readable `copy_template_picker`; hidden slot IDs still drive formulas and should not be manually edited.
+- For the first v21 POC, visible month dropdowns are limited to `2026-04` and `2026-05`; do not widen the month list until CEFA approves a broader rollout window.
+- The v21 `copy_template_picker` label starts with copy angle, then program/topic, persona, offer, and headline preview. Treat `PCT-*` and `FCT-*` as backend IDs, not user-facing copy choices.
+- Stakeholder review is copy-first and platform-specific. Use `META_STAKEHOLDER_REVIEW` for Meta primary text/headline/description/CTA review and `GOOGLE_STAKEHOLDER_REVIEW` for Google RSA headline/description/path review. The old `STAKEHOLDER_REVIEW` tab is an index only.
+- For the April/May 2026 POC, CW/RSA tabs should use direct location/program-specific copy. Placeholder rendering is optional/future and should not be required for stakeholder review.
+- Current parent LSM Attention POC copy row is `PCT-005` for `Kelowna - Spall`. Treat it as the working example for location-specific direct copy: do not reintroduce `{CityName}` or `{SchoolName}` placeholders into this row.
+- Current Markham Ads Manager POC source uses `PCT-012` / `PR-003` / `PCTRV-001` and build batch `markham_attention_poc_20260508`. Target campaign ID is `120229052675680400`; target ad set ID is `120229052675670400`; target ad name is `IMG | All Programs | Markham | Attention | v1`. Keep it draft-only unless MB explicitly approves publish.
+- `campaign_slot` is the budget-driven planned-campaign row key from `CAMPAIGN_SELECTOR`, not a live platform object ID. In user-facing v21 tabs, select the readable campaign picker label and let formulas extract the slot. Use platform object IDs for live joins and imports.
+- In v21 user-facing tabs, `program_label` is the human-readable parent program value and `program_token` is the generated naming/UTM-safe value. Franchise rows should use `franchise_topic` and should not force parent program tokens.
+- In v21 copywriter tabs, preview location/market fields are for writing context only. They render placeholders in the copywriter row, but MB campaign selection still controls final campaign-specific rendering.
+- Approved `CopyAngle` dropdown values currently include `Attention`, `Interest`, `Desire`, `Action`, `Trust`, `Program Fit`, `Curriculum`, `Safety`, `Convenience`, `Social Proof`, `Urgency`, `Diversification`, `Investment`, `Market Opportunity`, `Real Estate`, and `Retargeting`.
 - API-created or imported Meta objects must default to paused unless explicitly approved.
+- API-created or bulk-created Google Ads campaigns, ad groups, asset groups, and ads must default to paused unless explicitly approved.
 - Paid-media agents should link here before creating or reviewing campaign/ad naming.
 
 ## Suggested Next Files

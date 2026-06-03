@@ -110,5 +110,4 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 
 		return build_query( $params );
 	}
-
 }

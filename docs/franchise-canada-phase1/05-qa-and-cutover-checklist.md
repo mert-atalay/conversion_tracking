@@ -1,8 +1,18 @@
 # Franchise Canada QA And Cutover Checklist
 
-Last updated: 2026-05-03
+Last updated: 2026-05-05
 
-Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`. GAConnector field population is verified on a clean Form 1 runtime test; Form 2 uses the same selector map and final destination mapping is verified, but a final post-Version-52 Form 2 attribution re-submit can still be run if stricter evidence is needed.
+Status note: this checklist reflects the live-domain Version 52 GTM pass on `franchise.cefa.ca`, the 2026-05-04 GAConnector cleanup patch, and the 2026-05-05 Version 54 continuity correction. Controlled live Form 1 and Form 2 submissions on 2026-05-04 both reached their thank-you pages, pushed the expected helper events, created Gravity Forms entries, saved matching `cefa_conversion_tracking_event_id` values, and appeared in GA4 realtime as `generate_lead`. The later Form 2 retest verified the stale same-session `gclid` issue is fixed by preferring the current Google `_gcl_aw` value before Gravity Forms saves the entry. The post-Version-54 Form 1 browser QA on 2026-05-05 verified Google Ads primary `fr_application_submit`, GA4 `generate_lead`, no secondary Ads `fr_inquiry_submit`, and Meta `Fr Application Submit` script execution.
+
+Continuity correction on 2026-05-05:
+
+- Live GTM Version `54` changed the Form `1` helper-submit destination from the secondary `fr_inquiry_submit` path to the existing primary/optimized `fr_application_submit` path.
+- The neutral website event remains `franchise_inquiry_submit`.
+- Meta helper tag `52` now sends `Fr Application Submit` with the helper `event_id`, preserving the currently optimized `Fr Application Submit_CAD` custom conversion path on dataset `918227085392601`.
+- Google Ads tag `27` now fires from trigger `197` with label `AW-11088792613/cys-CIHslY4YEKWYxqcp`.
+- Google Ads tag `28` / `fr_inquiry_submit` is paused to avoid duplicate final Ads hits.
+- Legacy pageview trigger `38` is disabled by matching only `__cefa_disabled_legacy_thank_you_application_submit__`; old pageview Meta tag `51` is paused.
+- Post-Version-54 controlled Form `1` browser QA is recorded in [08-post-v54-application-submit-qa-2026-05-05.md](./08-post-v54-application-submit-qa-2026-05-05.md). Platform UI/reporting confirmation remains pending for Meta Events Manager and delayed GA4/Google Ads processed reports.
 
 Admin/reporting recheck on 2026-05-01:
 
@@ -21,6 +31,14 @@ Admin/reporting refresh on 2026-05-03:
 - Google Ads reporting-query evidence through Supermetrics still shows `fr_application_submit` as primary and `generate_lead (GA4)`, `fr_site_form_submit`, and `fr_inquiry_submit` as secondary in account `3820636025`.
 - Direct Meta Events Manager custom-conversion setup was still not available through the current tool access; it remains a UI/API confirmation item.
 
+Live main-conversion refresh on 2026-05-04:
+
+- Form 1 controlled submission emitted `franchise_inquiry_submit` with event ID `bbf3bbef-2154-48d9-b036-8f54e4bee3e3`; Gravity Forms entry `44` saved the same event ID and a `cefa_synuma_lead_id`.
+- Form 2 controlled submission emitted `real_estate_site_submit` with event ID `740e7413-9cbc-4410-a19f-53a5e0e34e80`; Gravity Forms entry `45` saved the same event ID and a `cefa_synuma_lead_id`.
+- GA4 realtime for property `259747921` showed `2` `generate_lead` events after the Form 1 and Form 2 tests.
+- Initial Form 2 saved GAConnector fields `14`, `15`, `16`, `29`, and `30`, but field `29` used the earlier Form 1 `gclid`; this triggered the cleanup patch.
+- Post-patch Form 2 retest saved Gravity Forms entry `46` with `14=qa_tracking`, `15=live_patch`, `16=gaconnector_backfill_20260504`, `29=QA-FRCA-PATCH-SITE-20260504`, and `30=1065795917.1777927212`; the dataLayer `real_estate_site_submit` payload carried the same current click ID and clean separate attribution parameters.
+
 ## Before GTM Build
 
 - [x] Confirm GTM account/container for Canada franchise.
@@ -35,7 +53,7 @@ Admin/reporting refresh on 2026-05-03:
 - [x] Confirm GAConnector scripts/cookies load on staging runtime.
 - [x] Confirm `gclid` can populate hidden field `29` in runtime tests.
 - [x] Confirm real Form 1 entry/runtime saves clean fields `14` through `30`.
-- [ ] Confirm real Form 2 entry saves clean fields `14` through `30` after Version 52.
+- [x] Confirm real Form 2 entry saves clean/current fields `14` through `30` after the GAConnector cleanup patch.
 - [x] Confirm whether GAConnector populates `lc_*`, `fc_*`, and `GA_Client_ID` reliably after real submissions.
 - [x] Decide whether helper plugin should backfill missing attribution values if GAConnector fields remain empty.
 - [x] Confirm Meta dataset decision for Canada transition.
@@ -46,7 +64,7 @@ Admin/reporting refresh on 2026-05-03:
 
 - [x] Plugin code supports Franchise Canada hostnames `cefafranchise.kinsta.cloud` and `franchise.cefa.ca`.
 - [x] Plugin code supports Form `1` and Form `2` confirmed-success payload contracts.
-- [x] Plugin code reads GAConnector fields `14` through `30` and does not overwrite them.
+- [x] Plugin code reads GAConnector fields `14` through `30`, backfills missing/placeholder values from GAConnector cookies, and overwrites stale `gclid` only when the current Google `_gcl_aw` cookie proves a newer click ID.
 - [x] Deploy temporary WPCode fallback bridge on live Franchise Canada.
 - [x] Form 1 success emits exactly one `franchise_inquiry_submit`.
 - [x] Form 2 success emits exactly one `real_estate_site_submit`.
@@ -83,10 +101,16 @@ Admin/reporting refresh on 2026-05-03:
 - [x] Submit Form 1 in production test mode and verify one primary event.
 - [x] Submit Form 2 in production test mode and verify one primary event.
 - [ ] Confirm CRM/Synuma/SiteZeus delivery still works.
-- [ ] Confirm GA4 realtime/debug view receives events in platform UI after processing delay.
+- [x] Confirm GA4 realtime receives events after controlled live Form 1/Form 2 submissions.
 - [x] Confirm processed GA4 Data API event reporting includes `generate_lead` on `franchise.cefa.ca`.
 - [x] Confirm GA4 custom dimensions are registered for low-cardinality helper payload reporting fields.
 - [x] Confirm Google Ads primary/secondary status through reporting API evidence.
 - [x] Confirm Google Ads only receives approved final conversion events from browser/network evidence.
 - [x] Confirm Meta only receives approved final conversion events from browser/network evidence.
 - [ ] Confirm custom conversions separate franchise Canada from parent and USA.
+- [x] Preserve Google Ads bidding continuity by mapping Form `1` helper submit to existing primary `fr_application_submit`.
+- [x] Preserve Meta campaign continuity by mapping Form `1` helper submit to existing `Fr Application Submit` custom event.
+- [x] Disable legacy `/thank-you` pageview application-submit trigger so old pageview tags cannot duplicate the helper submit.
+- [x] Run post-Version-54 Form `1` controlled browser submission and confirm one Google Ads `fr_application_submit`, one GA4 `generate_lead`, Meta `Fr Application Submit` script execution, and no secondary `fr_inquiry_submit` Ads hit.
+- [ ] Confirm post-Version-54 `Fr Application Submit` receipt in Meta Events Manager UI after platform processing delay.
+- [ ] Confirm post-Version-54 GA4 and Google Ads processed reporting rows after platform processing delay.

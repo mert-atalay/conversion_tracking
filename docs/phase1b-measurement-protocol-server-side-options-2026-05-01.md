@@ -2,6 +2,8 @@
 
 Last updated: 2026-05-01
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new Measurement Protocol, CAPI, sGTM, or server-side tracking work there. Status: `Current summary`.
+
 ## Current State
 
 Parent `cefa.ca` currently uses the CEFA Conversion Tracking plugin as the website-side source of truth for Form `4`.

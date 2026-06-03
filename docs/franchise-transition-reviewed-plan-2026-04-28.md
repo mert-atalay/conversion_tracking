@@ -2,6 +2,8 @@
 
 Last updated: 2026-04-28
 
+Governance note: Current owner is [Conversion tracking](./10-conversion-tracking/README.md). Update new franchise-transition decisions there. Status: `Historical package`.
+
 This document records the reviewed position after comparing the CEFA parent tracking implementation, the franchise-transition handoff, and GPT Pro's final strategy pack.
 
 ## Final Position

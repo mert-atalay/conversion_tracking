@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Prevented school/program/day metadata values from being accepted as `event_id` values if Form 4 field `32.4` is ever prefilled incorrectly.
 - Added the live-domain status note for the parent cutover and franchise WPCode bridge rollout.
 - Added `snippets/franchise-wpcode-bridge.php` as a temporary live franchise deployment fallback for hosts where normal plugin-file writes are blocked.
 - Updated the franchise bridge to fetch one-time thank-you payloads with `POST` plus `cache: no-store` to avoid cached GET payload reuse.

@@ -1,6 +1,6 @@
 # Franchise USA GTM Build And QA Notes
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## Published GTM Version
 
@@ -129,5 +129,146 @@ Base pageview, Google tag, conversion linker, remarketing, and non-final tags we
 - Form 1 GA4 browser-hit or processed-report confirmation.
 - Processed GA4 report confirmation for both forms after the GA4 delay.
 - USA Google Ads account and conversion-action decision before activating Ads final helper-event tags.
-- USA Meta dataset/pixel confirmation before activating Meta final tags.
 - Decision on whether USA GA4 property currency should remain `CAD`.
+
+## Published GTM Version 16 - USA Meta Dataset Split
+
+Published on 2026-05-04 after the USA dataset was created.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `16`
+- Version name: `CEFA Franchise USA Meta dataset split - 2026-05-04`
+- Rollback target: Version `15`
+
+What changed:
+
+- Updated tag `57` from the shared Meta dataset to the USA dataset:
+  - New tag name: `CEFA - Franchise USA - Meta Base Pixel (1531247935333023)`
+  - New pixel/dataset ID: `1531247935333023`
+  - Old shared dataset ID removed from active public GTM runtime: `918227085392601`
+- Added host-scoped pageview trigger `266`:
+  - Name: `CEFA - Franchise USA - pageview - production host`
+  - Hostname regex: `^(www\.)?franchisecefa\.com$`
+- Added final Meta standard `Lead` tags on the existing dispatch events:
+  - Tag `267`: `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`, trigger `260`
+  - Tag `268`: `CEFA - Franchise USA - Meta Lead - Site Submit`, trigger `261`
+- Meta `Lead` tags use non-PII helper parameters only and pass `eventID` from `DLV - cefa - event_id`.
+
+WordPress cleanup:
+
+- The old shared Meta pixel was also present outside GTM in the `insert-headers-and-footers` plugin options:
+  - `ihaf_insert_header`
+  - `ihaf_insert_body`
+- The old inline and noscript `918227085392601` blocks were removed on 2026-05-04.
+- GTM install code was left intact.
+- WP Engine cache purge was called after the option update.
+- Remote rollback backup path from the change: `/tmp/cefa-usa-old-meta-pixel-backup-20260504-211855`
+
+Verification:
+
+- Public `gtm.js?id=GTM-5LZMHBZL` check after publish:
+  - `1531247935333023`: present
+  - `918227085392601`: zero active public runtime occurrences
+  - `cefa_franchise_us_inquiry_dispatch`: present
+  - `cefa_franchise_us_site_dispatch`: present
+- Fresh Form 1 and Form 2 HTML checks after WP Engine purge:
+  - `GTM-5LZMHBZL`: present
+  - `918227085392601`: zero HTML occurrences
+- WordPress database search after cleanup:
+  - `wp db search 918227085392601 --all-tables`: zero matches
+- Fresh headless Chrome network check after purge:
+  - Meta config request for `1531247935333023`: present
+  - Meta config/request count for `918227085392601`: zero
+
+Remaining Meta signoff:
+
+- Confirm receipt in Meta Events Manager for dataset `1531247935333023`.
+- USA-specific inquiry custom conversion was created on 2026-05-04 as `1915200622465036` / `USA Franchise Lead`.
+- Site-submit custom conversion is still optional/pending because the current request was for the franchise inquiry submission event.
+
+## Published GTM Version 17 - Helper-Only Launch Cleanup
+
+Published on 2026-05-04 after Version `16`.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `17`
+- Version name: `CEFA Franchise USA cleanup - helper-only launch state - 2026-05-04`
+- Rollback target: Version `16`
+
+What changed:
+
+- Paused remaining active legacy micro/click tags from the old setup:
+  - Tag `75`: `Franchisor_GAds_Fr Email Click_ollo`
+  - Tag `88`: `Franchisor_GAds_Fr Application Click_ollo`
+  - Tag `92`: `Franchisor_GAds_Fr Phone Click_ollo`
+  - Tag `161`: `Franchisor_FB_Fr Email Click_ollo`
+  - Tag `164`: `Franchisor_FB_Fr Phone Click_ollo`
+  - Tag `167`: `Franchisor_FB_Fr Application Click_ollo`
+  - Tag `203`: `Franchisor_GA4_Fr Email Click_ollo`
+  - Tag `206`: `Franchisor_GA4_Fr Application Click_ollo`
+  - Tag `211`: `Franchisor_GA4_Fr Phone Click_ollo`
+- Kept required infrastructure active:
+  - Tag `82`: `Conversion Linker_ollo`
+  - Tag `86`: `Franchisor GAds_Fr Remarketing Tag_ollo`
+  - Tag `145`: `Franchisor GA4_Pageview_All Pages_ollo`
+  - Tag `155`: `Google Tag AW-11088792613`
+  - Tag `228`: `GA Connector - CRM (USA)`
+- Kept final helper-event path active:
+  - Tag `57`: `CEFA - Franchise USA - Meta Base Pixel (1531247935333023)`
+  - Tag `262`: `CEFA - Franchise USA - dispatch inquiry helper event`
+  - Tag `263`: `CEFA - Franchise USA - dispatch site helper event`
+  - Tag `264`: `CEFA - GA4 - Franchise USA - generate_lead - inquiry`
+  - Tag `265`: `CEFA - GA4 - Franchise USA - generate_lead - site`
+  - Tag `267`: `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`
+  - Tag `268`: `CEFA - Franchise USA - Meta Lead - Site Submit`
+
+Verification:
+
+- Version `17` was created and published with no GTM compiler error.
+- Public `gtm.js?id=GTM-5LZMHBZL` check after publish:
+  - `1531247935333023`: present
+  - `918227085392601`: zero active public runtime occurrences
+  - `cefa_franchise_us_inquiry_dispatch`: present
+  - `cefa_franchise_us_site_dispatch`: present
+  - `G-YL1KQPWV0M`: present
+  - `AW-11088792613`: present
+  - Legacy click markers `fr_email_click`, `fr_phone_click`, `fr_application_click`, `Fr Email Click`, `Fr Phone Click`, and `Fr Application Click`: zero occurrences
+  - Legacy Google Ads click labels `sn5lCJPslY4YEKWYxqcp`, `TiGLCJbslY4YEKWYxqcp`, and `aYItCI3slY4YEKWYxqcp`: zero occurrences
+
+## Published GTM Version 18 - Meta Lead Reliability Fix
+
+Published on 2026-05-04 after Version `17`.
+
+Version:
+
+- Container: `GTM-5LZMHBZL` / `204988779`
+- Published version: `18`
+- Version name: `CEFA Franchise USA Meta Lead reliability fix - 2026-05-04`
+- Rollback target: Version `17`
+
+What changed:
+
+- Updated tag `267` / `CEFA - Franchise USA - Meta Lead - Franchise Inquiry`.
+- Updated tag `268` / `CEFA - Franchise USA - Meta Lead - Site Submit`.
+- Both tags still send Meta standard `Lead` to dataset `1531247935333023`.
+- Both tags include a local `fbq` init fallback so the `Lead` call can queue if the dispatch event fires before the base pixel is fully ready.
+
+Meta custom conversion created:
+
+- Name: `USA Franchise Lead`
+- ID: `1915200622465036`
+- Meta dataset/pixel: `1531247935333023`
+- Ad account context: `act_505300888223754`
+- Rule: standard Meta `Lead` plus URL path containing `inquiry-thank-you`
+- Purpose: USA franchise inquiry optimization/reporting candidate inside the USA-only dataset.
+
+Verification:
+
+- Meta Events Manager UI/API access was available through the authenticated browser session.
+- Existing custom conversions were checked first to avoid creating a duplicate named `USA Franchise Lead`.
+- The custom conversion was created successfully by API response with ID `1915200622465036`.
+- A post-Version-18 controlled browser test reached the USA helper dataLayer and GA4 path in earlier tests, but browser CDP did not expose a `facebook.com/tr?ev=Lead` beacon. Treat Meta Events Manager live receipt as still pending until the event appears in the Meta UI.
