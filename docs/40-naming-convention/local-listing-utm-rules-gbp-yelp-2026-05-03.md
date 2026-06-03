@@ -19,7 +19,7 @@ This is a naming-convention workstream document. It does not define conversion e
 
 ## Current Verified Status
 
-- `Verified`: This repo is the shared working surface for CEFA measurement/tracking docs on branch `codex/franchise-canada-tracking-plan`.
+- `Verified`: This repo is the shared working surface for CEFA measurement/tracking docs on `main`.
 - `Verified`: Governance routes UTM naming and Meta naming to `docs/40-naming-convention/`.
 - `Verified`: These rules are intentionally separate from Meta NC1 ad naming. Do not use Meta tokens such as `LSM`, `FRANCH`, `META`, `TOF`, `BOF`, `IMG`, `VID`, or `CAR` in GBP/Yelp UTMs.
 - `Partial`: `{school_slug}` should use the canonical CEFA school page slug. This document gives the rule and examples, but it does not contain the full school slug crosswalk.
