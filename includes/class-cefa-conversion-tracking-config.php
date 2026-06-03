@@ -230,10 +230,10 @@ final class CEFA_Conversion_Tracking_Config {
 						'attribution_backfill' => false,
 						'attribution_fields'   => self::franchise_attribution_fields(),
 						'field_map'            => array(
-							'site_offered_by'               => '39',
+							'site_offered_by'       => '39',
 							'property_square_footage_range' => '34',
-							'outdoor_space_range'           => '35',
-							'availability_timeline'         => '36',
+							'outdoor_space_range'   => '35',
+							'availability_timeline' => '36',
 						),
 						'static_payload'       => array(
 							'event_scope'   => 'primary',
@@ -291,10 +291,10 @@ final class CEFA_Conversion_Tracking_Config {
 						'attribution_backfill' => false,
 						'attribution_fields'   => self::franchise_attribution_fields(),
 						'field_map'            => array(
-							'site_offered_by'               => '39',
+							'site_offered_by'       => '39',
 							'property_square_footage_range' => '34',
-							'outdoor_space_range'           => '35',
-							'availability_timeline'         => '36',
+							'outdoor_space_range'   => '35',
+							'availability_timeline' => '36',
 						),
 						'static_payload'       => array(
 							'event_scope'   => 'primary',
