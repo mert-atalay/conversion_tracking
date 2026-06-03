@@ -165,7 +165,7 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 		}
 
 		$_POST[ 'cefa_ct_event_id_' . $form_id ] = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$_POST['cefa_ct_event_id']               = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$_POST['cefa_ct_event_id']               = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		return $event_id;
 	}
