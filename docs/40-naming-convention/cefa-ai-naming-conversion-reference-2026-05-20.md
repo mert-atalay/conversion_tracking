@@ -32,7 +32,7 @@ Use these labels in all future work:
 
 ## 2. Current Human Working Surface
 
-Status: `Verified` for sheet identity and tab list on 2026-06-03.
+Status: `Verified` for sheet identity and tab list on 2026-05-20. This reference was consolidated against the latest repo conversion-mapping evidence on 2026-06-03.
 
 Current v21 final POC Google Sheet:
 
