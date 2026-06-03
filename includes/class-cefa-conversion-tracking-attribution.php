@@ -17,18 +17,18 @@ final class CEFA_Conversion_Tracking_Attribution {
 	 * Parent Form 4 attribution map.
 	 */
 	private const COOKIE_TO_FIELD = array(
-		'cefa_last_utm_source'      => '35',
-		'cefa_last_utm_medium'      => '36',
-		'cefa_last_utm_campaign'    => '37',
-		'cefa_last_utm_term'        => '38',
-		'cefa_last_utm_content'     => '39',
-		'cefa_last_gclid'           => '40',
-		'cefa_last_gbraid'          => '41',
-		'cefa_last_wbraid'          => '42',
-		'cefa_last_fbclid'          => '43',
-		'cefa_last_msclkid'         => '44',
-		'cefa_first_landing_page'   => '45',
-		'cefa_first_referrer'       => '46',
+		'cefa_last_utm_source'    => '35',
+		'cefa_last_utm_medium'    => '36',
+		'cefa_last_utm_campaign'  => '37',
+		'cefa_last_utm_term'      => '38',
+		'cefa_last_utm_content'   => '39',
+		'cefa_last_gclid'         => '40',
+		'cefa_last_gbraid'        => '41',
+		'cefa_last_wbraid'        => '42',
+		'cefa_last_fbclid'        => '43',
+		'cefa_last_msclkid'       => '44',
+		'cefa_first_landing_page' => '45',
+		'cefa_first_referrer'     => '46',
 	);
 
 	/**

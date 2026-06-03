@@ -165,7 +165,7 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 		}
 
 		$_POST[ 'cefa_ct_event_id_' . $form_id ] = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$_POST['cefa_ct_event_id']              = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$_POST['cefa_ct_event_id']               = $event_id; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		return $event_id;
 	}
@@ -336,13 +336,13 @@ if ( ! function_exists( 'cefa_franchise_ct_bootstrap' ) ) {
 		);
 
 		if ( 1 === $form_id ) {
-			$payload['location_interest']             = cefa_franchise_ct_entry_value( $entry, '32' );
-			$payload['location_interest_name']        = cefa_franchise_ct_location_name( $payload['location_interest'] );
-			$payload['investment_range']              = cefa_franchise_ct_entry_value( $entry, '7' );
-			$payload['opening_timeline']              = cefa_franchise_ct_entry_value( $entry, '10' );
-			$payload['school_count_goal']             = cefa_franchise_ct_entry_value( $entry, '11' );
-			$payload['ownership_structure']           = cefa_franchise_ct_entry_value( $entry, '12' );
-			$payload['location_availability_status']  = 'unknown';
+			$payload['location_interest']            = cefa_franchise_ct_entry_value( $entry, '32' );
+			$payload['location_interest_name']       = cefa_franchise_ct_location_name( $payload['location_interest'] );
+			$payload['investment_range']             = cefa_franchise_ct_entry_value( $entry, '7' );
+			$payload['opening_timeline']             = cefa_franchise_ct_entry_value( $entry, '10' );
+			$payload['school_count_goal']            = cefa_franchise_ct_entry_value( $entry, '11' );
+			$payload['ownership_structure']          = cefa_franchise_ct_entry_value( $entry, '12' );
+			$payload['location_availability_status'] = 'unknown';
 		} else {
 			$payload['site_offered_by']               = cefa_franchise_ct_entry_value( $entry, '39' );
 			$payload['property_square_footage_range'] = cefa_franchise_ct_entry_value( $entry, '34' );
