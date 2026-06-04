@@ -10,6 +10,7 @@ Start here when adding a new document, routing work to another agent, or decidin
 - [source-of-truth-rules.md](./source-of-truth-rules.md): authority order and verification rules.
 - [data-taxonomy.md](./data-taxonomy.md): cross-workstream map of CEFA data sources, stable IDs, naming keys, conversion events, warehouse surfaces, and owning docs.
 - [repository-structure-audit-2026-06-03.md](./repository-structure-audit-2026-06-03.md): current repo/branch structure audit, collision risks, and branch consolidation recommendation.
+- [codex-machine-migration-checklist-2026-06-04.md](./codex-machine-migration-checklist-2026-06-04.md): non-secret checklist for carrying Codex config, memory, MCPs, plugins, local workspaces, and auth surfaces to a new Mac.
 - [agent-responsibilities.md](./agent-responsibilities.md): agent/workstream ownership boundaries.
 - [contribution-workflow.md](./contribution-workflow.md): how to add docs without mixing workstreams.
 
