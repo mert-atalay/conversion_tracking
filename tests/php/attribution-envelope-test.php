@@ -192,6 +192,12 @@ if ( ! function_exists( 'wp_unslash' ) ) {
 	}
 }
 
+if ( ! function_exists( 'is_ssl' ) ) {
+	function is_ssl() {
+		return true;
+	}
+}
+
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	function esc_url_raw( $value ) {
 		return filter_var( $value, FILTER_SANITIZE_URL );
@@ -288,6 +294,28 @@ if ( ! function_exists( 'delete_transient' ) ) {
 		return true;
 	}
 }
+
+$prepared_cookie = CEFA_Conversion_Tracking_Attribution_Envelope::prepare_cookie(
+	$query,
+	$server,
+	array()
+);
+cefa_assert( 'cefa_parent_attr_v1' === $prepared_cookie['name'], 'Transport fallback prepared the wrong cookie.' );
+cefa_assert( ! empty( $prepared_cookie['httponly'] ), 'Transport fallback cookie is not HTTP only.' );
+$prepared_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::decode(
+	(string) $prepared_cookie['value'],
+	'entry-test-secret',
+	'parent'
+);
+cefa_assert( 'google' === $prepared_envelope['last_non_direct_touch']['source'], 'Transport fallback did not retain attribution.' );
+cefa_assert(
+	array() === CEFA_Conversion_Tracking_Attribution_Envelope::prepare_cookie(
+		$query,
+		$server,
+		array( 'cefa_parent_attr_v1' => $prepared_cookie['value'] )
+	),
+	'Transport fallback rewrote an unchanged envelope.'
+);
 
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-entry-attribution.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution.php';

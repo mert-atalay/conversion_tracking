@@ -50,6 +50,70 @@ final class CEFA_Conversion_Tracking_REST_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			'cefa-conversion-tracking/v1',
+			'/attribution-capture',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'capture_attribution' ),
+				'permission_callback' => array( __CLASS__, 'allow_same_origin_attribution' ),
+			)
+		);
+	}
+
+	/**
+	 * Restrict anonymous attribution writes to the CEFA browser bridge.
+	 *
+	 * The custom header forces a CORS preflight for cross-origin callers while
+	 * the origin check keeps this endpoint scoped to the current CEFA host.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return bool
+	 */
+	public static function allow_same_origin_attribution( WP_REST_Request $request ): bool {
+		if ( '1' !== (string) $request->get_header( 'x-cefa-attribution' ) ) {
+			return false;
+		}
+
+		$origin      = (string) $request->get_header( 'origin' );
+		$origin_host = strtolower( (string) wp_parse_url( $origin, PHP_URL_HOST ) );
+		$site_host   = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+
+		return '' !== $origin_host && '' !== $site_host && $origin_host === $site_host;
+	}
+
+	/**
+	 * Capture attribution through an uncached request for managed hosts.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response
+	 */
+	public static function capture_attribution( WP_REST_Request $request ): WP_REST_Response {
+		$params       = $request->get_param( 'params' );
+		$landing_path = (string) $request->get_param( 'landing_path' );
+		$referrer     = (string) $request->get_param( 'referrer' );
+		$site_host    = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+		$path         = (string) wp_parse_url( $landing_path, PHP_URL_PATH );
+		$server       = array(
+			'HTTP_HOST'    => $site_host,
+			'REQUEST_URI'  => '/' . ltrim( substr( $path, 0, 500 ), '/' ),
+			'HTTP_REFERER' => esc_url_raw( substr( $referrer, 0, 1000 ) ),
+		);
+		$prepared     = CEFA_Conversion_Tracking_Attribution_Envelope::prepare_cookie(
+			is_array( $params ) ? $params : array(),
+			$server,
+			$_COOKIE
+		);
+		$stored       = CEFA_Conversion_Tracking_Attribution_Envelope::persist_prepared_cookie( $prepared );
+		$response     = new WP_REST_Response(
+			array( 'status' => $stored ? 'stored' : 'unchanged' ),
+			200
+		);
+
+		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+
+		return $response;
 	}
 
 	/**

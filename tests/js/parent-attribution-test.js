@@ -12,9 +12,10 @@ function assert(condition, message) {
 const sourcePath = 'assets/js/cefa-conversion-tracking.js';
 const source = fs.readFileSync(sourcePath, 'utf8').replace(
 	/\}\)\(\);\s*$/,
-	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl };})();'
+	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl, captureSignedAttribution: captureSignedAttribution };})();'
 );
 const localValues = {};
+const fetchCalls = [];
 const context = {
 	URL,
 	Event: function Event() {},
@@ -23,6 +24,8 @@ const context = {
 	clearTimeout,
 	window: {
 		CEFAConversionTracking: {
+			attributionMode: 'shadow',
+			restAttributionUrl: 'https://cefa.ca/wp-json/cefa-conversion-tracking/v1/attribution-capture',
 			ownHosts: [
 				'cefa.ca',
 				'www.cefa.ca',
@@ -54,6 +57,10 @@ const context = {
 			randomUUID() {
 				return 'test-uuid';
 			}
+		},
+		fetch(url, options) {
+			fetchCalls.push({ url, options });
+			return Promise.resolve({ ok: true });
 		},
 		setTimeout,
 		clearTimeout
@@ -94,5 +101,16 @@ context.document.referrer = 'https://www.google.com/search?q=cefa';
 const organicTouch = tests.buildAdvertisingTouchFromUrl();
 assert(organicTouch.source === 'google', 'Google organic source classification failed.');
 assert(organicTouch.channel === 'organic_search', 'Google organic channel classification failed.');
+
+tests.captureSignedAttribution(
+	new URL('https://cefa.ca/?utm_source=google&utm_medium=cpc&utm_campaign=shadow-qa&gclid=test-gclid')
+);
+assert(fetchCalls.length === 1, 'Signed attribution fallback did not call the REST endpoint.');
+assert(fetchCalls[0].options.method === 'POST', 'Signed attribution fallback did not use POST.');
+assert(fetchCalls[0].options.headers['X-CEFA-Attribution'] === '1', 'Signed attribution request marker is missing.');
+const captureBody = JSON.parse(fetchCalls[0].options.body);
+assert(captureBody.params.gclid === 'test-gclid', 'Signed attribution fallback omitted the GCLID.');
+assert(captureBody.params.utm_campaign === 'shadow-qa', 'Signed attribution fallback omitted the campaign.');
+assert(captureBody.referrer === 'https://www.google.com/search', 'Signed attribution fallback retained a referrer query.');
 
 console.log('Parent attribution browser tests passed.');

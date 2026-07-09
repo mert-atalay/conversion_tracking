@@ -272,7 +272,9 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Attribution Bridge Runtime Flags
 
-Plugin `0.5.0` ships every new attribution/cutover path disabled by default.
+Plugin `0.5.1` ships every new attribution/cutover path disabled by default.
+
+When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
 
 | Setting | Default | Purpose |
 |---|---|---|
