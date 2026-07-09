@@ -13,6 +13,8 @@
 	var queryToken = config.queryToken || 'cefa_tracking_token';
 	var restPayloadBase = config.restPayloadBase || '';
 	var restEventBase = config.restEventBase || '';
+	var restAttributionUrl = config.restAttributionUrl || '';
+	var attributionMode = String(config.attributionMode || 'off').toLowerCase();
 	var microConsumedKey = config.microConsumedKey || 'cefa_conversion_tracking_micro_consumed';
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
 	var clickDelayMs = Number(config.clickDelayMs || 0);
@@ -48,6 +50,29 @@
 		history: 'cefa_ad_attr_touch_history'
 	};
 	var paidClickParams = ['gclid', 'gbraid', 'wbraid', 'msclkid', 'fbclid'];
+	var signedAttributionParams = [
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_id',
+		'utm_term',
+		'utm_content',
+		'gclid',
+		'gbraid',
+		'wbraid',
+		'fbclid',
+		'msclkid',
+		'google_adgroup_id',
+		'google_network',
+		'google_device',
+		'google_matchtype',
+		'meta_campaign_id',
+		'meta_adset_id',
+		'meta_ad_id',
+		'cefa_agency_test'
+	];
+	var signedAttributionCaptureKey = 'cefa_signed_attribution_capture_v1';
+	var signedAttributionCapturePending = '';
 	var searchSources = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex', 'ecosia'];
 	var socialSources = [
 		'facebook',
@@ -637,6 +662,76 @@
 			}
 		});
 		recordAdvertisingAttribution();
+		captureSignedAttribution(url);
+	}
+
+	function captureSignedAttribution(url) {
+		var params = {};
+		var referrerUrl = parseUrl(document.referrer || '');
+		var referrerHost = referrerUrl ? hostFromUrl(referrerUrl.toString()) : '';
+		var externalReferrer = referrerUrl && !referrerIsOwnSite(referrerHost)
+			? referrerUrl.origin + referrerUrl.pathname
+			: '';
+		var signature;
+
+		if (!restAttributionUrl || ['shadow', 'primary'].indexOf(attributionMode) === -1 || !url) {
+			return;
+		}
+
+		signedAttributionParams.forEach(function (key) {
+			var value = normalizeAttribution(url.searchParams.get(key) || '', 220);
+
+			if (value) {
+				params[key] = value;
+			}
+		});
+
+		if (!Object.keys(params).length && !externalReferrer) {
+			return;
+		}
+
+		signature = JSON.stringify([params, url.pathname, externalReferrer]);
+
+		try {
+			if (
+				signedAttributionCapturePending === signature ||
+				window.sessionStorage.getItem(signedAttributionCaptureKey) === signature
+			) {
+				return;
+			}
+		} catch (error) {}
+
+		signedAttributionCapturePending = signature;
+		window
+			.fetch(restAttributionUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				cache: 'no-store',
+				keepalive: true,
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+					'X-CEFA-Attribution': '1'
+				},
+				body: JSON.stringify({
+					params: params,
+					landing_path: url.pathname,
+					referrer: externalReferrer
+				})
+			})
+			.then(function (response) {
+				if (!response.ok) {
+					throw new Error('Attribution capture unavailable.');
+				}
+
+				try {
+					window.sessionStorage.setItem(signedAttributionCaptureKey, signature);
+				} catch (error) {}
+			})
+			.catch(function () {})
+			.then(function () {
+				signedAttributionCapturePending = '';
+			});
 	}
 
 	function trackingFieldValueIsEmpty(value) {

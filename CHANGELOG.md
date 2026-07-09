@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.1 - 2026-07-09
+
+- Added a same-origin, no-store REST fallback so signed attribution cookies are captured reliably when WP Engine serves anonymous pages from cache.
+- Restricted the fallback to shadow/primary modes, an explicit browser marker header, the current site origin, and the existing attribution allowlist.
+- Kept conversion events, Gravity Forms values, CRM/Synuma delivery, and primary writeback behavior unchanged.
+
 ## 0.5.0 - 2026-07-09
 
 - Added fail-closed, hostname-scoped `off`, `shadow`, and `primary` attribution modes.

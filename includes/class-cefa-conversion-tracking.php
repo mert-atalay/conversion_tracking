@@ -90,6 +90,8 @@ final class CEFA_Conversion_Tracking {
 				array(
 					'restPayloadBase'       => esc_url_raw( rest_url( self::REST_NAMESPACE . '/tracking-payload/' ) ),
 					'restEventBase'         => esc_url_raw( rest_url( self::REST_NAMESPACE . '/tracking-payload-by-event/' ) ),
+					'restAttributionUrl'    => esc_url_raw( rest_url( self::REST_NAMESPACE . '/attribution-capture' ) ),
+					'attributionMode'       => CEFA_Conversion_Tracking_Config::attribution_v2_mode(),
 					'queryFlag'             => 'cefa_tracking',
 					'queryToken'            => 'cefa_tracking_token',
 					'consumedKey'           => 'cefa_conversion_tracking_consumed_event_ids',

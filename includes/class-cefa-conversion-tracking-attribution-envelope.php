@@ -63,45 +63,77 @@ final class CEFA_Conversion_Tracking_Attribution_Envelope {
 			return;
 		}
 
+		$prepared = self::prepare_cookie( $_GET, $_SERVER, $_COOKIE ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		self::persist_prepared_cookie( $prepared );
+	}
+
+	/**
+	 * Prepare a signed cookie from a page or uncached same-origin request.
+	 *
+	 * @param array<string, mixed> $query   Allowlisted acquisition parameters.
+	 * @param array<string, mixed> $server  Request host, path, and referrer.
+	 * @param array<string, mixed> $cookies Existing first-party cookies.
+	 * @return array<string, string|int|bool>
+	 */
+	public static function prepare_cookie( array $query, array $server, array $cookies ): array {
+		$mode         = CEFA_Conversion_Tracking_Config::attribution_v2_mode();
 		$secret       = CEFA_Conversion_Tracking_Config::attribution_v2_secret();
 		$site_context = CEFA_Conversion_Tracking_Config::site_context();
 		$cookie_name  = CEFA_Conversion_Tracking_Config::attribution_cookie_name();
 
-		if ( '' === $secret || 'unknown' === $site_context || '' === $cookie_name || headers_sent() ) {
-			return;
+		if ( 'off' === $mode || '' === $secret || 'unknown' === $site_context || '' === $cookie_name ) {
+			return array();
 		}
 
 		$existing = array();
 
-		if ( isset( $_COOKIE[ $cookie_name ] ) ) {
-			$cookie_value = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$existing     = self::decode(
-				$cookie_value,
-				$secret,
-				$site_context
-			);
+		if ( isset( $cookies[ $cookie_name ] ) ) {
+			$cookie_value = sanitize_text_field( wp_unslash( $cookies[ $cookie_name ] ) );
+			$existing     = self::decode( $cookie_value, $secret, $site_context );
 		}
 
-		$envelope = self::capture( $_GET, $_SERVER, $site_context, $existing ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$envelope = self::with_browser_ids( $envelope, $_COOKIE );
+		$envelope = self::capture( $query, $server, $site_context, $existing );
+		$envelope = self::with_browser_ids( $envelope, $cookies );
 
 		if ( empty( $envelope ) || $envelope === $existing ) {
-			return;
+			return array();
 		}
 
 		$token = self::encode( $envelope, $secret );
 
 		if ( '' === $token ) {
-			return;
+			return array();
 		}
 
-		setcookie(
-			$cookie_name,
-			$token,
+		return array(
+			'name'     => $cookie_name,
+			'value'    => $token,
+			'expires'  => time() + self::COOKIE_TTL,
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => 'Lax',
+		);
+	}
+
+	/**
+	 * Send a prepared host-only attribution cookie.
+	 *
+	 * @param array<string, string|int|bool> $prepared Prepared cookie values.
+	 * @return bool
+	 */
+	public static function persist_prepared_cookie( array $prepared ): bool {
+		if ( headers_sent() || empty( $prepared['name'] ) || empty( $prepared['value'] ) || empty( $prepared['expires'] ) ) {
+			return false;
+		}
+
+		return setcookie(
+			(string) $prepared['name'],
+			(string) $prepared['value'],
 			array(
-				'expires'  => time() + self::COOKIE_TTL,
+				'expires'  => (int) $prepared['expires'],
 				'path'     => '/',
-				'secure'   => is_ssl(),
+				'secure'   => ! empty( $prepared['secure'] ),
 				'httponly' => true,
 				'samesite' => 'Lax',
 			)
