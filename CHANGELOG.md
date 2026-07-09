@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.5.0 - 2026-07-09
+
+- Added fail-closed, hostname-scoped `off`, `shadow`, and `primary` attribution modes.
+- Added a signed first-touch, current-touch, last-non-direct, click-ID, platform-ID, browser-ID, experiment, and eight-touch attribution envelope.
+- Added idempotent Gravity Forms entry-meta persistence that leaves legacy parent and franchise fields unchanged in shadow mode.
+- Added a plugin-owned unique server event-ID registry and separate browser submission-attempt identity.
+- Added guarded compatibility adapters for parent fields `35-46` and franchise fields `14-30`; writing requires both primary mode and the CRM identity flag.
+- Added signed, replay-safe confirmation payload tokens behind a separate feature flag and signing secret.
+- Added no-PII per-entry shadow parity summaries for parent and franchise attribution contracts.
+- Fixed parent internal CEFA navigation being classified as referral traffic.
+- Added server-side GA client/session and Meta `_fbp`/`_fbc` parsing.
+- Added PHP 7.4/8.2 attribution, identity, adapter, payload, and browser contract tests.
+- Kept all new write, payload, and cutover behavior disabled by default.
+
+## 0.4.5 - 2026-07-08
+
 - Prevented school/program/day metadata values from being accepted as `event_id` values if Form 4 field `32.4` is ever prefilled incorrectly.
 - Added the live-domain status note for the parent cutover and franchise WPCode bridge rollout.
 - Added `snippets/franchise-wpcode-bridge.php` as a temporary live franchise deployment fallback for hosts where normal plugin-file writes are blocked.

@@ -151,7 +151,7 @@ Implemented in source control only; not deployed to WordPress:
 - HMAC signing, tamper rejection, site-context rejection, expiry rejection, eight-touch cap, and cookie-size budget;
 - `Secure`, `HttpOnly`, `SameSite=Lax`, path `/`, host-only cookie settings when eventually enabled.
 
-The current plugin version remains `0.4.5`. No release package or WordPress deployment was created.
+Live WordPress remains on plugin `0.4.5`. Source control now contains a guarded `0.5.0` release candidate; no WordPress deployment has been made.
 
 ### Parent CEFA-owned attribution entry metadata
 
@@ -170,7 +170,7 @@ Automated tests cover metadata persistence, off-mode no-write behavior, idempote
 
 ### CEFA-owned script versus current GAConnector contract
 
-| Capability | Live parent `0.4.5` | Remediation branch | Current franchise GAConnector fields `14-30` |
+| Capability | Live parent `0.4.5` | `0.5.0` release candidate | Current franchise GAConnector fields `14-30` |
 |---|---|---|---|
 | Source/medium/campaign/content/term | Saved as parent last-touch fields | Signed first and last non-direct entry meta | Saved as first/last-click fields |
 | Landing/referrer | First landing/referrer saved | Normalized host/path for first, current, last, and history | First/last landing and referrer fields |
@@ -323,15 +323,14 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 ## Remaining Priority Order
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
-2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
-3. Review and merge PR `#3`, then create a versioned release candidate without enabling any feature flags.
-4. Export live Gravity Forms and destination feed maps before changing WordPress.
-5. Deploy parent shadow mode with server secrets and compare it beside fields `35-46`.
-6. Observe at least 98% paid-entry parity and 100% reserved server-ID uniqueness without routing regressions.
-7. Deploy franchise shadow mode beside GAConnector fields `14-30`, one property at a time.
-8. Enable signed confirmation payload V2 only after browser prefetch/replay QA.
-9. Create approved CRM destination fields and map event/form identity without changing routing.
-10. Complete the Google URL-option cleanup, warehouse reconciliation, and lifecycle propagation.
+2. Merge reviewed GitHub PR `#3`; the `0.5.0` release candidate and CI are ready.
+3. Export live Gravity Forms and destination feed maps before changing WordPress.
+4. Deploy parent shadow mode with server secrets and compare it beside fields `35-46`.
+5. Observe at least 98% paid-entry parity and 100% reserved server-ID uniqueness without routing regressions.
+6. Deploy franchise shadow mode beside GAConnector fields `14-30`, one property at a time.
+7. Enable signed confirmation payload V2 only after browser prefetch/replay QA.
+8. Create approved CRM destination fields and map event/form identity without changing routing.
+9. Complete the Google URL-option cleanup, warehouse reconciliation, and lifecycle propagation.
 
 ## Rollback
 

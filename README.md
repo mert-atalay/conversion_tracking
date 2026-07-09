@@ -270,6 +270,28 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 - It fetches the thank-you payload with `POST` and `cache: no-store`.
 - It does not change GAConnector attribution fields or CRM delivery.
 
+## Attribution Bridge Runtime Flags
+
+Plugin `0.5.0` ships every new attribution/cutover path disabled by default.
+
+| Setting | Default | Purpose |
+|---|---|---|
+| `CEFA_CT_ATTRIBUTION_V2_MODE` | `off` | `shadow` saves canonical evidence without replacing existing fields/IDs; `primary` allows approved cutover behavior. |
+| `CEFA_CT_ATTRIBUTION_SECRET` | empty | Server-only HMAC secret required before shadow or primary attribution can operate. |
+| `CEFA_CT_CRM_IDENTITY_ENABLED` | `false` | Allows primary mode to populate only the approved parent `35-46` or franchise `14-30` compatibility fields. |
+| `CEFA_CT_PAYLOAD_V2_ENABLED` | `false` | Enables signed, replay-safe confirmation payload retrieval. |
+| `CEFA_CT_PAYLOAD_SECRET` | empty | Server-only signing secret required for payload V2. |
+| `CEFA_CT_COLLECTOR_ENABLED` | `false` | Preserves the existing optional collector gate. |
+
+Safe deployment sequence:
+
+1. Deploy with all defaults unchanged.
+2. Verify plugin load and existing confirmed-submit behavior.
+3. Configure server secrets without exposing them to WordPress content or source control.
+4. Enable `shadow` on one hostname only.
+5. Review no-PII parity evidence before considering `primary`.
+6. Never enable CRM compatibility writing during the initial shadow period.
+
 ## Install On Staging
 
 1. Create a ZIP:
