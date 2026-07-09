@@ -24,6 +24,7 @@ final class CEFA_Conversion_Tracking {
 	 * @return void
 	 */
 	public static function init(): void {
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Envelope', 'capture_request' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
 

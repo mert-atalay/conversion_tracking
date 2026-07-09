@@ -19,6 +19,56 @@ final class CEFA_Conversion_Tracking_Config {
 	public const EVENT_ID_META_KEY = 'cefa_conversion_tracking_event_id';
 
 	/**
+	 * Return the guarded Attribution Bridge runtime mode.
+	 *
+	 * The value may be a scalar or a hostname-keyed array/JSON object. Unknown
+	 * values fail closed to off.
+	 *
+	 * @return string
+	 */
+	public static function attribution_v2_mode(): string {
+		$value = self::hostname_config_value( 'CEFA_CT_ATTRIBUTION_V2_MODE' );
+		$mode  = strtolower( trim( (string) $value ) );
+
+		return in_array( $mode, array( 'off', 'shadow', 'primary' ), true ) ? $mode : 'off';
+	}
+
+	/**
+	 * Return the server-only Attribution Bridge signing secret.
+	 *
+	 * @return string
+	 */
+	public static function attribution_v2_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_ATTRIBUTION_SECRET' ) );
+	}
+
+	/**
+	 * Return the current governed site context.
+	 *
+	 * @return string
+	 */
+	public static function site_context(): string {
+		$context = self::active_context();
+
+		return sanitize_key( (string) ( $context['context_key'] ?? 'unknown' ) );
+	}
+
+	/**
+	 * Return the host-only attribution cookie name for the current context.
+	 *
+	 * @return string
+	 */
+	public static function attribution_cookie_name(): string {
+		$names = array(
+			'parent'       => 'cefa_parent_attr_v1',
+			'franchise_ca' => 'cefa_fr_ca_attr_v1',
+			'franchise_us' => 'cefa_fr_us_attr_v1',
+		);
+
+		return $names[ self::site_context() ] ?? '';
+	}
+
+	/**
 	 * Return active form configs for the current hostname.
 	 *
 	 * @return array<int, array<string, mixed>>
@@ -103,6 +153,36 @@ final class CEFA_Conversion_Tracking_Config {
 		$value = getenv( $name );
 
 		return false === $value ? '' : $value;
+	}
+
+	/**
+	 * Read a scalar or hostname-keyed configuration value.
+	 *
+	 * @param string $name Constant/environment variable name.
+	 * @return mixed
+	 */
+	private static function hostname_config_value( string $name ) {
+		$value = self::config_value( $name );
+
+		if ( is_string( $value ) && '' !== trim( $value ) && in_array( substr( trim( $value ), 0, 1 ), array( '{', '[' ), true ) ) {
+			$decoded = json_decode( $value, true );
+
+			if ( is_array( $decoded ) ) {
+				$value = $decoded;
+			}
+		}
+
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		$host = self::current_host();
+
+		if ( array_key_exists( $host, $value ) ) {
+			return $value[ $host ];
+		}
+
+		return $value['default'] ?? '';
 	}
 
 	/**

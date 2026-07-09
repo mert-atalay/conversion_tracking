@@ -25,6 +25,7 @@ define( 'CEFA_CONVERSION_TRACKING_URL', plugin_dir_url( __FILE__ ) );
 define( 'CEFA_CONVERSION_TRACKING_FORM_ID', 4 );
 
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-config.php';
+require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-attribution-envelope.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-event-id.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-attribution.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-datalayer-payload.php';
