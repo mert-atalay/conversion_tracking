@@ -617,6 +617,15 @@ Foundation result, 2026-07-09:
 - CI now runs the envelope contract test on PHP `7.4` and `8.2` in addition to syntax and WordPress coding standards.
 - Entry-meta persistence, browser envelope exposure, hidden-field adapters, and production shadow activation remain gated work.
 
+Parent entry-meta result, 2026-07-09:
+
+- Verified attribution now has a guarded, idempotent Gravity Forms entry-meta persistence path in source control.
+- Shadow persistence does not alter fields `35-46`, School Manager field `32`, confirmation behavior, event names, or CRM feed inputs.
+- Server-side browser identity parsing adds GA client ID, GA session ID, `_fbp`, and `_fbc` without placing these values in URLs.
+- The parent browser script's internal-referrer defect is fixed with exact approved CEFA host matching and regression tests.
+- The owned bridge now exceeds the current GAConnector field map for click-ID coverage, Meta browser IDs, signed history, and saved multi-touch depth.
+- Operational parity remains gated on CRM propagation, final server event-ID enforcement, and production shadow evidence.
+
 ### C7. Browser multi-form writer
 
 Replace the single global `formId` assumption with a contract map keyed by form ID.

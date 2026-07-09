@@ -21,7 +21,7 @@ Blueprint: [CEFA conversion tracking remediation blueprint](./cefa-conversion-tr
 | Franchise USA GA4/Meta form events | Existing active tags and triggers remain unchanged. |
 | Meta raw browser Lead anomaly | Resolved as an API aggregation/query-semantics artifact. Correct event-filtered stats show normal browser/server pairs. |
 | Consent/CMP | Deferred by owner decision and outside this execution scope. |
-| Attribution Bridge V1 | Signed envelope foundation implemented and tested in the PR. Production remains `off`; entry-meta, browser multi-form, and shadow rollout are not yet implemented. |
+| Attribution Bridge V1 | Parent signed-envelope and entry-meta shadow foundation implemented and tested in the PR. Production remains `off`; CRM propagation and shadow rollout are not yet implemented. |
 | CRM event-ID lineage | Not yet implemented. |
 | Warehouse reconciliation repairs | Not yet implemented. |
 
@@ -149,6 +149,44 @@ Implemented in source control only; not deployed to WordPress:
 
 The current plugin version remains `0.4.5`. No release package or WordPress deployment was created.
 
+### Parent CEFA-owned attribution entry metadata
+
+Implemented in source control only; not deployed to WordPress:
+
+- verified signed attribution is saved to `cefa_conversion_tracking_attribution_v1` entry meta in `shadow` or `primary` mode;
+- schema, delivery status, and provenance are saved in separate bounded meta keys;
+- repeated after-submission and confirmation hooks are idempotent;
+- `shadow` mode does not write or overwrite Gravity Forms fields;
+- parent fields `35-46`, School Manager field `32`, event names, confirmation destinations, and CRM feed inputs remain unchanged;
+- `_ga`, GA4 session, `_fbp`, and `_fbc` cookies are parsed server-side into an allowlisted `browser_ids` object;
+- arbitrary cookies and query parameters are not retained;
+- the parent browser script now uses exact approved CEFA hosts and no longer classifies internal CEFA navigation as referral traffic.
+
+Automated tests cover metadata persistence, off-mode no-write behavior, idempotency, legacy-field preservation, GA client/session parsing, Meta browser-ID parsing, exact-host exclusions, internal-navigation behavior, and Google organic classification.
+
+### CEFA-owned script versus current GAConnector contract
+
+| Capability | Live parent `0.4.5` | Remediation branch | Current franchise GAConnector fields `14-30` |
+|---|---|---|---|
+| Source/medium/campaign/content/term | Saved as parent last-touch fields | Signed first and last non-direct entry meta | Saved as first/last-click fields |
+| Landing/referrer | First landing/referrer saved | Normalized host/path for first, current, last, and history | First/last landing and referrer fields |
+| Google click IDs | `gclid`, `gbraid`, `wbraid` fields | Same plus signed canonical storage | Current mapped field exposes `gclid` |
+| Meta/Microsoft click IDs | `fbclid`, `msclkid` fields | Same plus signed canonical storage | Not present in the current mapped fields |
+| GA client ID | Not saved on parent Form 4 | Parsed server-side into entry meta | Saved in field `30` |
+| GA session ID | Not saved | Parsed server-side into entry meta | Not present in the current mapped fields |
+| `_fbp` / `_fbc` | Not saved | Parsed server-side into entry meta | Not present in the current mapped fields |
+| Multi-touch history | Browser-only, up to eight touches | Signed and saved with the entry | First/last-click fields, not an eight-touch saved history |
+| Direct/internal protection | Internal-referrer defect in live script | Exact-host defect fixed and tested | Dependent on GAConnector classification |
+| Tamper protection | Browser cookies/local storage | HMAC-signed, host-scoped envelope | No CEFA-controlled signature contract |
+| CRM availability | Legacy parent fields are available | Canonical entry meta is not yet mapped into CRM | Existing hidden fields are available to current form/feed paths |
+| Final server event identity | Existing event ID flow is only partially server-enforced | Still pending unique reservation/cutover | Not supplied by GAConnector |
+
+Decision:
+
+- The remediation branch now captures a richer attribution dataset than the current GAConnector field map.
+- It does **not** yet match GAConnector operationally because the canonical entry metadata is not mapped into CRM and the final server event-ID contract is incomplete.
+- Do not remove GAConnector or retire parent fields `35-46` until a production shadow comparison reaches the documented parity gates.
+
 ## QA Evidence
 
 ### Google Ads no-send QA
@@ -246,11 +284,12 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
 2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
-3. Complete and test Attribution Bridge V1 behind feature flags.
-4. Add canonical entry-meta persistence and the form-contract adapter without overwriting legacy hidden fields.
-5. Complete the browser multi-form writer and shadow the bridge beside GAConnector.
-6. Complete the lower-level Google URL-option map before expanding the pilot.
-7. Carry event IDs into CRM and repair warehouse reconciliation.
+3. Complete the final server event-ID contract and unique reservation.
+4. Map canonical parent entry metadata into approved CRM fields without changing current routing.
+5. Package and deploy parent shadow mode after review, then compare it beside fields `35-46`.
+6. Complete the franchise browser multi-form adapter and shadow beside GAConnector.
+7. Complete the lower-level Google URL-option map before expanding the pilot.
+8. Repair warehouse reconciliation and activate lifecycle propagation.
 
 ## Rollback
 
