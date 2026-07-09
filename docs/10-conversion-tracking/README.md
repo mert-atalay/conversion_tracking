@@ -9,6 +9,9 @@ This folder is the routing surface for CEFA conversion tracking across:
 
 ## Current Canonical Files
 
+- [CEFA conversion tracking remediation blueprint, 2026-07-09](./cefa-conversion-tracking-remediation-blueprint-2026-07-09.md)
+- [Conversion tracking remediation execution log, 2026-07-09](./conversion-tracking-remediation-execution-log-2026-07-09.md)
+- [Full conversion tracking assessment and execution plan, 2026-07-09](./full-conversion-tracking-assessment-and-execution-plan-2026-07-09.md)
 - [Plugin README](../../README.md)
 - [Live conversion tracking status](../live-conversion-tracking-status-2026-05-01.md)
 - [Parent production cutover checklist](../parent-production-cutover-checklist.md)

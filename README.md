@@ -14,6 +14,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Uses the saved Gravity Forms entry as the source of truth.
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
+- Provides a disabled-by-default, HMAC-signed Form 4 collector send path for no-PII BigQuery audit events.
 - Pushes one clean `franchise_inquiry_submit` event for Franchise Canada Form 1.
 - Pushes one clean `real_estate_site_submit` event for Franchise Canada Form 2.
 - Prevents direct thank-you-page false positives and reload duplicates.
@@ -36,7 +37,8 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - KinderTales/business submission delivery.
 - CEFA Franchise API delivery.
 - GAConnector attribution capture on franchise forms.
-- GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
+- GA4, Google Ads, Meta, CAPI, Measurement Protocol, or sGTM outbound calls.
+- Production collector delivery unless `CEFA_CT_COLLECTOR_ENABLED`, `CEFA_CT_COLLECTOR_URL`, and `CEFA_CT_COLLECTOR_SECRET` are explicitly configured.
 
 ## Repo Operating Model
 
@@ -59,10 +61,12 @@ Keep runtime plugin changes and documentation-only changes separate when practic
 
 ## Current Live-Domain Audit Status
 
-- Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
-- Franchise Canada `franchise.cefa.ca` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, GAConnector hidden-field writeback, and live GTM destination mapping through `GTM-TPJGHFS`.
-- Franchise USA `franchisecefa.com` now renders the WPCode fallback bridge, has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, and has live GTM Version `18` helper-event mapping / Meta USA dataset cleanup through `GTM-5LZMHBZL`.
-- Franchise Canada and Franchise USA now have GA4 custom dimensions registered for the low-cardinality helper payload fields. Canada still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision. USA has post-Version-15 controlled helper/dispatch evidence for both current live forms and browser-level GA4 `generate_lead` evidence for Form `2`; USA still needs processed GA4 report confirmation, Form `1` GA4 hit confirmation, and USA-specific Google Ads and Meta final mapping decisions before bidding signoff.
+- Parent `cefa.ca` is live on plugin `0.4.5` and `GTM-NZ6N7WNC`; confirmed `school_inquiry_submit` reaches GA4, Google Ads, and Meta. Parent GTM authenticated API access still needs to be restored for the service account.
+- Franchise Canada `franchise.cefa.ca` uses the WPCode fallback bridge and live GTM Version `54`; confirmed Form `1` and Form `2` helper paths remain active.
+- Franchise USA `franchisecefa.com` uses the WPCode fallback bridge and live GTM Version `25`; GA4 and Meta final-submit paths remain active, and the existing Google Ads `Application Submit (USA)` action now fires only on the confirmed Form `1` inquiry dispatch with server `event_id` transaction deduplication and the existing `600 CAD` value.
+- Current cross-platform assessment: [Full conversion tracking assessment and execution plan, 2026-07-09](docs/10-conversion-tracking/full-conversion-tracking-assessment-and-execution-plan-2026-07-09.md).
+- Detailed implementation sequence: [CEFA conversion tracking remediation blueprint, 2026-07-09](docs/10-conversion-tracking/cefa-conversion-tracking-remediation-blueprint-2026-07-09.md).
+- Current remediation execution status: [Conversion tracking remediation execution log, 2026-07-09](docs/10-conversion-tracking/conversion-tracking-remediation-execution-log-2026-07-09.md).
 - Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 - Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
 - School/program taxonomy status: `docs/canonical-school-program-taxonomy-2026-05-03.md`.
