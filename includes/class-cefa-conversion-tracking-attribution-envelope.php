@@ -83,6 +83,7 @@ final class CEFA_Conversion_Tracking_Attribution_Envelope {
 		}
 
 		$envelope = self::capture( $_GET, $_SERVER, $site_context, $existing ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$envelope = self::with_browser_ids( $envelope, $_COOKIE );
 
 		if ( empty( $envelope ) || $envelope === $existing ) {
 			return;
@@ -208,6 +209,40 @@ final class CEFA_Conversion_Tracking_Attribution_Envelope {
 	}
 
 	/**
+	 * Add allowlisted browser identifiers from first-party cookies.
+	 *
+	 * @param array<string, mixed> $envelope Verified canonical envelope.
+	 * @param array<string, mixed> $cookies  Request cookies.
+	 * @return array<string, mixed>
+	 */
+	public static function with_browser_ids( array $envelope, array $cookies ): array {
+		if ( empty( $envelope ) ) {
+			return $envelope;
+		}
+
+		$browser_ids = is_array( $envelope['browser_ids'] ?? null ) ? $envelope['browser_ids'] : array();
+		$ga_client   = self::ga_client_id( (string) ( $cookies['_ga'] ?? '' ) );
+		$ga_session  = self::ga_session_id( $cookies );
+		$fbp         = self::cookie_identifier( (string) ( $cookies['_fbp'] ?? '' ), '/^fb\.\d+\.\d+\.\d+$/' );
+		$fbc         = self::cookie_identifier( (string) ( $cookies['_fbc'] ?? '' ), '/^fb\.\d+\.\d+\.[A-Za-z0-9_-]+$/' );
+
+		foreach ( array(
+			'ga_client_id'  => $ga_client,
+			'ga_session_id' => $ga_session,
+			'fbp'           => $fbp,
+			'fbc'           => $fbc,
+		) as $key => $value ) {
+			if ( '' !== $value ) {
+				$browser_ids[ $key ] = $value;
+			}
+		}
+
+		$envelope['browser_ids'] = $browser_ids;
+
+		return self::fit_cookie_budget( $envelope );
+	}
+
+	/**
 	 * Keep only approved, bounded query values.
 	 *
 	 * @param array<string, mixed> $query Query parameters.
@@ -310,6 +345,7 @@ final class CEFA_Conversion_Tracking_Attribution_Envelope {
 			'current_touch'         => array(),
 			'click_ids'             => array(),
 			'platform_ids'          => array(),
+			'browser_ids'           => array(),
 			'experiment'            => array(),
 			'touch_count'           => 0,
 			'touch_history'         => array(),
@@ -418,6 +454,59 @@ final class CEFA_Conversion_Tracking_Attribution_Envelope {
 		$envelope['touch_count'] = count( $envelope['touch_history'] );
 
 		return $envelope;
+	}
+
+	/**
+	 * Parse the GA client ID from the standard first-party cookie.
+	 *
+	 * @param string $value Cookie value.
+	 * @return string
+	 */
+	private static function ga_client_id( string $value ): string {
+		$value = self::normalize_value( $value, 180 );
+
+		if ( preg_match( '/^GA\d+\.\d+\.(\d+\.\d+)$/', $value, $matches ) ) {
+			return $matches[1];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Parse GA4 session identity from legacy and current cookie formats.
+	 *
+	 * @param array<string, mixed> $cookies Request cookies.
+	 * @return string
+	 */
+	private static function ga_session_id( array $cookies ): string {
+		ksort( $cookies );
+
+		foreach ( $cookies as $name => $raw_value ) {
+			if ( 0 !== strpos( (string) $name, '_ga_' ) || is_array( $raw_value ) ) {
+				continue;
+			}
+
+			$value = self::normalize_value( (string) $raw_value, 500 );
+
+			if ( preg_match( '/^GS\d+\.\d+\.s?(\d{6,})/', $value, $matches ) || preg_match( '/(?:^|\$)s(\d{6,})(?:\$|$)/', $value, $matches ) ) {
+				return $matches[1];
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Validate a bounded browser identifier cookie.
+	 *
+	 * @param string $value   Cookie value.
+	 * @param string $pattern Validation pattern.
+	 * @return string
+	 */
+	private static function cookie_identifier( string $value, string $pattern ): string {
+		$value = self::normalize_value( $value, 220 );
+
+		return preg_match( $pattern, $value ) ? $value : '';
 	}
 
 	/**

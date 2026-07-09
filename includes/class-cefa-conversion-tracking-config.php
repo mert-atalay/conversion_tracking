@@ -110,6 +110,8 @@ final class CEFA_Conversion_Tracking_Config {
 		$primary_form = self::primary_form( $forms );
 
 		return array(
+			'siteContext'         => self::site_context(),
+			'ownHosts'            => self::approved_cefa_hosts(),
 			'formId'              => (int) ( $primary_form['id'] ?? CEFA_CONVERSION_TRACKING_FORM_ID ),
 			'forms'               => array_values( $forms ),
 			'finalEvents'         => self::final_event_names( $forms ),
@@ -120,6 +122,23 @@ final class CEFA_Conversion_Tracking_Config {
 				'input[data-cefa-si-meta="4"]',
 			),
 		);
+	}
+
+	/**
+	 * Return exact CEFA journey hosts that must not become referral sources.
+	 *
+	 * @return string[]
+	 */
+	private static function approved_cefa_hosts(): array {
+		$hosts = array();
+
+		foreach ( self::contexts() as $context ) {
+			if ( is_array( $context['hostnames'] ?? null ) ) {
+				$hosts = array_merge( $hosts, $context['hostnames'] );
+			}
+		}
+
+		return array_values( array_unique( array_map( 'strtolower', $hosts ) ) );
 	}
 
 	/**

@@ -47,3 +47,6 @@ jobs:
 
       - name: JavaScript syntax
         run: node --check assets/js/cefa-conversion-tracking.js
+
+      - name: Parent attribution browser contracts
+        run: node tests/js/parent-attribution-test.js

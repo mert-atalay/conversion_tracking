@@ -17,6 +17,11 @@
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
 	var clickDelayMs = Number(config.clickDelayMs || 0);
 	var attributionCookieDays = Number(config.attributionCookieDays || 90);
+	var ownHosts = Array.isArray(config.ownHosts)
+		? config.ownHosts.map(function (host) {
+				return String(host || '').toLowerCase().replace(/:\d+$/, '');
+		  })
+		: [];
 	var lastSubmitAttemptAt = 0;
 	var validationObserverStarted = false;
 	var attributionLastTouchFields = [
@@ -255,9 +260,13 @@
 	}
 
 	function referrerIsOwnSite(referrerHost) {
+		var normalized = normalizeLower(referrerHost, 180).replace(/:\d+$/, '');
 		var currentHost = hostFromUrl(window.location.href);
 
-		return !!(referrerHost && currentHost && referrerHost === currentHost);
+		return !!(
+			normalized &&
+			((currentHost && normalized === currentHost) || ownHosts.indexOf(normalized) !== -1)
+		);
 	}
 
 	function sourceFromReferrer(referrerHost) {
@@ -421,6 +430,7 @@
 		var url = currentUrl();
 		var referrer = document.referrer || '';
 		var referrerHost = hostFromUrl(referrer);
+		var externalReferrerHost = referrerIsOwnSite(referrerHost) ? '' : referrerHost;
 		var clickId = readClickId(url);
 		var source = url ? normalizeAttribution(url.searchParams.get('utm_source') || '', 220) : '';
 		var medium = url ? normalizeAttribution(url.searchParams.get('utm_medium') || '', 220) : '';
@@ -434,10 +444,10 @@
 		}
 
 		if (!source) {
-			source = sourceFromReferrer(referrerHost);
+			source = sourceFromReferrer(externalReferrerHost);
 		}
 
-		channel = inferAdvertisingChannel(source, medium, clickId.type, referrerHost);
+		channel = inferAdvertisingChannel(source, medium, clickId.type, externalReferrerHost);
 
 		if (!source) {
 			source = 'direct';
@@ -457,7 +467,7 @@
 			click_id_type: clickId.type,
 			click_id: clickId.value,
 			landing_page: safeAttributionUrl(window.location.href),
-			referrer: referrer && !referrerIsOwnSite(referrerHost) ? safeAttributionUrl(referrer) : '',
+			referrer: referrer && externalReferrerHost ? safeAttributionUrl(referrer) : '',
 			touch_ts: new Date().toISOString()
 		};
 	}

@@ -107,6 +107,22 @@ $braid = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
 );
 cefa_assert( ! isset( $braid['click_ids']['gclid'] ) && 'new-gbraid' === $braid['click_ids']['gbraid'], 'Google click-ID family replacement failed.' );
 
+$identified = CEFA_Conversion_Tracking_Attribution_Envelope::with_browser_ids(
+	$braid,
+	array(
+		'_ga'          => 'GA1.1.123456789.987654321',
+		'_ga_TEST'     => 'GS2.1.s1783641600$o3$g1$t1783641700$j60$l0$h0',
+		'_fbp'         => 'fb.1.1783641600.123456789',
+		'_fbc'         => 'fb.1.1783641600.testFbclid_123',
+		'email_cookie' => 'must-not-save@example.com',
+	)
+);
+cefa_assert( '123456789.987654321' === $identified['browser_ids']['ga_client_id'], 'GA client ID parsing failed.' );
+cefa_assert( '1783641600' === $identified['browser_ids']['ga_session_id'], 'GA session ID parsing failed.' );
+cefa_assert( 'fb.1.1783641600.123456789' === $identified['browser_ids']['fbp'], 'FBP parsing failed.' );
+cefa_assert( 'fb.1.1783641600.testFbclid_123' === $identified['browser_ids']['fbc'], 'FBC parsing failed.' );
+cefa_assert( ! isset( $identified['browser_ids']['email_cookie'] ), 'Unapproved browser cookie was retained.' );
+
 $agency = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
 	array(
 		'utm_source'       => 'meta',
@@ -123,4 +139,87 @@ $agency = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
 );
 cefa_assert( 'fr_us_in_house' === $agency['experiment']['agency_test'], 'Approved in-house marker normalization failed.' );
 
-echo "Attribution envelope tests passed.\n";
+/**
+ * Minimal configuration substitute for entry persistence tests.
+ */
+final class CEFA_Conversion_Tracking_Config {
+	public static $mode = 'shadow';
+
+	public static function attribution_v2_mode() {
+		return self::$mode;
+	}
+
+	public static function attribution_v2_secret() {
+		return 'entry-test-secret';
+	}
+
+	public static function site_context() {
+		return 'parent';
+	}
+
+	public static function attribution_cookie_name() {
+		return 'cefa_parent_attr_v1';
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	function sanitize_text_field( $value ) {
+		return trim( strip_tags( (string) $value ) );
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'rgar' ) ) {
+	function rgar( $array, $key ) {
+		return is_array( $array ) && array_key_exists( $key, $array ) ? $array[ $key ] : null;
+	}
+}
+
+$GLOBALS['cefa_test_meta']         = array();
+$GLOBALS['cefa_test_meta_updates'] = 0;
+
+if ( ! function_exists( 'gform_update_meta' ) ) {
+	function gform_update_meta( $entry_id, $meta_key, $value, $form_id = 0 ) {
+		unset( $form_id );
+		$GLOBALS['cefa_test_meta'][ $entry_id ][ $meta_key ] = $value;
+		++$GLOBALS['cefa_test_meta_updates'];
+	}
+}
+
+if ( ! function_exists( 'gform_get_meta' ) ) {
+	function gform_get_meta( $entry_id, $meta_key ) {
+		return $GLOBALS['cefa_test_meta'][ $entry_id ][ $meta_key ] ?? '';
+	}
+}
+
+require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-entry-attribution.php';
+
+$entry_now      = time();
+$entry_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture( $query, $server, 'parent', array(), $entry_now );
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $entry_envelope, 'entry-test-secret' );
+$entry = array(
+	'id'      => 101,
+	'form_id' => 4,
+	'status'  => 'active',
+	'35'      => 'legacy-google',
+);
+$saved = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $entry, array( 'id' => 4 ) );
+cefa_assert( 'legacy-google' === $saved['35'], 'Shadow persistence changed a legacy field.' );
+cefa_assert( isset( $GLOBALS['cefa_test_meta'][101][ CEFA_Conversion_Tracking_Entry_Attribution::ATTRIBUTION_META_KEY ] ), 'Canonical entry attribution was not saved.' );
+cefa_assert( 'attribution_shadow' === $GLOBALS['cefa_test_meta'][101][ CEFA_Conversion_Tracking_Entry_Attribution::STATUS_META_KEY ], 'Shadow status was not saved.' );
+cefa_assert( $entry_envelope === CEFA_Conversion_Tracking_Entry_Attribution::from_entry( $saved ), 'Saved entry attribution round trip failed.' );
+
+$updates = $GLOBALS['cefa_test_meta_updates'];
+CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $saved, array( 'id' => 4 ) );
+cefa_assert( $updates === $GLOBALS['cefa_test_meta_updates'], 'Repeated persistence was not idempotent.' );
+
+CEFA_Conversion_Tracking_Config::$mode = 'off';
+CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( array( 'id' => 102, 'form_id' => 4 ), array( 'id' => 4 ) );
+cefa_assert( ! isset( $GLOBALS['cefa_test_meta'][102] ), 'Off mode wrote entry attribution.' );
+
+echo "Attribution envelope and entry tests passed.\n";
