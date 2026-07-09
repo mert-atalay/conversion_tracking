@@ -35,7 +35,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 			return $entry;
 		}
 
-		$envelope = self::verified_request_envelope();
+		$envelope = self::current_verified_envelope();
 
 		if ( empty( $envelope ) ) {
 			return $entry;
@@ -101,7 +101,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 	 *
 	 * @return array<string, mixed>
 	 */
-	private static function verified_request_envelope(): array {
+	public static function current_verified_envelope(): array {
 		$secret       = CEFA_Conversion_Tracking_Config::attribution_v2_secret();
 		$site_context = CEFA_Conversion_Tracking_Config::site_context();
 		$cookie_name  = CEFA_Conversion_Tracking_Config::attribution_cookie_name();
@@ -112,7 +112,9 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 
 		$token = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		return CEFA_Conversion_Tracking_Attribution_Envelope::decode( $token, $secret, $site_context );
+		$envelope = CEFA_Conversion_Tracking_Attribution_Envelope::decode( $token, $secret, $site_context );
+
+		return CEFA_Conversion_Tracking_Attribution_Envelope::with_browser_ids( $envelope, $_COOKIE );
 	}
 
 	/**

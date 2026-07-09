@@ -43,6 +43,33 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Whether canonical attribution may populate approved CRM compatibility fields.
+	 *
+	 * @return bool
+	 */
+	public static function crm_identity_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_CRM_IDENTITY_ENABLED' ) );
+	}
+
+	/**
+	 * Whether signed, replay-safe confirmation payloads are enabled.
+	 *
+	 * @return bool
+	 */
+	public static function payload_v2_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PAYLOAD_V2_ENABLED' ) );
+	}
+
+	/**
+	 * Return the server-only confirmation payload signing secret.
+	 *
+	 * @return string
+	 */
+	public static function payload_v2_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_PAYLOAD_SECRET' ) );
+	}
+
+	/**
 	 * Return the current governed site context.
 	 *
 	 * @return string

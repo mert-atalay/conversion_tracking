@@ -28,6 +28,8 @@ require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-trac
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-attribution-envelope.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-entry-attribution.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-event-id.php';
+require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-event-id-registry.php';
+require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-submission-identity.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-attribution.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-datalayer-payload.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-duplicate-guard.php';
@@ -35,5 +37,7 @@ require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-trac
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-confirmation-payload.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking-rest-controller.php';
 require_once CEFA_CONVERSION_TRACKING_DIR . 'includes/class-cefa-conversion-tracking.php';
+
+register_activation_hook( CEFA_CONVERSION_TRACKING_FILE, array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'activate' ) );
 
 CEFA_Conversion_Tracking::init();

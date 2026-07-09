@@ -21,7 +21,7 @@ final class CEFA_Conversion_Tracking_REST_Controller {
 	public static function register_routes(): void {
 		register_rest_route(
 			'cefa-conversion-tracking/v1',
-			'/tracking-payload/(?P<token>[A-Za-z0-9_-]{8,128})',
+			'/tracking-payload/(?P<token>[A-Za-z0-9_.-]{8,512})',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( __CLASS__, 'get_tracking_payload' ),
@@ -65,7 +65,7 @@ final class CEFA_Conversion_Tracking_REST_Controller {
 		if ( null === $payload ) {
 			return new WP_Error(
 				'cefa_conversion_tracking_payload_not_found',
-				__( 'Tracking payload is unavailable or already consumed.', 'cefa-conversion-tracking' ),
+				__( 'Tracking payload is unavailable or expired.', 'cefa-conversion-tracking' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -89,7 +89,7 @@ final class CEFA_Conversion_Tracking_REST_Controller {
 		if ( null === $payload ) {
 			return new WP_Error(
 				'cefa_conversion_tracking_payload_not_found',
-				__( 'Tracking payload is unavailable or already consumed.', 'cefa-conversion-tracking' ),
+				__( 'Tracking payload is unavailable or expired.', 'cefa-conversion-tracking' ),
 				array( 'status' => 404 )
 			);
 		}
