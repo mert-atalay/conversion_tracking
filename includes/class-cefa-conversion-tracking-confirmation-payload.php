@@ -35,6 +35,7 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry, $form_config );
 
 		CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
+		CEFA_Conversion_Tracking_Collector::send_form4_event( $payload, $entry, $form_config );
 	}
 
 	/**

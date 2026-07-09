@@ -5,3 +5,5 @@ dist/
 *.zip
 composer.lock
 .phpcs-cache
+__pycache__/
+*.py[cod]

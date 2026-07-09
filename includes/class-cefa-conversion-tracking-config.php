@@ -73,6 +73,49 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Optional server-side collector configuration.
+	 *
+	 * The collector is disabled unless explicitly enabled through constants or
+	 * environment variables. This keeps production behavior unchanged after
+	 * deployment until staging validation and explicit enablement happen.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function collector_config(): array {
+		return array(
+			'enabled' => self::truthy_config_value( self::config_value( 'CEFA_CT_COLLECTOR_ENABLED' ) ),
+			'url'     => esc_url_raw( (string) self::config_value( 'CEFA_CT_COLLECTOR_URL' ) ),
+			'secret'  => (string) self::config_value( 'CEFA_CT_COLLECTOR_SECRET' ),
+		);
+	}
+
+	/**
+	 * Read a constant or environment variable without exposing secret values.
+	 *
+	 * @param string $name Constant/environment variable name.
+	 * @return mixed
+	 */
+	private static function config_value( string $name ) {
+		if ( defined( $name ) ) {
+			return constant( $name );
+		}
+
+		$value = getenv( $name );
+
+		return false === $value ? '' : $value;
+	}
+
+	/**
+	 * Interpret common truthy config strings.
+	 *
+	 * @param mixed $value Config value.
+	 * @return bool
+	 */
+	private static function truthy_config_value( $value ): bool {
+		return in_array( strtolower( trim( (string) $value ) ), array( '1', 'true', 'yes', 'on' ), true );
+	}
+
+	/**
 	 * Return the active context.
 	 *
 	 * @return array<string, mixed>
