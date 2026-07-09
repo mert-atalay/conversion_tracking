@@ -419,6 +419,17 @@ Rollback:
 - restore the exported account template and lower-level suffixes;
 - roll out one account at a time, starting with a low-risk campaign subset.
 
+Pilot result, 2026-07-09:
+
+- The parent account remains auto-tagged and retains its legacy account tracking template during the pilot.
+- Campaign `14995905347` / branded Search was selected because it has one enabled ad, no lower-level URL options, and one homepage final URL.
+- Google Ads API `validateOnly=true` passed before apply.
+- The campaign now overrides the inherited template with `{lpurl}` and owns the canonical final URL suffix shown above.
+- Read-back confirmed no change to campaign status, budget, bidding, ad group, ad state, or final URL.
+- Live synthetic rendering returned HTTP `200`, zero redirects, correct existing-query separators, and preserved `gclid`, `gbraid`, and `wbraid` independently.
+- No PMax, school Search campaign, account-level URL option, or ad-level suffix changed.
+- Account-wide rollout is gated on the Attribution Bridge shadow test and a complete lower-level suffix cleanup map.
+
 ### B7. Inventory and quarantine legacy conversion objects
 
 Actions:

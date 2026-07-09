@@ -10,6 +10,7 @@ Blueprint: [CEFA conversion tracking remediation blueprint](./cefa-conversion-tr
 |---|---|
 | Parent regional PMax | Existing BC, Ontario, and Alberta inquiry-only campaign goals remain unchanged. |
 | Parent Search goals | Branded and Oakville Eighth Line now use only `SUBMIT_LEAD_FORM / WEBSITE` as biddable campaign goals. |
+| Google URL parameter pilot | Live on branded Search campaign `14995905347` only. The campaign overrides the legacy account template with `{lpurl}` and uses the canonical final URL suffix. |
 | Parent GA4 key events | `generate_lead` remains; inquiry/email/phone/school-finder clicks are ordinary events. GA4's non-deletable `purchase` key event remains. |
 | Franchise Canada GA4 key events | `generate_lead` remains; application/email/phone clicks are ordinary events. GA4's non-deletable `purchase` key event remains. |
 | Franchise USA GA4 key events | Unchanged pending lifecycle dependency review. |
@@ -108,6 +109,27 @@ Read-back state:
 - Franchise Canada key events: `purchase`, `generate_lead`.
 - Franchise USA key events were not changed.
 
+### Google Ads URL parameter pilot
+
+Validated through Google Ads API `validateOnly=true`, then applied and read back on one campaign only:
+
+- account: `4159217891`;
+- campaign: `14995905347` / `corp | search | branded | cefa | always on`;
+- campaign tracking template: `{lpurl}`;
+- campaign final URL suffix:
+
+```text
+utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_id={campaignid}&utm_content={creative}&utm_term={keyword}&google_adgroup_id={adgroupid}&google_network={network}&google_device={device}&google_matchtype={matchtype}
+```
+
+Reason for the campaign-level pilot:
+
+- the account still has the legacy tracking template `{lpurl}?utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_content={creative}&utm_term={keyword}`;
+- many active school Search ads have ad-level final URL suffixes, so an account-wide suffix would create an unsafe mixed hierarchy until those overrides are mapped and removed;
+- the branded campaign has one enabled ad, no ad-level URL options, and a single homepage final URL.
+
+Read-back confirmed that status, `20 CAD/day` budget, target impression share bidding, ad group, ad status, and `https://cefa.ca/` final URL did not change. Auto-tagging remains enabled at the account level. No PMax or school campaign URL option changed.
+
 ## QA Evidence
 
 ### Google Ads no-send QA
@@ -178,10 +200,22 @@ Decision:
 - monitor Meta Lead transport with an explicit `event=Lead` filter and full pagination;
 - retain form/CRM truth as the business lead count.
 
+### Google URL parameter pilot QA
+
+Synthetic ValueTrack rendering was tested against the live homepage for desktop/mobile-compatible query behavior:
+
+- `gclid`, `gbraid`, and `wbraid` were tested separately;
+- every request returned HTTP `200` with zero redirects;
+- every click ID remained unchanged in the effective URL;
+- a URL with an existing query parameter returned HTTP `200` with zero redirects and correct `&` separators;
+- each canonical UTM key appeared once.
+
+This proves the landing URL and parameter syntax. It does not claim a served-ad click or Google Ads attribution receipt.
+
 ## Explicitly Unchanged
 
 - Meta campaign, ad-set, ad, creative, budget, targeting, status, and promoted objects;
-- Google Ads campaign, budget, bidding strategy, targeting, status, URLs, and conversion action;
+- Google Ads campaign budget, bidding strategy, targeting, status, final URLs, and conversion actions; only the branded Search campaign URL options changed as documented above;
 - all three parent regional PMax campaigns, including current budgets: BC `80 CAD/day`, Ontario `60 CAD/day`, Alberta `60 CAD/day`;
 - Franchise USA GA4 and Meta final-submit tags;
 - Form `2` destination behavior;
@@ -193,9 +227,9 @@ Decision:
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
 2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
-3. Standardize Google Ads URL suffixes through a limited pilot.
-4. Build and test Attribution Bridge V1 behind feature flags.
-5. Shadow the bridge beside GAConnector.
+3. Build and test Attribution Bridge V1 behind feature flags.
+4. Shadow the bridge beside GAConnector.
+5. Complete the lower-level Google URL-option map before expanding the pilot.
 6. Carry event IDs into CRM and repair warehouse reconciliation.
 
 ## Rollback
@@ -203,5 +237,6 @@ Decision:
 - Google Ads tag repair rollback: publish GTM Version `22` or pause tag `275` in a one-change version.
 - Value-only rollback: publish Version `23` only if the action value contract is intentionally changed away from `600 CAD`.
 - Agency clearing rollback: publish Version `24` to restore the prior writer.
+- Google URL pilot rollback: clear `tracking_url_template` and `final_url_suffix` on campaign `14995905347` in a validated two-field campaign mutate. The unchanged account tracking template will resume inheritance.
 
 Do not roll back to Version `22` merely to undo agency clearing, because that would also remove the repaired Google Ads Form `1` conversion tag.
