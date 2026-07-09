@@ -17,6 +17,11 @@
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
 	var clickDelayMs = Number(config.clickDelayMs || 0);
 	var attributionCookieDays = Number(config.attributionCookieDays || 90);
+	var ownHosts = Array.isArray(config.ownHosts)
+		? config.ownHosts.map(function (host) {
+				return String(host || '').toLowerCase().replace(/:\d+$/, '');
+		  })
+		: [];
 	var lastSubmitAttemptAt = 0;
 	var validationObserverStarted = false;
 	var attributionLastTouchFields = [
@@ -34,6 +39,26 @@
 	var attributionFirstTouchFields = [
 		{ cookie: 'cefa_first_landing_page', fieldId: '45', maxLength: 1000 },
 		{ cookie: 'cefa_first_referrer', fieldId: '46', maxLength: 1000 }
+	];
+	var advertisingAttributionKeys = {
+		current: 'cefa_ad_attr_current_touch',
+		first: 'cefa_ad_attr_first_touch',
+		firstNonDirect: 'cefa_ad_attr_first_non_direct_touch',
+		lastNonDirect: 'cefa_ad_attr_last_non_direct_touch',
+		history: 'cefa_ad_attr_touch_history'
+	};
+	var paidClickParams = ['gclid', 'gbraid', 'wbraid', 'msclkid', 'fbclid'];
+	var searchSources = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex', 'ecosia'];
+	var socialSources = [
+		'facebook',
+		'instagram',
+		'tiktok',
+		'linkedin',
+		'reddit',
+		'pinterest',
+		'youtube',
+		'twitter',
+		'x.com'
 	];
 	var trackedEvents = Array.isArray(config.trackedEvents)
 		? config.trackedEvents
@@ -164,6 +189,429 @@
 		return stored;
 	}
 
+	function readAttributionJson(key, fallback) {
+		var raw = storageGet(key);
+
+		if (!raw) {
+			return fallback;
+		}
+
+		try {
+			return JSON.parse(raw);
+		} catch (error) {
+			return fallback;
+		}
+	}
+
+	function writeAttributionJson(key, value) {
+		try {
+			storageSet(key, JSON.stringify(value));
+		} catch (error) {}
+	}
+
+	function normalizeLower(value, maxLength) {
+		return normalizeAttribution(value, maxLength || 220).toLowerCase();
+	}
+
+	function hostFromUrl(value) {
+		var parsed = parseUrl(value);
+
+		if (!value) {
+			return '';
+		}
+
+		return parsed ? normalizeLower(parsed.hostname, 180).replace(/^www\./, '') : '';
+	}
+
+	function safeAttributionUrl(value) {
+		var parsed = parseUrl(value);
+		var blockedParams = ['email', 'e-mail', 'phone', 'tel', 'name', 'first_name', 'last_name'];
+
+		if (!value) {
+			return '';
+		}
+
+		if (!parsed) {
+			return normalizeAttribution(value, 1000);
+		}
+
+		blockedParams.forEach(function (param) {
+			parsed.searchParams.delete(param);
+		});
+		parsed.hash = '';
+
+		return normalizeAttribution(parsed.toString(), 1000);
+	}
+
+	function arrayContainsValue(values, value) {
+		return values.indexOf(normalizeLower(value, 180)) !== -1;
+	}
+
+	function sourceMatches(values, source) {
+		var normalized = normalizeLower(source, 180);
+
+		for (var i = 0; i < values.length; i++) {
+			if (normalized.indexOf(values[i]) !== -1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function referrerIsOwnSite(referrerHost) {
+		var normalized = normalizeLower(referrerHost, 180).replace(/:\d+$/, '');
+		var currentHost = hostFromUrl(window.location.href);
+
+		return !!(
+			normalized &&
+			((currentHost && normalized === currentHost) || ownHosts.indexOf(normalized) !== -1)
+		);
+	}
+
+	function sourceFromReferrer(referrerHost) {
+		if (!referrerHost || referrerIsOwnSite(referrerHost)) {
+			return '';
+		}
+
+		if (sourceMatches(searchSources, referrerHost)) {
+			if (referrerHost.indexOf('google') !== -1) {
+				return 'google';
+			}
+
+			if (referrerHost.indexOf('bing') !== -1) {
+				return 'bing';
+			}
+
+			if (referrerHost.indexOf('yahoo') !== -1) {
+				return 'yahoo';
+			}
+
+			if (referrerHost.indexOf('duckduckgo') !== -1) {
+				return 'duckduckgo';
+			}
+		}
+
+		if (sourceMatches(socialSources, referrerHost)) {
+			if (referrerHost.indexOf('instagram') !== -1) {
+				return 'instagram';
+			}
+
+			if (referrerHost.indexOf('linkedin') !== -1) {
+				return 'linkedin';
+			}
+
+			if (referrerHost.indexOf('tiktok') !== -1) {
+				return 'tiktok';
+			}
+
+			if (referrerHost.indexOf('reddit') !== -1) {
+				return 'reddit';
+			}
+
+			if (referrerHost.indexOf('pinterest') !== -1) {
+				return 'pinterest';
+			}
+
+			if (referrerHost.indexOf('youtube') !== -1) {
+				return 'youtube';
+			}
+
+			return 'facebook';
+		}
+
+		return referrerHost;
+	}
+
+	function readClickId(url) {
+		var parsed = url || currentUrl();
+		var value = '';
+
+		if (!parsed) {
+			return { type: '', value: '' };
+		}
+
+		for (var i = 0; i < paidClickParams.length; i++) {
+			value = normalizeAttribution(parsed.searchParams.get(paidClickParams[i]) || '', 220);
+
+			if (value) {
+				return {
+					type: paidClickParams[i],
+					value: value
+				};
+			}
+		}
+
+		return { type: '', value: '' };
+	}
+
+	function mediumLooksPaid(medium) {
+		return /^(cpc|ppc|paid|paid_social|paid-search|paid_search|display|programmatic|remarketing|retargeting)$/i.test(
+			normalizeAttribution(medium, 80)
+		);
+	}
+
+	function inferAdvertisingChannel(source, medium, clickIdType, referrerHost) {
+		var normalizedSource = normalizeLower(source || referrerHost, 180);
+		var normalizedMedium = normalizeLower(medium, 80);
+
+		if ('gclid' === clickIdType || 'gbraid' === clickIdType || 'wbraid' === clickIdType || 'msclkid' === clickIdType) {
+			return 'paid_search';
+		}
+
+		if ('fbclid' === clickIdType) {
+			return 'paid_social';
+		}
+
+		if (mediumLooksPaid(normalizedMedium)) {
+			if (sourceMatches(socialSources, normalizedSource) || normalizedMedium.indexOf('social') !== -1) {
+				return 'paid_social';
+			}
+
+			if (normalizedMedium.indexOf('display') !== -1 || normalizedMedium.indexOf('programmatic') !== -1) {
+				return 'display';
+			}
+
+			return 'paid_search';
+		}
+
+		if ('email' === normalizedMedium || normalizedMedium.indexOf('newsletter') !== -1) {
+			return 'email';
+		}
+
+		if (normalizedSource.indexOf('gbp') !== -1 || normalizedSource.indexOf('google_business') !== -1) {
+			return 'local_organic';
+		}
+
+		if (arrayContainsValue(searchSources, normalizedSource) || sourceMatches(searchSources, referrerHost || '')) {
+			return 'organic_search';
+		}
+
+		if (sourceMatches(socialSources, normalizedSource) || sourceMatches(socialSources, referrerHost || '')) {
+			return 'organic_social';
+		}
+
+		if (normalizedSource && 'direct' !== normalizedSource) {
+			return 'referral';
+		}
+
+		return 'direct';
+	}
+
+	function fallbackMediumForChannel(channel) {
+		if ('paid_search' === channel) {
+			return 'cpc';
+		}
+
+		if ('paid_social' === channel) {
+			return 'paid_social';
+		}
+
+		if ('organic_search' === channel) {
+			return 'organic';
+		}
+
+		if ('organic_social' === channel) {
+			return 'social';
+		}
+
+		if ('email' === channel) {
+			return 'email';
+		}
+
+		if ('direct' === channel) {
+			return 'none';
+		}
+
+		return 'referral';
+	}
+
+	function buildAdvertisingTouchFromUrl() {
+		var url = currentUrl();
+		var referrer = document.referrer || '';
+		var referrerHost = hostFromUrl(referrer);
+		var externalReferrerHost = referrerIsOwnSite(referrerHost) ? '' : referrerHost;
+		var clickId = readClickId(url);
+		var source = url ? normalizeAttribution(url.searchParams.get('utm_source') || '', 220) : '';
+		var medium = url ? normalizeAttribution(url.searchParams.get('utm_medium') || '', 220) : '';
+		var campaign = url ? normalizeAttribution(url.searchParams.get('utm_campaign') || '', 220) : '';
+		var term = url ? normalizeAttribution(url.searchParams.get('utm_term') || '', 220) : '';
+		var content = url ? normalizeAttribution(url.searchParams.get('utm_content') || '', 220) : '';
+		var channel = '';
+
+		if (!source && clickId.type) {
+			source = 'msclkid' === clickId.type ? 'bing' : 'fbclid' === clickId.type ? 'meta' : 'google';
+		}
+
+		if (!source) {
+			source = sourceFromReferrer(externalReferrerHost);
+		}
+
+		channel = inferAdvertisingChannel(source, medium, clickId.type, externalReferrerHost);
+
+		if (!source) {
+			source = 'direct';
+		}
+
+		if (!medium) {
+			medium = fallbackMediumForChannel(channel);
+		}
+
+		return {
+			source: normalizeAttribution(source, 220),
+			medium: normalizeAttribution(medium, 220),
+			campaign: campaign,
+			term: term,
+			content: content,
+			channel: channel,
+			click_id_type: clickId.type,
+			click_id: clickId.value,
+			landing_page: safeAttributionUrl(window.location.href),
+			referrer: referrer && externalReferrerHost ? safeAttributionUrl(referrer) : '',
+			touch_ts: new Date().toISOString()
+		};
+	}
+
+	function buildAdvertisingTouchFromPayload(payload) {
+		var clickIdType = '';
+		var clickId = '';
+		var source = normalizeAttribution(payload && payload.utm_source, 220);
+		var medium = normalizeAttribution(payload && payload.utm_medium, 220);
+		var referrer = normalizeAttribution(payload && payload.first_referrer, 1000);
+		var referrerHost = hostFromUrl(referrer);
+		var channel = '';
+
+		paidClickParams.forEach(function (param) {
+			if (!clickId && payload && payload[param]) {
+				clickIdType = param;
+				clickId = normalizeAttribution(payload[param], 220);
+			}
+		});
+
+		if (!source && clickIdType) {
+			source = 'msclkid' === clickIdType ? 'bing' : 'fbclid' === clickIdType ? 'meta' : 'google';
+		}
+
+		if (!source) {
+			source = sourceFromReferrer(referrerHost);
+		}
+
+		channel = inferAdvertisingChannel(source, medium, clickIdType, '');
+
+		if (!source) {
+			source = 'direct';
+		}
+
+		return {
+			source: source,
+			medium: medium || fallbackMediumForChannel(channel),
+			campaign: normalizeAttribution(payload && payload.utm_campaign, 220),
+			term: normalizeAttribution(payload && payload.utm_term, 220),
+			content: normalizeAttribution(payload && payload.utm_content, 220),
+			channel: channel,
+			click_id_type: clickIdType,
+			click_id: clickId,
+			landing_page: safeAttributionUrl(payload && payload.event_source_url ? payload.event_source_url : window.location.href),
+			referrer: safeAttributionUrl(referrer),
+			touch_ts: new Date().toISOString()
+		};
+	}
+
+	function touchIsDirect(touch) {
+		return !touch || 'direct' === touch.channel || 'direct' === normalizeLower(touch.source, 80);
+	}
+
+	function touchSignature(touch) {
+		if (!touch) {
+			return '';
+		}
+
+		return [
+			touch.channel,
+			touch.source,
+			touch.medium,
+			touch.campaign,
+			touch.click_id_type,
+			touch.click_id,
+			touch.landing_page
+		].join('|');
+	}
+
+	function recordAdvertisingAttribution() {
+		var touch = buildAdvertisingTouchFromUrl();
+		var history = readAttributionJson(advertisingAttributionKeys.history, []);
+		var lastHistoryTouch = Array.isArray(history) && history.length ? history[history.length - 1] : null;
+
+		writeAttributionJson(advertisingAttributionKeys.current, touch);
+
+		if (!readAttributionJson(advertisingAttributionKeys.first, null)) {
+			writeAttributionJson(advertisingAttributionKeys.first, touch);
+		}
+
+		if (!touchIsDirect(touch) && !readAttributionJson(advertisingAttributionKeys.firstNonDirect, null)) {
+			writeAttributionJson(advertisingAttributionKeys.firstNonDirect, touch);
+		}
+
+		if (!touchIsDirect(touch)) {
+			writeAttributionJson(advertisingAttributionKeys.lastNonDirect, touch);
+		}
+
+		if (!Array.isArray(history)) {
+			history = [];
+		}
+
+		if (touchSignature(lastHistoryTouch) !== touchSignature(touch)) {
+			history.push(touch);
+			writeAttributionJson(advertisingAttributionKeys.history, history.slice(-8));
+		}
+	}
+
+	function trafficSourceSummary(history) {
+		if (!Array.isArray(history)) {
+			return '';
+		}
+
+		return history
+			.map(function (touch) {
+				return [touch.channel, touch.source, touch.medium].filter(Boolean).join('/');
+			})
+			.filter(Boolean)
+			.join(' > ')
+			.slice(0, 500);
+	}
+
+	function buildAdvertisingAttributionPayload(serverPayload) {
+		var current = readAttributionJson(advertisingAttributionKeys.current, null);
+		var first = readAttributionJson(advertisingAttributionKeys.first, null);
+		var firstNonDirect = readAttributionJson(advertisingAttributionKeys.firstNonDirect, null);
+		var lastNonDirect = readAttributionJson(advertisingAttributionKeys.lastNonDirect, null);
+		var history = readAttributionJson(advertisingAttributionKeys.history, []);
+		var fallback = serverPayload ? buildAdvertisingTouchFromPayload(serverPayload) : null;
+		var credited = !touchIsDirect(lastNonDirect) ? lastNonDirect : fallback || current || first;
+
+		return {
+			ad_attribution_model: 'cefa_last_non_direct_v2',
+			ad_attribution_channel: credited && credited.channel ? credited.channel : '',
+			ad_attribution_source: credited && credited.source ? credited.source : '',
+			ad_attribution_medium: credited && credited.medium ? credited.medium : '',
+			ad_attribution_campaign: credited && credited.campaign ? credited.campaign : '',
+			ad_attribution_term: credited && credited.term ? credited.term : '',
+			ad_attribution_content: credited && credited.content ? credited.content : '',
+			ad_attribution_click_id_type: credited && credited.click_id_type ? credited.click_id_type : '',
+			ad_attribution_click_id: credited && credited.click_id ? credited.click_id : '',
+			ad_attribution_landing_page: credited && credited.landing_page ? credited.landing_page : '',
+			ad_attribution_referrer: credited && credited.referrer ? credited.referrer : '',
+			ad_attribution_current_channel: current && current.channel ? current.channel : '',
+			ad_attribution_current_source: current && current.source ? current.source : '',
+			ad_attribution_first_channel: first && first.channel ? first.channel : '',
+			ad_attribution_first_source: first && first.source ? first.source : '',
+			ad_attribution_first_non_direct_channel: firstNonDirect && firstNonDirect.channel ? firstNonDirect.channel : '',
+			ad_attribution_first_non_direct_source: firstNonDirect && firstNonDirect.source ? firstNonDirect.source : '',
+			ad_attribution_touch_count: Array.isArray(history) ? String(history.length) : '0',
+			ad_attribution_all_sources: trafficSourceSummary(history)
+		};
+	}
+
 	function captureAttribution() {
 		var url = currentUrl();
 		var firstLanding = readAttributionValue('cefa_first_landing_page', 1000);
@@ -188,6 +636,7 @@
 				writeAttributionValue(item.cookie, value, item.maxLength);
 			}
 		});
+		recordAdvertisingAttribution();
 	}
 
 	function trackingFieldValueIsEmpty(value) {
@@ -447,6 +896,25 @@
 			'program_name',
 			'days_per_week',
 			'inquiry_event_id',
+			'ad_attribution_model',
+			'ad_attribution_channel',
+			'ad_attribution_source',
+			'ad_attribution_medium',
+			'ad_attribution_campaign',
+			'ad_attribution_term',
+			'ad_attribution_content',
+			'ad_attribution_click_id_type',
+			'ad_attribution_click_id',
+			'ad_attribution_landing_page',
+			'ad_attribution_referrer',
+			'ad_attribution_current_channel',
+			'ad_attribution_current_source',
+			'ad_attribution_first_channel',
+			'ad_attribution_first_source',
+			'ad_attribution_first_non_direct_channel',
+			'ad_attribution_first_non_direct_source',
+			'ad_attribution_touch_count',
+			'ad_attribution_all_sources',
 			'phone_number',
 			'email_target',
 			'validation_error_count'
@@ -474,7 +942,7 @@
 	}
 
 	function baseMicroPayload(eventName) {
-		return {
+		return mergePayload({
 			event: eventName,
 			event_id: uuid(),
 			event_scope: 'micro',
@@ -483,7 +951,7 @@
 			page_url: window.location.href,
 			page_path: getPagePath(),
 			tracking_source: 'helper_plugin'
-		};
+		}, buildAdvertisingAttributionPayload());
 	}
 
 	function eventIsTracked(eventName) {
@@ -1074,6 +1542,7 @@
 			return;
 		}
 
+		mergePayload(payload, buildAdvertisingAttributionPayload(payload));
 		payload.inquiry_success_url = window.location.href;
 		window.dataLayer = window.dataLayer || [];
 		window.dataLayer.push(payload);

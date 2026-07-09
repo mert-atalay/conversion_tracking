@@ -39,6 +39,24 @@ final class CEFA_Conversion_Tracking_Event_ID {
 	}
 
 	/**
+	 * Replace the operational POST event ID with a reserved server UUID.
+	 *
+	 * This is called only in primary Attribution Bridge mode. Shadow mode keeps
+	 * the legacy operational ID unchanged.
+	 *
+	 * @param string               $event_id    Reserved server event ID.
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return void
+	 */
+	public static function replace_posted_event_id( string $event_id, array $form_config = array() ): void {
+		$event_id = self::normalize_event_id( $event_id );
+
+		if ( '' !== $event_id ) {
+			self::write_event_id_to_post( $event_id, $form_config );
+		}
+	}
+
+	/**
 	 * Read and normalize an event ID from POST data.
 	 *
 	 * @param array<string, mixed> $form_config Active form configuration.

@@ -42,5 +42,11 @@ jobs:
       - name: WordPress coding standards
         run: composer phpcs
 
+      - name: Attribution envelope contracts
+        run: composer test:php
+
       - name: JavaScript syntax
         run: node --check assets/js/cefa-conversion-tracking.js
+
+      - name: Parent attribution browser contracts
+        run: node tests/js/parent-attribution-test.js

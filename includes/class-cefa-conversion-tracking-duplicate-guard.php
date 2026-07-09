@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Stores and consumes short-lived tracking payloads.
+ * Stores short-lived tracking payloads with guarded replay-safe retrieval.
  */
 final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	/**
@@ -21,25 +21,29 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	/**
 	 * Payload lifetime in seconds.
 	 */
-	private const PAYLOAD_TTL = 15 * MINUTE_IN_SECONDS;
+	private const PAYLOAD_TTL = 30 * MINUTE_IN_SECONDS;
 
 	/**
-	 * Store a payload behind a one-time token.
+	 * Store a payload behind an opaque legacy or signed V2 token.
 	 *
 	 * @param array<string, mixed> $payload Tracking payload.
 	 * @return string
 	 */
 	public static function store_payload( array $payload ): string {
-		$token = wp_generate_uuid4();
+		$token = self::v2_ready() ? self::signed_token( $payload ) : wp_generate_uuid4();
 
-		set_transient( self::TRANSIENT_PREFIX . $token, $payload, self::PAYLOAD_TTL );
+		if ( '' === $token ) {
+			return '';
+		}
+
+		set_transient( self::payload_key( $token ), $payload, self::PAYLOAD_TTL );
 		self::store_event_token_alias( $payload, $token );
 
 		return $token;
 	}
 
 	/**
-	 * Consume a one-time payload.
+	 * Read a payload, retaining signed V2 payloads for safe replay during TTL.
 	 *
 	 * @param string $token Payload token.
 	 * @return array<string, mixed>|null
@@ -51,15 +55,23 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 			return null;
 		}
 
-		$key     = self::TRANSIENT_PREFIX . $token;
+		$is_v2 = false !== strpos( $token, '.' );
+
+		if ( $is_v2 && ! self::valid_signed_token( $token ) ) {
+			return null;
+		}
+
+		$key     = self::payload_key( $token );
 		$payload = get_transient( $key );
 
 		if ( false === $payload || ! is_array( $payload ) ) {
 			return null;
 		}
 
-		delete_transient( $key );
-		self::delete_event_token_alias( $payload );
+		if ( ! $is_v2 ) {
+			delete_transient( $key );
+			self::delete_event_token_alias( $payload );
+		}
 
 		return $payload;
 	}
@@ -98,7 +110,7 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	public static function normalize_token( string $token ): string {
 		$token = trim( $token );
 
-		if ( ! preg_match( '/^[A-Za-z0-9_-]{8,128}$/', $token ) ) {
+		if ( ! preg_match( '/^[A-Za-z0-9_.-]{8,512}$/', $token ) ) {
 			return '';
 		}
 
@@ -146,5 +158,120 @@ final class CEFA_Conversion_Tracking_Duplicate_Guard {
 	 */
 	private static function event_token_key( string $event_id ): string {
 		return self::TRANSIENT_PREFIX . 'event_' . hash( 'sha256', $event_id );
+	}
+
+	/**
+	 * Return a bounded transient key for either token generation.
+	 *
+	 * @param string $token Payload token.
+	 * @return string
+	 */
+	private static function payload_key( string $token ): string {
+		if ( false !== strpos( $token, '.' ) ) {
+			return self::TRANSIENT_PREFIX . 'payload_' . hash( 'sha256', $token );
+		}
+
+		return self::TRANSIENT_PREFIX . $token;
+	}
+
+	/**
+	 * Confirm V2 is explicitly enabled and has a signing secret.
+	 *
+	 * @return bool
+	 */
+	private static function v2_ready(): bool {
+		return CEFA_Conversion_Tracking_Config::payload_v2_enabled()
+			&& '' !== CEFA_Conversion_Tracking_Config::payload_v2_secret();
+	}
+
+	/**
+	 * Issue a signed token containing only event identity, context, and expiry.
+	 *
+	 * @param array<string, mixed> $payload Tracking payload.
+	 * @return string
+	 */
+	private static function signed_token( array $payload ): string {
+		$event_id = CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) ( $payload['event_id'] ?? '' ) );
+
+		if ( '' === $event_id ) {
+			return '';
+		}
+
+		$claims = wp_json_encode(
+			array(
+				'event_id'     => $event_id,
+				'site_context' => CEFA_Conversion_Tracking_Config::site_context(),
+				'expires_at'   => time() + self::PAYLOAD_TTL,
+				'nonce'        => bin2hex( random_bytes( 16 ) ),
+			),
+			JSON_UNESCAPED_SLASHES
+		);
+
+		if ( ! is_string( $claims ) ) {
+			return '';
+		}
+
+		$encoded   = self::base64url_encode( $claims );
+		$signature = self::base64url_encode(
+			hash_hmac( 'sha256', $encoded, CEFA_Conversion_Tracking_Config::payload_v2_secret(), true )
+		);
+
+		return $encoded . '.' . $signature;
+	}
+
+	/**
+	 * Verify token signature, expiry, and hostname-scoped context.
+	 *
+	 * @param string $token Signed token.
+	 * @return bool
+	 */
+	private static function valid_signed_token( string $token ): bool {
+		$parts = explode( '.', $token );
+
+		if ( 2 !== count( $parts ) || '' === CEFA_Conversion_Tracking_Config::payload_v2_secret() ) {
+			return false;
+		}
+
+		$expected = self::base64url_encode(
+			hash_hmac( 'sha256', $parts[0], CEFA_Conversion_Tracking_Config::payload_v2_secret(), true )
+		);
+
+		if ( ! hash_equals( $expected, $parts[1] ) ) {
+			return false;
+		}
+
+		$json   = self::base64url_decode( $parts[0] );
+		$claims = is_string( $json ) ? json_decode( $json, true ) : null;
+
+		return is_array( $claims )
+			&& time() <= (int) ( $claims['expires_at'] ?? 0 )
+			&& 0 === strcmp( CEFA_Conversion_Tracking_Config::site_context(), (string) ( $claims['site_context'] ?? '' ) )
+			&& '' !== CEFA_Conversion_Tracking_Event_ID::normalize_event_id( (string) ( $claims['event_id'] ?? '' ) );
+	}
+
+	/**
+	 * Base64url encode token data.
+	 *
+	 * @param string $value Data.
+	 * @return string
+	 */
+	private static function base64url_encode( string $value ): string {
+		return rtrim( strtr( base64_encode( $value ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Required for compact signed tokens.
+	}
+
+	/**
+	 * Base64url decode token data.
+	 *
+	 * @param string $value Encoded data.
+	 * @return string|false
+	 */
+	private static function base64url_decode( string $value ) {
+		$padding = strlen( $value ) % 4;
+
+		if ( $padding ) {
+			$value .= str_repeat( '=', 4 - $padding );
+		}
+
+		return base64_decode( strtr( $value, '-_', '+/' ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Decodes compact signed tokens.
 	}
 }
