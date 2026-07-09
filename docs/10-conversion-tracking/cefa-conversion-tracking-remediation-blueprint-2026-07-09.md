@@ -344,6 +344,13 @@ Rollback:
 - restore key-event status from the snapshot if a verified dependency was missed;
 - do not change event collection code during this task.
 
+Execution result, 2026-07-09:
+
+- Removed key-event status from four parent click events and three Franchise Canada click events.
+- Kept `generate_lead` and GA4's non-deletable `purchase` key event.
+- Left Franchise USA key events unchanged pending lifecycle review.
+- Click-event collection remains active as ordinary analytics events.
+
 ### B5. Isolate two parent Search campaign goals
 
 Campaigns:
@@ -371,6 +378,13 @@ Acceptance:
 Rollback:
 
 - restore the captured customer-goal inheritance settings with a separately validated operation.
+
+Execution result, 2026-07-09:
+
+- All 12 proposed campaign-goal operations passed Google Ads API `validateOnly=true`.
+- Both Search campaigns now have only `SUBMIT_LEAD_FORM / WEBSITE` biddable.
+- All unrelated goal families are non-biddable for those campaigns.
+- Read-back confirmed the three regional PMax campaigns remain inquiry-only and otherwise unchanged.
 
 ### B6. Standardize Google Ads URL parameters
 

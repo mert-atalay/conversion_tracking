@@ -256,6 +256,14 @@ From 2026-06-09 through 2026-07-08:
 
 Only confirmed business submit events should be key events by default. Keep clicks as ordinary diagnostic events. This avoids broad "website leads" reports that combine intent and completion.
 
+Remediation update, 2026-07-09:
+
+- Parent `inquiry_click`, `email_click`, `phone_click`, and `find_a_school_click` are no longer key events.
+- Franchise Canada `fr_application_click`, `fr_phone_click`, and `fr_email_click` are no longer key events.
+- Parent and Franchise Canada retain `generate_lead` plus GA4's non-deletable `purchase` key event.
+- Franchise USA definitions remain unchanged pending lifecycle dependency review.
+- Event collection was not disabled; the clicks remain available as ordinary GA4 events.
+
 ### P1. Warehouse reconciliation reports zero GA4 leads even though GA4 is live
 
 `mart_cefa_growth_dashboard.dashboard_form4_event_reconciliation_daily_latest` reports zero GA4 `generate_lead` events throughout the checked period. Live GA4 Data API and native export both contain the events. The current reconciliation model is reading an empty or stale GA4 serving surface.
@@ -310,6 +318,13 @@ The attribution script removes only a short list of possible PII parameters and 
 - Two active parent Search campaigns still inherit customer-level Google goals; the rest of the current lead campaigns use safer campaign-level overrides.
 
 Archive only after dependency and change-history review. The current three regional PMax campaigns are already isolated correctly and should not be changed merely because account-level goals are noisy.
+
+Remediation update, 2026-07-09:
+
+- Parent Search campaigns `14995905347` and `23854771600` now have explicit campaign-level goal overrides with only `SUBMIT_LEAD_FORM / WEBSITE` biddable.
+- The Google Ads API accepted all 12 operations in `validateOnly=true` before apply.
+- Read-back confirmed both Search campaigns and all three regional PMax campaigns have only the confirmed website form-submit goal biddable.
+- No budgets, bidding strategies, ads, keywords, targeting, URLs, or campaign statuses changed.
 
 ### P2. Automated tests are missing
 

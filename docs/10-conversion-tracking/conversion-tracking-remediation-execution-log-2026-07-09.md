@@ -9,6 +9,10 @@ Blueprint: [CEFA conversion tracking remediation blueprint](./cefa-conversion-tr
 | Area | Current state |
 |---|---|
 | Parent regional PMax | Existing BC, Ontario, and Alberta inquiry-only campaign goals remain unchanged. |
+| Parent Search goals | Branded and Oakville Eighth Line now use only `SUBMIT_LEAD_FORM / WEBSITE` as biddable campaign goals. |
+| Parent GA4 key events | `generate_lead` remains; inquiry/email/phone/school-finder clicks are ordinary events. GA4's non-deletable `purchase` key event remains. |
+| Franchise Canada GA4 key events | `generate_lead` remains; application/email/phone clicks are ordinary events. GA4's non-deletable `purchase` key event remains. |
+| Franchise USA GA4 key events | Unchanged pending lifecycle dependency review. |
 | Franchise USA Google Ads | Repaired. Existing `Application Submit (USA)` action now fires from confirmed Form `1` only. |
 | Franchise USA Meta in-house | Working. Both active ad sets still optimize to the marker-filtered in-house custom conversion. |
 | Franchise USA Meta partner | Unchanged. Reshift still optimizes to broad `USA Franchise Lead`; no partner marker was added. |
@@ -62,6 +66,47 @@ Change:
 - exact partner campaign `120244631021580488`, ad set `120244631021560488`, and slug `reshift_meta` clear stale in-house state;
 - clearing stores no `fr_us_partner` value;
 - unknown/direct traffic does not erase valid in-house state.
+
+### Parent Google Ads Search goal isolation
+
+Validated through Google Ads API `validateOnly=true`, then applied and read back:
+
+- campaign `14995905347` / branded Search;
+- campaign `23854771600` / Oakville Eighth Line Search.
+
+For both campaigns:
+
+- `SUBMIT_LEAD_FORM / WEBSITE` remains biddable;
+- `PURCHASE / WEBSITE` is not biddable;
+- `DOWNLOAD / APP` is not biddable;
+- `GET_DIRECTIONS / WEBSITE` is not biddable;
+- `ENGAGEMENT / YOUTUBE_HOSTED` is not biddable;
+- `YOUTUBE_FOLLOW_ON_VIEWS / YOUTUBE_HOSTED` is not biddable.
+
+Read-back confirmed campaign status, budgets, bidding strategies, ads, keywords, and targeting were not changed.
+
+### GA4 key-event cleanup
+
+Removed key-event status only from confirmed micro actions:
+
+Parent property `267558140`:
+
+- `inquiry_click`;
+- `email_click`;
+- `phone_click`;
+- `find_a_school_click`.
+
+Franchise Canada property `259747921`:
+
+- `fr_application_click`;
+- `fr_phone_click`;
+- `fr_email_click`.
+
+Read-back state:
+
+- Parent key events: `purchase`, `generate_lead`.
+- Franchise Canada key events: `purchase`, `generate_lead`.
+- Franchise USA key events were not changed.
 
 ## QA Evidence
 
@@ -137,7 +182,7 @@ Decision:
 
 - Meta campaign, ad-set, ad, creative, budget, targeting, status, and promoted objects;
 - Google Ads campaign, budget, bidding strategy, targeting, status, URLs, and conversion action;
-- all three parent regional PMax campaigns;
+- all three parent regional PMax campaigns, including current budgets: BC `80 CAD/day`, Ontario `60 CAD/day`, Alberta `60 CAD/day`;
 - Franchise USA GA4 and Meta final-submit tags;
 - Form `2` destination behavior;
 - WordPress form fields and CRM routing;
@@ -147,12 +192,11 @@ Decision:
 ## Remaining Priority Order
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
-2. Establish a clean reviewed production-state source commit and redacted GTM/form manifests.
-3. Clean GA4 key-event definitions and isolate the two parent Search campaign goals in separate change windows.
-4. Standardize Google Ads URL suffixes through a limited pilot.
-5. Build and test Attribution Bridge V1 behind feature flags.
-6. Shadow the bridge beside GAConnector.
-7. Carry event IDs into CRM and repair warehouse reconciliation.
+2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
+3. Standardize Google Ads URL suffixes through a limited pilot.
+4. Build and test Attribution Bridge V1 behind feature flags.
+5. Shadow the bridge beside GAConnector.
+6. Carry event IDs into CRM and repair warehouse reconciliation.
 
 ## Rollback
 

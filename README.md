@@ -62,7 +62,9 @@ Keep runtime plugin changes and documentation-only changes separate when practic
 ## Current Live-Domain Audit Status
 
 - Parent `cefa.ca` is live on plugin `0.4.5` and `GTM-NZ6N7WNC`; confirmed `school_inquiry_submit` reaches GA4, Google Ads, and Meta. Parent GTM authenticated API access still needs to be restored for the service account.
+- Parent branded Search and Oakville Eighth Line Search now use explicit inquiry-only campaign goals. Parent GA4 click events remain collected but are no longer key events.
 - Franchise Canada `franchise.cefa.ca` uses the WPCode fallback bridge and live GTM Version `54`; confirmed Form `1` and Form `2` helper paths remain active.
+- Franchise Canada application/email/phone clicks remain collected but are no longer GA4 key events.
 - Franchise USA `franchisecefa.com` uses the WPCode fallback bridge and live GTM Version `25`; GA4 and Meta final-submit paths remain active, and the existing Google Ads `Application Submit (USA)` action now fires only on the confirmed Form `1` inquiry dispatch with server `event_id` transaction deduplication and the existing `600 CAD` value.
 - Current cross-platform assessment: [Full conversion tracking assessment and execution plan, 2026-07-09](docs/10-conversion-tracking/full-conversion-tracking-assessment-and-execution-plan-2026-07-09.md).
 - Detailed implementation sequence: [CEFA conversion tracking remediation blueprint, 2026-07-09](docs/10-conversion-tracking/cefa-conversion-tracking-remediation-blueprint-2026-07-09.md).
