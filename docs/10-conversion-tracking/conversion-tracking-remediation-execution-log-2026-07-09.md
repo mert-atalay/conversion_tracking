@@ -21,7 +21,7 @@ Blueprint: [CEFA conversion tracking remediation blueprint](./cefa-conversion-tr
 | Franchise USA GA4/Meta form events | Existing active tags and triggers remain unchanged. |
 | Meta raw browser Lead anomaly | Resolved as an API aggregation/query-semantics artifact. Correct event-filtered stats show normal browser/server pairs. |
 | Consent/CMP | Deferred by owner decision and outside this execution scope. |
-| Attribution Bridge V1 | Blueprint complete; runtime build and shadow rollout not started. |
+| Attribution Bridge V1 | Signed envelope foundation implemented and tested in the PR. Production remains `off`; entry-meta, browser multi-form, and shadow rollout are not yet implemented. |
 | CRM event-ID lineage | Not yet implemented. |
 | Warehouse reconciliation repairs | Not yet implemented. |
 
@@ -130,6 +130,25 @@ Reason for the campaign-level pilot:
 
 Read-back confirmed that status, `20 CAD/day` budget, target impression share bidding, ad group, ad status, and `https://cefa.ca/` final URL did not change. Auto-tagging remains enabled at the account level. No PMax or school campaign URL option changed.
 
+### Attribution Bridge signed-envelope foundation
+
+Implemented in source control only; not deployed to WordPress:
+
+- hostname-scoped `CEFA_CT_ATTRIBUTION_V2_MODE` with fail-closed `off`, `shadow`, and `primary` values;
+- production default remains `off`;
+- server-only `CEFA_CT_ATTRIBUTION_SECRET` requirement;
+- host-only cookie namespaces for parent, Franchise Canada, and Franchise USA;
+- allowlisted query capture with bounded values and no arbitrary form/query data;
+- exact CEFA internal-referrer exclusions;
+- first-touch and last-non-direct behavior that ignores direct/internal navigation;
+- canonical click-ID and platform-ID objects;
+- newest Google click-ID family replacement;
+- approved in-house experiment marker normalization without a partner marker;
+- HMAC signing, tamper rejection, site-context rejection, expiry rejection, eight-touch cap, and cookie-size budget;
+- `Secure`, `HttpOnly`, `SameSite=Lax`, path `/`, host-only cookie settings when eventually enabled.
+
+The current plugin version remains `0.4.5`. No release package or WordPress deployment was created.
+
 ## QA Evidence
 
 ### Google Ads no-send QA
@@ -227,10 +246,11 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
 2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
-3. Build and test Attribution Bridge V1 behind feature flags.
-4. Shadow the bridge beside GAConnector.
-5. Complete the lower-level Google URL-option map before expanding the pilot.
-6. Carry event IDs into CRM and repair warehouse reconciliation.
+3. Complete and test Attribution Bridge V1 behind feature flags.
+4. Add canonical entry-meta persistence and the form-contract adapter without overwriting legacy hidden fields.
+5. Complete the browser multi-form writer and shadow the bridge beside GAConnector.
+6. Complete the lower-level Google URL-option map before expanding the pilot.
+7. Carry event IDs into CRM and repair warehouse reconciliation.
 
 ## Rollback
 

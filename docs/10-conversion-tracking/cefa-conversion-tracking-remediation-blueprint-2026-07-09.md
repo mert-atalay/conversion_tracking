@@ -469,6 +469,12 @@ Rules:
 - feature flags are hostname scoped;
 - production defaults remain `off` until the applicable release gate passes.
 
+Foundation result, 2026-07-09:
+
+- The hostname-scoped mode parser and server-only secret contract are implemented in the remediation PR.
+- Unknown modes fail closed to `off`; the production default remains `off`.
+- No plugin release or WordPress deployment has been made.
+
 ### C2. File-level implementation plan
 
 Modify:
@@ -603,6 +609,13 @@ Each touch may contain only:
 - click-ID type, not raw click ID duplicated in history.
 
 Raw click IDs belong in the top-level restricted `click_ids` object and approved form fields. The signed value must be rejected if its signature, site context, schema, or expiry is invalid.
+
+Foundation result, 2026-07-09:
+
+- The canonical envelope capture/sign/verify class is implemented in source control.
+- Focused tests cover Google paid capture, allowlist enforcement, path-only landing storage, HMAC round trip, tamper rejection, cross-context rejection, expiry rejection, internal/direct preservation, Google click-ID family replacement, and the approved in-house marker.
+- CI now runs the envelope contract test on PHP `7.4` and `8.2` in addition to syntax and WordPress coding standards.
+- Entry-meta persistence, browser envelope exposure, hidden-field adapters, and production shadow activation remain gated work.
 
 ### C7. Browser multi-form writer
 
