@@ -22,6 +22,10 @@ Blueprint: [CEFA conversion tracking remediation blueprint](./cefa-conversion-tr
 | Meta raw browser Lead anomaly | Resolved as an API aggregation/query-semantics artifact. Correct event-filtered stats show normal browser/server pairs. |
 | Consent/CMP | Deferred by owner decision and outside this execution scope. |
 | Attribution Bridge V1 | Parent signed-envelope and entry-meta shadow foundation implemented and tested in the PR. Production remains `off`; CRM propagation and shadow rollout are not yet implemented. |
+| Server event identity | Guarded dual-mode registry implemented in the PR. Shadow keeps the current platform ID and reserves a separate server UUID; primary promotes only a reserved UUID. Not deployed. |
+| Franchise replacement adapter | Existing fields `14-30` can be populated from canonical CEFA attribution only when both primary mode and the CRM identity flag are enabled. Default is disabled. |
+| Confirmation payload V2 | Signed, 30-minute, replay-safe payload retrieval implemented behind a separate disabled flag. |
+| Shadow parity evidence | No-PII per-entry match/missing/mismatch summaries implemented for parent and franchise field maps. |
 | CRM event-ID lineage | Not yet implemented. |
 | Warehouse reconciliation repairs | Not yet implemented. |
 
@@ -187,6 +191,42 @@ Decision:
 - It does **not** yet match GAConnector operationally because the canonical entry metadata is not mapped into CRM and the final server event-ID contract is incomplete.
 - Do not remove GAConnector or retire parent fields `35-46` until a production shadow comparison reaches the documented parity gates.
 
+### Server identity and replacement adapters
+
+Implemented in source control only; not deployed:
+
+- plugin-owned event-ID registry with a unique primary key;
+- 10,000 generated/reserved UUID contract test with zero duplicates;
+- `shadow` mode preserves the current platform event ID and stores a separate reserved server UUID plus browser submission-attempt ID;
+- `primary` mode replaces the operational event ID only after atomic reservation;
+- repeated confirmation handling reuses the saved server identity;
+- existing parent fields `35-46` and franchise fields `14-30` have canonical compatibility adapters;
+- compatibility writing requires both `CEFA_CT_ATTRIBUTION_V2_MODE=primary` and `CEFA_CT_CRM_IDENTITY_ENABLED=true`;
+- shadow and disabled modes cannot overwrite the existing fields;
+- current CRM routing, destination feeds, and GAConnector remain unchanged.
+
+### Signed replay-safe confirmation payload
+
+Implemented behind `CEFA_CT_PAYLOAD_V2_ENABLED` and a separate server-only signing secret:
+
+- signed token contains only event ID, site context, expiry, and random nonce;
+- payload remains readable more than once for 30 minutes;
+- tampered, expired, or wrong-context tokens are rejected;
+- legacy one-time behavior remains the default until V2 is enabled;
+- REST responses remain `Cache-Control: no-store`.
+
+### Shadow parity evidence
+
+For each supported saved entry in shadow mode, the plugin can now store:
+
+- checked and matched field counts;
+- parity rate;
+- mismatch semantic keys;
+- legacy-missing semantic keys;
+- canonical-missing semantic keys.
+
+The parity record stores no raw attribution values, URLs, click IDs, browser IDs, or PII. It supports both parent fields `35-46` and franchise fields `14-30`.
+
 ## QA Evidence
 
 ### Google Ads no-send QA
@@ -284,12 +324,14 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
 2. Merge reviewed GitHub PR `#3` after approval; the branch and CI are ready.
-3. Complete the final server event-ID contract and unique reservation.
-4. Map canonical parent entry metadata into approved CRM fields without changing current routing.
-5. Package and deploy parent shadow mode after review, then compare it beside fields `35-46`.
-6. Complete the franchise browser multi-form adapter and shadow beside GAConnector.
-7. Complete the lower-level Google URL-option map before expanding the pilot.
-8. Repair warehouse reconciliation and activate lifecycle propagation.
+3. Review and merge PR `#3`, then create a versioned release candidate without enabling any feature flags.
+4. Export live Gravity Forms and destination feed maps before changing WordPress.
+5. Deploy parent shadow mode with server secrets and compare it beside fields `35-46`.
+6. Observe at least 98% paid-entry parity and 100% reserved server-ID uniqueness without routing regressions.
+7. Deploy franchise shadow mode beside GAConnector fields `14-30`, one property at a time.
+8. Enable signed confirmation payload V2 only after browser prefetch/replay QA.
+9. Create approved CRM destination fields and map event/form identity without changing routing.
+10. Complete the Google URL-option cleanup, warehouse reconciliation, and lifecycle propagation.
 
 ## Rollback
 

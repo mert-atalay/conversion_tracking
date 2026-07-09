@@ -718,6 +718,15 @@ Acceptance:
 - two separately saved entries never share an event ID;
 - all destination payloads for one entry use the same final event ID.
 
+Foundation result, 2026-07-09:
+
+- A plugin-owned registry with a unique event-ID primary key is implemented in source control.
+- Shadow mode preserves the current operational ID and records a separate reserved server UUID and submission-attempt ID.
+- Primary mode promotes only a pre-reserved server UUID to the operational conversion ID.
+- Repeated post-submit handling reuses saved identity metadata.
+- Automated tests reserve 10,000 generated IDs with no duplicates and verify shadow/primary separation.
+- Production remains unchanged because the bridge mode defaults to `off`.
+
 ### C11. Idempotent confirmation payload
 
 Replace delete-on-GET behavior:
@@ -736,6 +745,13 @@ Acceptance:
 - browser prefetch followed by the real page still retrieves the payload;
 - repeated retrieval does not create duplicate dataLayer events in one browser;
 - repeated platform sends deduplicate by event/transaction ID.
+
+Foundation result, 2026-07-09:
+
+- Signed replay-safe tokens are implemented behind `CEFA_CT_PAYLOAD_V2_ENABLED` and a server-only payload secret.
+- V2 payloads remain readable during a 30-minute TTL and reject tampering or wrong context.
+- Legacy one-time token behavior remains the default until the flag and secret are configured.
+- Automated tests verify repeated V2 reads, event-ID alias retrieval, tamper rejection, and legacy consume-once behavior.
 
 ## 10. Workstream D: Form-Specific Rollout
 
@@ -808,6 +824,14 @@ Mismatch categories:
 - implementation defect.
 
 Do not cut over while unresolved implementation defects exceed 2% of paid entries.
+
+Foundation result, 2026-07-09:
+
+- A no-PII per-entry parity summary is implemented for parent fields `35-46` and franchise fields `14-30`.
+- It records counts, parity rate, and semantic mismatch/missing keys only.
+- Canonical compatibility writers are implemented but require both primary mode and the CRM identity flag.
+- Shadow and disabled modes cannot overwrite legacy or GAConnector fields.
+- Live observation remains pending; source-level test success is not a cutover approval.
 
 ## 11. Workstream E: Collector Reliability And Expansion
 
