@@ -291,6 +291,7 @@ if ( ! function_exists( 'delete_transient' ) ) {
 
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-entry-attribution.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution.php';
+require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution-parity.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-event-id.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-event-id-registry.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-submission-identity.php';
@@ -380,6 +381,22 @@ CEFA_Conversion_Tracking_Attribution::apply_primary_compatibility_fields( $franc
 cefa_assert( 'google' === $_POST['input_14'] && 'google' === $_POST['input_22'], 'Franchise first/last source adapter failed.' );
 cefa_assert( 'test-gclid' === $_POST['input_29'], 'Franchise GCLID adapter failed.' );
 cefa_assert( '123456789.987654321' === $_POST['input_30'], 'Franchise GA client adapter failed.' );
+
+CEFA_Conversion_Tracking_Config::$mode = 'shadow';
+$parity_entry = $saved;
+$parity_entry['35'] = 'google';
+$parity_entry['36'] = 'cpc';
+$parity_entry['37'] = '14995905347';
+$parity_entry['38'] = 'cefa';
+$parity_entry['39'] = '623792611812';
+$parity_entry['40'] = 'test-gclid';
+$parity_entry['45'] = 'https://cefa.ca/';
+$parity_entry['46'] = 'https://www.google.com/search';
+$parity_entry = CEFA_Conversion_Tracking_Attribution_Parity::persist_after_submission( $parity_entry, $parent_fields );
+$parity_summary = json_decode( $parity_entry[ CEFA_Conversion_Tracking_Attribution_Parity::PARITY_META_KEY ], true );
+cefa_assert( is_array( $parity_summary ) && $parity_summary['checked_count'] >= 8, 'Shadow parity did not compare the populated legacy contract.' );
+cefa_assert( 1 === $parity_summary['parity_rate'], 'Matching shadow attribution did not reach full parity.' );
+cefa_assert( ! isset( $parity_summary['raw_values'] ), 'Parity metadata retained raw attribution values.' );
 
 $GLOBALS['wpdb'] = new CEFA_Test_WPDB();
 $reserved_ids    = array();

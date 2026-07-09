@@ -92,7 +92,7 @@ final class CEFA_Conversion_Tracking_Attribution {
 		}
 
 		$form_id = (int) ( $form_config['id'] ?? 0 );
-		$values  = self::compatibility_values( $envelope, $form_config );
+		$values  = self::canonical_compatibility_values( $envelope, $form_config );
 		$fields  = is_array( $form_config['attribution_fields'] ?? null ) ? $form_config['attribution_fields'] : array();
 
 		foreach ( $fields as $semantic_key => $field_id ) {
@@ -111,7 +111,7 @@ final class CEFA_Conversion_Tracking_Attribution {
 	 * @param array<string, mixed> $form_config Active form configuration.
 	 * @return array<string, string>
 	 */
-	private static function compatibility_values( array $envelope, array $form_config ): array {
+	public static function canonical_compatibility_values( array $envelope, array $form_config ): array {
 		$first       = is_array( $envelope['first_touch'] ?? null ) ? $envelope['first_touch'] : array();
 		$last        = is_array( $envelope['last_non_direct_touch'] ?? null ) ? $envelope['last_non_direct_touch'] : array();
 		$click_ids   = is_array( $envelope['click_ids'] ?? null ) ? $envelope['click_ids'] : array();
