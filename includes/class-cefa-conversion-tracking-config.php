@@ -34,6 +34,21 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Return the guarded runtime profile for bridge coexistence.
+	 *
+	 * Full preserves the current conversion lifecycle. Attribution-only captures
+	 * shadow evidence without competing with an existing WPCode event bridge.
+	 *
+	 * @return string
+	 */
+	public static function runtime_profile(): string {
+		$value   = self::hostname_config_value( 'CEFA_CT_RUNTIME_PROFILE' );
+		$profile = strtolower( trim( (string) $value ) );
+
+		return 'attribution_only' === $profile ? $profile : 'full';
+	}
+
+	/**
 	 * Return the server-only Attribution Bridge signing secret.
 	 *
 	 * @return string
@@ -138,6 +153,7 @@ final class CEFA_Conversion_Tracking_Config {
 
 		return array(
 			'siteContext'         => self::site_context(),
+			'runtimeProfile'      => self::runtime_profile(),
 			'ownHosts'            => self::approved_cefa_hosts(),
 			'formId'              => (int) ( $primary_form['id'] ?? CEFA_CONVERSION_TRACKING_FORM_ID ),
 			'forms'               => array_values( $forms ),

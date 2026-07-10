@@ -238,6 +238,7 @@ Read-only inventory confirmed the live contracts before deployment:
 - The franchise Synuma adapter already forwards first/last-click fields, `gclid`, GA client ID, IP, and user agent and stores `cefa_synuma_lead_id` to prevent duplicate successful delivery.
 - The same CEFA franchise tracking bridge code is active on both franchise properties. Canada has a published WPCode record; USA currently loads the same code from WPCode's active snippet cache.
 - The franchise bridge still reads GAConnector cookies. No franchise plugin, snippet, form, Synuma route, or GAConnector setting changed during the parent rollout.
+- Plugin `0.5.2` adds an undeployed `attribution_only` profile for franchise coexistence. It can persist signed shadow/parity metadata without registering a second event-ID, confirmation, final-event, legacy-field, or micro-event path.
 
 Parent deployment result:
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.2 - 2026-07-09
+
+- Added a guarded `attribution_only` runtime profile for future franchise shadow deployment beside the existing WPCode conversion bridge.
+- In attribution-only mode, the plugin captures signed attribution and saves no-PII parity metadata without registering event IDs, confirmation payloads, final conversion events, field writeback, or micro-events.
+- Kept the existing `full` runtime as the fail-safe default so the live parent behavior is unchanged.
+
 ## 0.5.1 - 2026-07-09
 
 - Added a same-origin, no-store REST fallback so signed attribution cookies are captured reliably when WP Engine serves anonymous pages from cache.

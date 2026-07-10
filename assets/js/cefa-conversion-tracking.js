@@ -15,6 +15,7 @@
 	var restEventBase = config.restEventBase || '';
 	var restAttributionUrl = config.restAttributionUrl || '';
 	var attributionMode = String(config.attributionMode || 'off').toLowerCase();
+	var runtimeProfile = String(config.runtimeProfile || 'full').toLowerCase();
 	var microConsumedKey = config.microConsumedKey || 'cefa_conversion_tracking_micro_consumed';
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
 	var clickDelayMs = Number(config.clickDelayMs || 0);
@@ -1744,6 +1745,11 @@
 
 	function init() {
 		captureAttribution();
+
+		if (runtimeProfile === 'attribution_only') {
+			return;
+		}
+
 		syncAttributionFields(document);
 		initMicroClickTracking();
 		initFormTracking();
@@ -1758,34 +1764,37 @@
 	} else {
 		init();
 	}
-	document.addEventListener('gform_post_render', function () {
-		init();
-		scheduleValidationErrorTracking();
-	});
-	document.addEventListener('gform_confirmation_loaded', function (event) {
-		if (!event.detail || Number(event.detail.formId) === formId) {
-			schedulePendingPayloadFetch();
-		}
-	});
-	document.addEventListener('gform/postRender', function (event) {
-		if (!event.detail || Number(event.detail.formId) === formId) {
+
+	if (runtimeProfile !== 'attribution_only') {
+		document.addEventListener('gform_post_render', function () {
 			init();
 			scheduleValidationErrorTracking();
-		}
-	});
-
-	if (window.jQuery) {
-		window.jQuery(document).on('gform_post_render gform_post_rendered', function (event, renderedFormId) {
-			if (Number(renderedFormId) === formId) {
+		});
+		document.addEventListener('gform_confirmation_loaded', function (event) {
+			if (!event.detail || Number(event.detail.formId) === formId) {
+				schedulePendingPayloadFetch();
+			}
+		});
+		document.addEventListener('gform/postRender', function (event) {
+			if (!event.detail || Number(event.detail.formId) === formId) {
 				init();
 				scheduleValidationErrorTracking();
 			}
 		});
 
-		window.jQuery(document).on('gform_confirmation_loaded', function (event, submittedFormId) {
-			if (Number(submittedFormId) === formId) {
-				schedulePendingPayloadFetch();
-			}
-		});
+		if (window.jQuery) {
+			window.jQuery(document).on('gform_post_render gform_post_rendered', function (event, renderedFormId) {
+				if (Number(renderedFormId) === formId) {
+					init();
+					scheduleValidationErrorTracking();
+				}
+			});
+
+			window.jQuery(document).on('gform_confirmation_loaded', function (event, submittedFormId) {
+				if (Number(submittedFormId) === formId) {
+					schedulePendingPayloadFetch();
+				}
+			});
+		}
 	}
 })();
