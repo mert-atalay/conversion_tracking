@@ -281,6 +281,19 @@ The reusable monitor is `tools/wp-shadow-parity-report.php`. It is read-only and
 wp eval-file tools/wp-shadow-parity-report.php 4 '2026-07-10 00:00:00' 500
 ```
 
+### Prepared franchise shadow candidate
+
+A runtime-only `0.5.2` franchise coexistence candidate was packaged from merged commit `d592fea701ed79b6c6209c07aa99377f423647c3`:
+
+- artifact: `cefa-conversion-tracking-0.5.2-franchise-shadow-rc1.zip`;
+- SHA-256: `d8873354e1590af9586752239ebdd18ef5b70e35be76021906820323461fd035`;
+- ZIP integrity: passed;
+- embedded plugin version: `0.5.2`;
+- intended runtime profile: `attribution_only` with attribution mode `shadow`;
+- deployment status: **not deployed** to Franchise Canada or Franchise USA.
+
+The artifact must not be activated until the parent observation gate is met and the target franchise host is configured for `attribution_only` before activation.
+
 ## QA Evidence
 
 ### Google Ads no-send QA
