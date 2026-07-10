@@ -471,6 +471,7 @@ Parent ownership correction and live verification:
 - the newest post-ledger entries had consumed their one-time confirmation payloads within the 30-minute lifetime, confirming the browser website-event handoff;
 - one `gclid`-classified paid entry exposed stale existing `google_business_profile/local_listing` source and medium, so canonical primary writeback remains disabled;
 - the public parent GTM container still exposes `school_inquiry_submit`, GA4 `generate_lead`, Google Ads `AW-802334988/cFt-CMrLufgCEIzSyv4C`, and Meta dataset `918227085392601`.
+- a post-rollout no-send test confirmed that `school_inquiry_submit` still activates GA4 `generate_lead`, the existing Google Ads label, and Meta `Inquiry Submit` with the shared `eventID`; all synthetic destination transport was blocked before transmission.
 
 Canonical boundary: [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
 
