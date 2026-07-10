@@ -166,6 +166,8 @@ Live GTM no-send tests passed both before and after flag enablement for GA4 `gen
 
 No natural Form `4` entry arrived between flag enablement and the immediate post-enable monitor at `2026-07-10T21:43:43Z`. The first natural paid inquiry should therefore be reviewed for `parent_paid_click`, corrected fields `35-44`, KinderTales `SUCCESS`, webhook success, and unchanged event identity.
 
+The dated test evidence, follow-up window, acceptance criteria, and result table are maintained in [Parent paid-click writeback production observation](./parent-paid-writeback-production-observation-2026-07-10.md).
+
 Immediate rollback is to remove or set `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` false. This does not require changing attribution mode, ledger mode, School Manager, KinderTales, GTM, GA4, Google Ads, or Meta.
 
 Future work may add `event_id` and `capture_id` to KinderTales metadata only after the KinderTales API contract is confirmed to accept those keys.
