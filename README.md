@@ -62,7 +62,7 @@ Keep runtime plugin changes and documentation-only changes separate when practic
 
 ## Current Live-Domain Audit Status
 
-- Parent `cefa.ca` is live on plugin `0.6.1` with Attribution Bridge and ledger shadow modes. CEFA School Manager owns Form `4`, fields `32.*`, fields `35-46`, and KinderTales delivery; the tracking plugin does not replace that business path. Confirmed `school_inquiry_submit` ownership remains unchanged across GA4, Google Ads, and Meta. Synuma/SiteZeus applies to the franchise properties, not the parent site.
+- Parent `cefa.ca` is live on plugin `0.6.2` with Attribution Bridge and ledger shadow modes plus the separately scoped parent paid-click writeback. CEFA School Manager owns Form `4`, fields `32.*`, fields `35-46`, and KinderTales delivery; the tracking plugin does not replace that business path. Confirmed `school_inquiry_submit` ownership remains unchanged across GA4, Google Ads, and Meta. Synuma/SiteZeus applies to the franchise properties, not the parent site.
 - Parent branded Search and Oakville Eighth Line Search now use explicit inquiry-only campaign goals. Parent GA4 click events remain collected but are no longer key events.
 - Franchise Canada `franchise.cefa.ca` uses the WPCode fallback bridge and live GTM Version `54`; confirmed Form `1` and Form `2` helper paths remain active.
 - Franchise Canada application/email/phone clicks remain collected but are no longer GA4 key events.

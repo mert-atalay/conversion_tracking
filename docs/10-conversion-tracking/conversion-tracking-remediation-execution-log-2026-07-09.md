@@ -475,6 +475,34 @@ Parent ownership correction and live verification:
 
 Canonical boundary: [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
 
+## 2026-07-10 Parent Paid-Click Writeback
+
+Release `0.6.2` and PR `#15` implemented a parent-only paid-click correction independent from broad primary mode.
+
+Implemented policy:
+
+- require a click type on the canonical current last-non-direct touch;
+- accept Google and Microsoft click IDs directly;
+- require campaign or governed platform evidence in addition to `fbclid`;
+- finalize fields `35-44` after School Manager's cookie fallback;
+- clear stale campaign and competing click-ID values from the previous touch;
+- write first-touch fields `45-46` only when canonical evidence is present;
+- record `cefa_conversion_tracking_writeback_status=parent_paid_click`;
+- never change field `32`, event identity, School Manager code, KinderTales routing, franchise systems, or conversion destinations.
+
+Deployment and validation:
+
+- PHP `7.4` and `8.2` GitHub CI passed;
+- release checksum: `898b132a177e440a19c98b818cc1bcb675d3755e58ead8b9a1e865b00b16f89c`;
+- deployed with the new flag absent and verified `0.6.2` on normal homepage and Form `4` URLs;
+- no-send conversion test passed before enablement;
+- enabled only `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED=1` while attribution and ledger remained `shadow`;
+- production in-memory adapter QA returned `google / cpc`, cleared stale campaign and competing `fbclid`, preserved first touch, and reported `parent_paid_click` without saving an entry or calling KinderTales;
+- no-send conversion test passed after enablement for GA4, Google Ads, and Meta with Meta event-ID deduplication;
+- the immediate post-enable monitor found zero natural entries, so the first real paid KinderTales inquiry remains the next observation check.
+
+Rollback: remove or disable `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED`. No other runtime or platform setting needs to change.
+
 Remaining validation:
 
 1. Observe the next paid and Safari/iOS Form `4` submissions and confirm ledger capture-reference coverage beside the existing parity report.

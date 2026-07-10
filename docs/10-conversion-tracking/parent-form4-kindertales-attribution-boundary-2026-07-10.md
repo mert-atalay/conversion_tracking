@@ -21,7 +21,7 @@ Production evidence on 2026-07-10:
 
 - Gravity Forms `2.10.5` is active.
 - CEFA School Manager `1.0.21` is active.
-- CEFA Conversion Tracking `0.6.1` is active.
+- CEFA Conversion Tracking `0.6.2` is active.
 - Form `4` has active Mailchimp and CEFA Brain webhook feeds.
 - The generic Gravity Forms Zoho CRM add-on is active globally but has no Form `4` feed.
 - KinderTales delivery is not a generic Gravity Forms feed. It is the custom `gform_after_submission` handler in CEFA School Manager.
@@ -150,6 +150,23 @@ When enabled, the adapter:
 7. Does not change field `32`, event identity, School Manager code, KinderTales routing, or conversion destinations.
 
 Regression coverage includes a `gclid`-only visit after an older local-listing touch, stale campaign clearing, first-touch preservation, historical-click/newer-organic protection, and franchise isolation.
+
+### Live rollout
+
+The parent-only flag is enabled in production while both broad attribution and ledger modes remain `shadow`:
+
+- `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED=1`;
+- `CEFA_CT_ATTRIBUTION_V2_MODE=shadow`;
+- `CEFA_CT_LEDGER_MODE=shadow`;
+- broad `CEFA_CT_CRM_IDENTITY_ENABLED` remains disabled.
+
+Production in-memory QA corrected `google_business_profile / local_listing` to `google / cpc`, cleared the stale campaign and competing `fbclid`, preserved a valid first landing value when canonical first touch was unavailable, and returned writeback status `parent_paid_click`. The QA did not save a Gravity Forms entry or call KinderTales.
+
+Live GTM no-send tests passed both before and after flag enablement for GA4 `generate_lead`, Google Ads `Inquiry Submit_ollo`, and Meta `Inquiry Submit` with `eventID`. Synthetic destination transport was blocked.
+
+No natural Form `4` entry arrived between flag enablement and the immediate post-enable monitor at `2026-07-10T21:43:43Z`. The first natural paid inquiry should therefore be reviewed for `parent_paid_click`, corrected fields `35-44`, KinderTales `SUCCESS`, webhook success, and unchanged event identity.
+
+Immediate rollback is to remove or set `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` false. This does not require changing attribution mode, ledger mode, School Manager, KinderTales, GTM, GA4, Google Ads, or Meta.
 
 Future work may add `event_id` and `capture_id` to KinderTales metadata only after the KinderTales API contract is confirmed to accept those keys.
 
