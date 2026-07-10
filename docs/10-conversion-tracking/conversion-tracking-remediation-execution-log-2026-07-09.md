@@ -251,7 +251,7 @@ Parent deployment result:
 - Wrong-origin requests and requests missing the CEFA bridge header were rejected.
 - Parent is now `CEFA_CT_ATTRIBUTION_V2_MODE=shadow` with a configured server-only secret. `CEFA_CT_CRM_IDENTITY_ENABLED` and `CEFA_CT_PAYLOAD_V2_ENABLED` remain false.
 - Home and thank-you pages return HTTP `200`; cached HTML references plugin `0.5.1`, shadow mode, and the same-origin capture endpoint.
-- No real lead form was submitted during this deployment test, so conversion counts, CRM records, and Synuma records were not intentionally created.
+- No real lead form was submitted during this parent deployment test, so conversion counts and KinderTales inquiry records were not intentionally created. Franchise Synuma/SiteZeus delivery was not exercised or changed.
 
 Rollback material exists on the parent host for the pre-`0.5.0` plugin, the pre-shadow WordPress configuration, and the prior `0.5.0` runtime directory. Secrets are not recorded in this repository or log.
 
@@ -446,7 +446,7 @@ Implemented and merged in PR `#10`:
 - host-scoped opaque HttpOnly capture cookie;
 - 30-minute signed Gravity Forms fallback handle stored only for the browser session;
 - entry-level capture reference and recovery provenance metadata;
-- no changes to existing Gravity Forms fields, School Manager, Synuma, webhook delivery, GTM, GA4, Google Ads, Meta, or final conversion ownership.
+- no changes to existing Gravity Forms fields, School Manager, parent KinderTales delivery, webhook delivery, GTM, GA4, Google Ads, Meta, or final conversion ownership; franchise Synuma/SiteZeus delivery was outside this rollout and remained unchanged.
 
 Live parent rollout:
 
@@ -461,6 +461,18 @@ Live parent rollout:
 - confirmed a post-deployment Form `4` entry retained canonical attribution, a unique reserved server ID, School Manager delivery, and webhook success.
 
 Release follow-up `0.6.1` was deployed after CI passed on PHP `7.4` and `8.2`. It adds a 25-minute browser refresh for the 30-minute form handle, preserving a five-minute submission margin for long-open forms. This does not change the ledger schema, conversion events, or downstream delivery. WP Engine object and Varnish caches were purged through the host-native runtime; normal unbusted homepage and Form `4` URLs both returned the `0.6.1` asset with attribution and ledger modes still in `shadow`.
+
+Parent ownership correction and live verification:
+
+- CEFA School Manager `1.0.21`, not Synuma, owns parent Form `4` delivery to KinderTales;
+- the exact live tracking map is Form fields `35-46`, which School Manager sends into KinderTales `metaData`;
+- Form `4` has no active Zoho CRM feed; KinderTales delivery is the custom School Manager `gform_after_submission` handler;
+- four post-ledger production entries each had canonical attribution, a unique server ID, a ledger capture reference, a successful KinderTales note, and a successful CEFA Brain webhook note;
+- the newest post-ledger entries had consumed their one-time confirmation payloads within the 30-minute lifetime, confirming the browser website-event handoff;
+- one `gclid`-classified paid entry exposed stale existing `google_business_profile/local_listing` source and medium, so canonical primary writeback remains disabled;
+- the public parent GTM container still exposes `school_inquiry_submit`, GA4 `generate_lead`, Google Ads `AW-802334988/cFt-CMrLufgCEIzSyv4C`, and Meta dataset `918227085392601`.
+
+Canonical boundary: [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
 
 Remaining validation:
 
