@@ -1251,6 +1251,15 @@ Exit gate:
 
 Status on 2026-07-09: parent Form `4` shadow capture is active on plugin `0.5.1`; franchise rollout has not started.
 
+Read-only observation contract:
+
+- use `tools/wp-shadow-parity-report.php` so monitoring returns aggregate metrics without PII or raw attribution values;
+- require server-ID count to equal unique server-ID count;
+- require zero unexpected attribution gaps when existing acquisition fields are present;
+- require successful existing delivery notes for every observed entry;
+- score paid core parity on source, medium, campaign metadata, and the current canonical click ID;
+- report but exclude deployment-window first landing/referrer differences and stale non-current Google click-family values from the core cutover score.
+
 Order:
 
 1. Parent Form 4.
