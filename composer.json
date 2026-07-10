@@ -17,6 +17,7 @@
     "phpcs": "phpcs --standard=phpcs.xml.dist",
     "test:php": [
       "php tests/php/attribution-envelope-test.php",
+      "php tests/php/attribution-ledger-test.php",
       "php tests/php/runtime-profile-test.php",
       "php tests/php/shadow-parity-report-test.php"
     ]

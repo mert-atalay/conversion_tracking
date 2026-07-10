@@ -15,6 +15,7 @@
 	var restEventBase = config.restEventBase || '';
 	var restAttributionUrl = config.restAttributionUrl || '';
 	var attributionMode = String(config.attributionMode || 'off').toLowerCase();
+	var ledgerMode = String(config.ledgerMode || 'off').toLowerCase();
 	var runtimeProfile = String(config.runtimeProfile || 'full').toLowerCase();
 	var microConsumedKey = config.microConsumedKey || 'cefa_conversion_tracking_micro_consumed';
 	var formStartKey = config.formStartKey || 'cefa_conversion_tracking_form4_started';
@@ -73,7 +74,9 @@
 		'cefa_agency_test'
 	];
 	var signedAttributionCaptureKey = 'cefa_signed_attribution_capture_v1';
+	var attributionFormTokenKey = 'cefa_attribution_form_token_v1';
 	var signedAttributionCapturePending = '';
+	var signedAttributionCapturePromise = null;
 	var searchSources = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex', 'ecosia'];
 	var socialSources = [
 		'facebook',
@@ -666,7 +669,98 @@
 		captureSignedAttribution(url);
 	}
 
-	function captureSignedAttribution(url) {
+	function ledgerEnabled() {
+		return ['shadow', 'primary'].indexOf(ledgerMode) !== -1;
+	}
+
+	function supportedFormIds() {
+		var forms = Array.isArray(config.forms) ? config.forms : [];
+		var ids = forms
+			.map(function (form) {
+				return Number(form && form.id ? form.id : 0);
+			})
+			.filter(function (id) {
+				return id > 0;
+			});
+
+		return ids.length ? ids : [formId];
+	}
+
+	function supportedForms(root) {
+		var forms = [];
+
+		if (!root || !root.querySelectorAll) {
+			return forms;
+		}
+
+		supportedFormIds().forEach(function (id) {
+			forms = forms.concat(Array.prototype.slice.call(root.querySelectorAll('form#gform_' + id)));
+		});
+
+		return forms;
+	}
+
+	function readAttributionFormToken() {
+		try {
+			return normalizeAttribution(window.sessionStorage.getItem(attributionFormTokenKey) || '', 1024);
+		} catch (error) {
+			return '';
+		}
+	}
+
+	function syncAttributionFormToken(root) {
+		var token = readAttributionFormToken();
+
+		if (!token) {
+			return;
+		}
+
+		supportedForms(root).forEach(function (form) {
+			var field = form.querySelector('input[name="cefa_capture_token"]');
+
+			if (!field) {
+				field = document.createElement('input');
+				field.type = 'hidden';
+				field.name = 'cefa_capture_token';
+				form.appendChild(field);
+			}
+
+			field.value = token;
+		});
+	}
+
+	function storeAttributionFormToken(token) {
+		var normalized = normalizeAttribution(token || '', 1024);
+
+		if (!normalized || !/^[A-Za-z0-9._-]+$/.test(normalized)) {
+			return;
+		}
+
+		try {
+			window.sessionStorage.setItem(attributionFormTokenKey, normalized);
+		} catch (error) {}
+
+		syncAttributionFormToken(document);
+	}
+
+	function ensureAttributionFormToken() {
+		if (!ledgerEnabled() || !supportedForms(document).length || readAttributionFormToken()) {
+			return;
+		}
+
+		if (signedAttributionCapturePromise) {
+			signedAttributionCapturePromise.then(function () {
+				if (!readAttributionFormToken()) {
+					captureSignedAttribution(currentUrl(), true);
+				}
+			});
+			return;
+		}
+
+		captureSignedAttribution(currentUrl(), true);
+	}
+
+	function captureSignedAttribution(url, force) {
 		var params = {};
 		var referrerUrl = parseUrl(document.referrer || '');
 		var referrerHost = referrerUrl ? hostFromUrl(referrerUrl.toString()) : '';
@@ -675,8 +769,12 @@
 			: '';
 		var signature;
 
-		if (!restAttributionUrl || ['shadow', 'primary'].indexOf(attributionMode) === -1 || !url) {
-			return;
+		if (
+			!restAttributionUrl ||
+			(!ledgerEnabled() && ['shadow', 'primary'].indexOf(attributionMode) === -1) ||
+			!url
+		) {
+			return null;
 		}
 
 		signedAttributionParams.forEach(function (key) {
@@ -687,23 +785,24 @@
 			}
 		});
 
-		if (!Object.keys(params).length && !externalReferrer) {
-			return;
+		if (!Object.keys(params).length && !externalReferrer && !force) {
+			return null;
 		}
 
-		signature = JSON.stringify([params, url.pathname, externalReferrer]);
+		signature = JSON.stringify([params, url.pathname, externalReferrer, !!force]);
 
 		try {
 			if (
 				signedAttributionCapturePending === signature ||
-				window.sessionStorage.getItem(signedAttributionCaptureKey) === signature
+				(window.sessionStorage.getItem(signedAttributionCaptureKey) === signature &&
+					(!ledgerEnabled() || readAttributionFormToken()))
 			) {
-				return;
+				return signedAttributionCapturePromise;
 			}
 		} catch (error) {}
 
 		signedAttributionCapturePending = signature;
-		window
+		signedAttributionCapturePromise = window
 			.fetch(restAttributionUrl, {
 				method: 'POST',
 				credentials: 'same-origin',
@@ -725,6 +824,13 @@
 					throw new Error('Attribution capture unavailable.');
 				}
 
+				return typeof response.json === 'function' ? response.json() : {};
+			})
+			.then(function (responseData) {
+				if (responseData && responseData.capture_token) {
+					storeAttributionFormToken(responseData.capture_token);
+				}
+
 				try {
 					window.sessionStorage.setItem(signedAttributionCaptureKey, signature);
 				} catch (error) {}
@@ -732,7 +838,10 @@
 			.catch(function () {})
 			.then(function () {
 				signedAttributionCapturePending = '';
+				signedAttributionCapturePromise = null;
 			});
+
+		return signedAttributionCapturePromise;
 	}
 
 	function trackingFieldValueIsEmpty(value) {
@@ -1745,6 +1854,8 @@
 
 	function init() {
 		captureAttribution();
+		syncAttributionFormToken(document);
+		ensureAttributionFormToken();
 
 		if (runtimeProfile === 'attribution_only') {
 			return;
@@ -1757,6 +1868,11 @@
 		initValidationObserver();
 		initValidationErrorTracking();
 		initThankYouTracking();
+	}
+
+	if (ledgerEnabled()) {
+		// Start the uncached capture before DOM ready to reduce the immediate-submit gap.
+		captureAttribution();
 	}
 
 	if (document.readyState === 'loading') {

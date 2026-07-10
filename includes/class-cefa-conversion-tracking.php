@@ -25,6 +25,7 @@ final class CEFA_Conversion_Tracking {
 	 */
 	public static function init(): void {
 		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Envelope', 'capture_request' ), 1 );
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Ledger', 'maybe_install' ), 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
 
@@ -41,7 +42,7 @@ final class CEFA_Conversion_Tracking {
 			return;
 		}
 
-		add_action( 'init', array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'maybe_install' ), 2 );
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'maybe_install' ), 3 );
 
 		foreach ( CEFA_Conversion_Tracking_Config::active_form_ids() as $form_id ) {
 			add_action(

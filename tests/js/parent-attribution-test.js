@@ -12,11 +12,21 @@ function assert(condition, message) {
 const sourcePath = 'assets/js/cefa-conversion-tracking.js';
 const source = fs.readFileSync(sourcePath, 'utf8').replace(
 	/\}\)\(\);\s*$/,
-	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl, captureSignedAttribution: captureSignedAttribution };})();'
+	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl, captureSignedAttribution: captureSignedAttribution, storeAttributionFormToken: storeAttributionFormToken, syncAttributionFormToken: syncAttributionFormToken };})();'
 );
 const localValues = {};
+const sessionValues = {};
 const fetchCalls = [];
 const documentEvents = [];
+const captureFields = [];
+const form = {
+	querySelector(selector) {
+		return selector === 'input[name="cefa_capture_token"]' ? captureFields[0] || null : null;
+	},
+	appendChild(field) {
+		captureFields.push(field);
+	}
+};
 const context = {
 	URL,
 	Event: function Event() {},
@@ -26,8 +36,10 @@ const context = {
 	window: {
 		CEFAConversionTracking: {
 			attributionMode: 'shadow',
+			ledgerMode: 'shadow',
 			runtimeProfile: 'attribution_only',
 			restAttributionUrl: 'https://cefa.ca/wp-json/cefa-conversion-tracking/v1/attribution-capture',
+			forms: [{ id: 4 }],
 			ownHosts: [
 				'cefa.ca',
 				'www.cefa.ca',
@@ -50,10 +62,12 @@ const context = {
 			}
 		},
 		sessionStorage: {
-			getItem() {
-				return null;
+			getItem(key) {
+				return sessionValues[key] || null;
 			},
-			setItem() {}
+			setItem(key, value) {
+				sessionValues[key] = String(value);
+			}
 		},
 		crypto: {
 			randomUUID() {
@@ -62,7 +76,12 @@ const context = {
 		},
 		fetch(url, options) {
 			fetchCalls.push({ url, options });
-			return Promise.resolve({ ok: true });
+			return Promise.resolve({
+				ok: true,
+				json() {
+					return Promise.resolve({ capture_token: 'signed.capture_token-1' });
+				}
+			});
 		},
 		setTimeout,
 		clearTimeout
@@ -80,11 +99,14 @@ const context = {
 		addEventListener(name) {
 			documentEvents.push(name);
 		},
+		createElement() {
+			return {};
+		},
 		querySelector() {
 			return null;
 		},
-		querySelectorAll() {
-			return [];
+		querySelectorAll(selector) {
+			return selector === 'form#gform_4' ? [form] : [];
 		}
 	}
 };
@@ -109,7 +131,7 @@ const organicTouch = tests.buildAdvertisingTouchFromUrl();
 assert(organicTouch.source === 'google', 'Google organic source classification failed.');
 assert(organicTouch.channel === 'organic_search', 'Google organic channel classification failed.');
 
-tests.captureSignedAttribution(
+const capturePromise = tests.captureSignedAttribution(
 	new URL('https://cefa.ca/?utm_source=google&utm_medium=cpc&utm_campaign=shadow-qa&gclid=test-gclid')
 );
 assert(fetchCalls.length === 1, 'Signed attribution fallback did not call the REST endpoint.');
@@ -120,4 +142,11 @@ assert(captureBody.params.gclid === 'test-gclid', 'Signed attribution fallback o
 assert(captureBody.params.utm_campaign === 'shadow-qa', 'Signed attribution fallback omitted the campaign.');
 assert(captureBody.referrer === 'https://www.google.com/search', 'Signed attribution fallback retained a referrer query.');
 
-console.log('Parent attribution browser tests passed.');
+capturePromise.then(function () {
+	assert(captureFields.length === 1, 'Signed capture token was not injected into the supported form.');
+	assert(captureFields[0].type === 'hidden', 'Signed capture token field was not hidden.');
+	assert(captureFields[0].name === 'cefa_capture_token', 'Signed capture token field name changed.');
+	assert(captureFields[0].value === 'signed.capture_token-1', 'Signed capture token field value was not preserved.');
+
+	console.log('Parent attribution browser tests passed.');
+});

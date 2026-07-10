@@ -20,6 +20,7 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Prevents direct thank-you-page false positives and reload duplicates.
 - Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
 - Stores first-touch and last-touch attribution in the same first-party cookie pattern used by the old parent site.
+- Provides a guarded server-side attribution ledger with an opaque HttpOnly capture cookie and a short-lived signed Gravity Forms fallback token.
 - Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
 - Reads Franchise Canada GAConnector hidden fields `14` through `30` when present; it does not overwrite them.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
@@ -272,7 +273,7 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Attribution Bridge Runtime Flags
 
-Plugin `0.5.2` ships every new attribution/cutover path disabled by default.
+Plugin `0.6.0` ships every new attribution/cutover path disabled by default.
 
 When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
 
@@ -281,6 +282,8 @@ When shadow or primary mode is enabled, the browser bridge posts allowlisted acq
 | `CEFA_CT_RUNTIME_PROFILE` | `full` | Use `attribution_only` during franchise shadow coexistence so the existing WPCode bridge remains the sole conversion-event owner. |
 | `CEFA_CT_ATTRIBUTION_V2_MODE` | `off` | `shadow` saves canonical evidence without replacing existing fields/IDs; `primary` allows approved cutover behavior. |
 | `CEFA_CT_ATTRIBUTION_SECRET` | empty | Server-only HMAC secret required before shadow or primary attribution can operate. |
+| `CEFA_CT_LEDGER_MODE` | `off` | `shadow` stores canonical attribution server-side and records recovery provenance without replacing current fields; `primary` is reserved for a separately approved cutover. |
+| `CEFA_CT_LEDGER_SECRET` | empty | Separate server-only HMAC secret required before the ledger table, opaque cookie, or form fallback can operate. |
 | `CEFA_CT_CRM_IDENTITY_ENABLED` | `false` | Allows primary mode to populate only the approved parent `35-46` or franchise `14-30` compatibility fields. |
 | `CEFA_CT_PAYLOAD_V2_ENABLED` | `false` | Enables signed, replay-safe confirmation payload retrieval. |
 | `CEFA_CT_PAYLOAD_SECRET` | empty | Server-only signing secret required for payload V2. |
@@ -296,6 +299,8 @@ Safe deployment sequence:
 6. Never enable CRM compatibility writing during the initial shadow period.
 
 For franchise coexistence, set `CEFA_CT_RUNTIME_PROFILE=attribution_only` before activation. This profile does not register event IDs, confirmation payloads, final events, legacy-field writeback, or micro-events; it only captures signed attribution and stores shadow/parity entry metadata.
+
+The ledger is additive to the existing signed attribution envelope. It stores the canonical envelope in a first-party WordPress table, sends only an opaque signed capture handle to the browser, and injects a 30-minute signed fallback handle into configured Gravity Forms. No existing Gravity Forms field, GAConnector field, CRM feed, conversion event, or campaign parameter is replaced. The ledger table is not installed and no ledger cookie is issued unless both `CEFA_CT_LEDGER_MODE` and `CEFA_CT_LEDGER_SECRET` are configured.
 
 ## Install On Staging
 
