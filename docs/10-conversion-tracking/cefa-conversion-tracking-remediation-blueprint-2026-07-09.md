@@ -457,6 +457,7 @@ Add runtime modes so the bridge can be deployed without immediate cutover:
 
 | Flag | Values | Purpose |
 |---|---|---|
+| `CEFA_CT_RUNTIME_PROFILE` | `full`, `attribution_only` | Prevents a future franchise shadow deployment from competing with the existing WPCode conversion bridge |
 | `CEFA_CT_ATTRIBUTION_V2_MODE` | `off`, `shadow`, `primary` | Controls attribution capture/write behavior |
 | `CEFA_CT_PAYLOAD_V2_ENABLED` | boolean | Controls idempotent confirmation payloads |
 | `CEFA_CT_COLLECTOR_QUEUE_ENABLED` | boolean | Controls queued collector delivery |
@@ -468,12 +469,14 @@ Rules:
 - `primary` writes approved V2 hidden fields and legacy compatibility fields;
 - feature flags are hostname scoped;
 - production defaults remain `off` until the applicable release gate passes.
+- `attribution_only` registers signed capture plus entry-meta/parity persistence, but no event-ID, confirmation, field-writeback, final-event, or micro-event lifecycle.
 
 Foundation result, 2026-07-09:
 
 - The hostname-scoped mode parser and server-only secret contract are implemented and merged.
 - Unknown modes fail closed to `off`; CRM compatibility writes and payload V2 remain off unless separately enabled.
 - Parent plugin `0.5.1` is deployed in `shadow` mode only. Franchise properties remain on their existing WPCode/GAConnector runtime.
+- The `0.5.2` attribution-only coexistence profile is implemented for future franchise shadow use but is not deployed to either franchise property.
 
 ### C2. File-level implementation plan
 

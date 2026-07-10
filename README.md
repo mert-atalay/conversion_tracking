@@ -272,12 +272,13 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Attribution Bridge Runtime Flags
 
-Plugin `0.5.1` ships every new attribution/cutover path disabled by default.
+Plugin `0.5.2` ships every new attribution/cutover path disabled by default.
 
 When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
 
 | Setting | Default | Purpose |
 |---|---|---|
+| `CEFA_CT_RUNTIME_PROFILE` | `full` | Use `attribution_only` during franchise shadow coexistence so the existing WPCode bridge remains the sole conversion-event owner. |
 | `CEFA_CT_ATTRIBUTION_V2_MODE` | `off` | `shadow` saves canonical evidence without replacing existing fields/IDs; `primary` allows approved cutover behavior. |
 | `CEFA_CT_ATTRIBUTION_SECRET` | empty | Server-only HMAC secret required before shadow or primary attribution can operate. |
 | `CEFA_CT_CRM_IDENTITY_ENABLED` | `false` | Allows primary mode to populate only the approved parent `35-46` or franchise `14-30` compatibility fields. |
@@ -293,6 +294,8 @@ Safe deployment sequence:
 4. Enable `shadow` on one hostname only.
 5. Review no-PII parity evidence before considering `primary`.
 6. Never enable CRM compatibility writing during the initial shadow period.
+
+For franchise coexistence, set `CEFA_CT_RUNTIME_PROFILE=attribution_only` before activation. This profile does not register event IDs, confirmation payloads, final events, legacy-field writeback, or micro-events; it only captures signed attribution and stores shadow/parity entry metadata.
 
 ## Install On Staging
 

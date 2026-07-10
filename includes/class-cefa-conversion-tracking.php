@@ -25,9 +25,23 @@ final class CEFA_Conversion_Tracking {
 	 */
 	public static function init(): void {
 		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Envelope', 'capture_request' ), 1 );
-		add_action( 'init', array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'maybe_install' ), 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
+
+		if ( 'attribution_only' === CEFA_Conversion_Tracking_Config::runtime_profile() ) {
+			foreach ( CEFA_Conversion_Tracking_Config::active_form_ids() as $form_id ) {
+				add_action(
+					'gform_after_submission_' . $form_id,
+					array( __CLASS__, 'persist_attribution_only' ),
+					30,
+					2
+				);
+			}
+
+			return;
+		}
+
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'maybe_install' ), 2 );
 
 		foreach ( CEFA_Conversion_Tracking_Config::active_form_ids() as $form_id ) {
 			add_action(
@@ -56,6 +70,25 @@ final class CEFA_Conversion_Tracking {
 				4
 			);
 		}
+	}
+
+	/**
+	 * Save canonical shadow evidence without registering a conversion lifecycle.
+	 *
+	 * @param array<string, mixed> $entry Gravity Forms entry.
+	 * @param array<string, mixed> $form  Gravity Forms form.
+	 * @return void
+	 */
+	public static function persist_attribution_only( array $entry, array $form ): void {
+		$form_config = CEFA_Conversion_Tracking_Config::form_config( (int) rgar( $form, 'id' ) );
+
+		if ( empty( $form_config ) || 'spam' === (string) rgar( $entry, 'status' ) ) {
+			return;
+		}
+
+		$entry = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $entry, $form_config );
+
+		CEFA_Conversion_Tracking_Attribution_Parity::persist_after_submission( $entry, $form_config );
 	}
 
 	/**

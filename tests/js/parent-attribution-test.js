@@ -16,6 +16,7 @@ const source = fs.readFileSync(sourcePath, 'utf8').replace(
 );
 const localValues = {};
 const fetchCalls = [];
+const documentEvents = [];
 const context = {
 	URL,
 	Event: function Event() {},
@@ -25,6 +26,7 @@ const context = {
 	window: {
 		CEFAConversionTracking: {
 			attributionMode: 'shadow',
+			runtimeProfile: 'attribution_only',
 			restAttributionUrl: 'https://cefa.ca/wp-json/cefa-conversion-tracking/v1/attribution-capture',
 			ownHosts: [
 				'cefa.ca',
@@ -75,7 +77,9 @@ const context = {
 			},
 			setAttribute() {}
 		},
-		addEventListener() {},
+		addEventListener(name) {
+			documentEvents.push(name);
+		},
 		querySelector() {
 			return null;
 		},
@@ -88,6 +92,9 @@ const context = {
 vm.runInNewContext(source, context, { filename: sourcePath });
 
 const tests = context.window.__cefaTests;
+assert(documentEvents.indexOf('DOMContentLoaded') !== -1, 'Attribution-only mode did not initialize capture.');
+assert(documentEvents.indexOf('gform_confirmation_loaded') === -1, 'Attribution-only mode registered a confirmation listener.');
+assert(documentEvents.indexOf('gform_post_render') === -1, 'Attribution-only mode registered a form event listener.');
 assert(tests.referrerIsOwnSite('www.cefa.ca'), 'Parent www host was not recognized as internal.');
 assert(tests.referrerIsOwnSite('franchise.cefa.ca'), 'Approved CEFA cross-property host was not recognized as internal.');
 assert(!tests.referrerIsOwnSite('notcefa.ca'), 'Substring-like external host was incorrectly recognized as internal.');
