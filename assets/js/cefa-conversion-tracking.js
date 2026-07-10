@@ -75,6 +75,8 @@
 	];
 	var signedAttributionCaptureKey = 'cefa_signed_attribution_capture_v1';
 	var attributionFormTokenKey = 'cefa_attribution_form_token_v1';
+	var attributionFormTokenStoredAtKey = 'cefa_attribution_form_token_stored_at_v1';
+	var attributionFormTokenRefreshMs = 25 * 60 * 1000;
 	var signedAttributionCapturePending = '';
 	var signedAttributionCapturePromise = null;
 	var searchSources = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex', 'ecosia'];
@@ -702,7 +704,14 @@
 
 	function readAttributionFormToken() {
 		try {
-			return normalizeAttribution(window.sessionStorage.getItem(attributionFormTokenKey) || '', 1024);
+			var token = normalizeAttribution(window.sessionStorage.getItem(attributionFormTokenKey) || '', 1024);
+			var storedAt = Number(window.sessionStorage.getItem(attributionFormTokenStoredAtKey) || 0);
+
+			if (!token || !storedAt || Date.now() - storedAt >= attributionFormTokenRefreshMs) {
+				return '';
+			}
+
+			return token;
 		} catch (error) {
 			return '';
 		}
@@ -738,6 +747,7 @@
 
 		try {
 			window.sessionStorage.setItem(attributionFormTokenKey, normalized);
+			window.sessionStorage.setItem(attributionFormTokenStoredAtKey, String(Date.now()));
 		} catch (error) {}
 
 		syncAttributionFormToken(document);
