@@ -125,6 +125,16 @@ No GTM, GA4, Google Ads, Meta, Form `4`, School Manager, KinderTales, or webhook
 
 The four post-ledger entries all had server event IDs and no pending one-time confirmation alias when checked. The newest entries were still inside the 30-minute payload lifetime, which confirms that their confirmation browsers retrieved the tracking payload instead of leaving it unconsumed. This verifies the website event handoff layer. Fresh processed GA4/Ads/Meta receipt remains subject to platform reporting delay and authenticated reporting access.
 
+A live-container no-send test then pushed a synthetic `school_inquiry_submit` while intercepting destination transport:
+
+- GA4 generated `generate_lead`;
+- Google Ads generated conversion requests for `AW-802334988` with label `cFt-CMrLufgCEIzSyv4C`;
+- Meta called `trackCustom` for `Inquiry Submit` on dataset `918227085392601`;
+- the Meta call included the shared event ID through its `eventID` deduplication option;
+- Google destination requests were aborted, and the Meta function was replaced before invocation, so no synthetic conversion was transmitted.
+
+This proves current website-side tag triggering after the ledger rollout. It does not replace delayed platform reporting confirmation.
+
 ## Safe Next Step
 
 Do not enable canonical CRM compatibility writeback yet. The current primary adapter can replace all approved fields, including intentional blanks.
