@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
+
 ## 0.5.2 - 2026-07-09
 
 - Added a guarded `attribution_only` runtime profile for future franchise shadow deployment beside the existing WPCode conversion bridge.

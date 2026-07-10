@@ -255,6 +255,32 @@ Parent deployment result:
 
 Rollback material exists on the parent host for the pre-`0.5.0` plugin, the pre-shadow WordPress configuration, and the prior `0.5.0` runtime directory. Secrets are not recorded in this repository or log.
 
+### Initial parent shadow observation
+
+Read-only sample from `2026-07-10 00:00:00` through `04:46:42 UTC`:
+
+- `18` active Form `4` entries;
+- `18/18` reserved server event IDs and `18/18` unique IDs;
+- `18/18` successful CEFA Brain webhook notes and `18/18` School Manager delivery notes;
+- `16` entries with signed canonical attribution;
+- `2` entries without canonical attribution, both with zero acquisition fields and therefore expected direct traffic rather than capture failures;
+- channel mix among attributable entries: `8` organic search, `4` referral, `3` paid search, and `1` paid social;
+- four paid entries with `22/22` comparable core fields matched, or `100%` initial core paid parity.
+
+The stored raw paid parity was `87.1%` because it correctly exposed deployment-window first-landing/referrer differences and one stale legacy Google click-family value. Those values are not counted as core cutover failures:
+
+- first landing/referrer cookies can predate the canonical shadow deployment;
+- canonical attribution keeps the current Google click-ID family and intentionally drops stale alternative `gclid`/`gbraid`/`wbraid` values;
+- current paid source, medium, campaign fields, and active click IDs remain part of the core score.
+
+This sample proves the data flow remained intact, but four paid entries are not enough to complete the observation gate. Continue collecting until the minimum duration/sample gate is met.
+
+The reusable monitor is `tools/wp-shadow-parity-report.php`. It is read-only and outputs aggregate counts only:
+
+```bash
+wp eval-file tools/wp-shadow-parity-report.php 4 '2026-07-10 00:00:00' 500
+```
+
 ## QA Evidence
 
 ### Google Ads no-send QA
