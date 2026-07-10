@@ -460,7 +460,7 @@ Live parent rollout:
 - confirmed the ledger accumulated live and QA capture rows immediately;
 - confirmed a post-deployment Form `4` entry retained canonical attribution, a unique reserved server ID, School Manager delivery, and webhook success.
 
-Release follow-up `0.6.1` adds a 25-minute browser refresh for the 30-minute form handle, preserving a five-minute submission margin for long-open forms. This does not change the ledger schema, conversion events, or downstream delivery.
+Release follow-up `0.6.1` was deployed after CI passed on PHP `7.4` and `8.2`. It adds a 25-minute browser refresh for the 30-minute form handle, preserving a five-minute submission margin for long-open forms. This does not change the ledger schema, conversion events, or downstream delivery. WP Engine object and Varnish caches were purged through the host-native runtime; normal unbusted homepage and Form `4` URLs both returned the `0.6.1` asset with attribution and ledger modes still in `shadow`.
 
 Remaining validation:
 
