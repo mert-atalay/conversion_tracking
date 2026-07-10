@@ -57,6 +57,15 @@ final class CEFA_Conversion_Tracking {
 				},
 				5
 			);
+			add_action(
+				'gform_pre_submission_' . $form_id,
+				static function () use ( $form_id ): void {
+					CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields(
+						CEFA_Conversion_Tracking_Config::form_config( $form_id )
+					);
+				},
+				50
+			);
 
 			add_action(
 				'gform_after_submission_' . $form_id,

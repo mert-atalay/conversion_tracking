@@ -4,6 +4,14 @@
 
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
+## 0.6.2 - 2026-07-10
+
+- Added a parent-only paid-click attribution writeback flag independent from broad primary mode.
+- Correct stale Form `4` last-touch fields only when a Google/Microsoft click ID, or `fbclid` plus governed Meta campaign evidence, is attached to the canonical current last-non-direct touch.
+- Clear stale competing click IDs while preserving existing first landing/referrer values when canonical first-touch evidence is unavailable.
+- Record per-entry compatibility writeback status and expose aggregate ledger/writeback coverage in the read-only shadow monitor.
+- Kept field `32`, event-ID ownership, School Manager, KinderTales, franchise contexts, and conversion destinations unchanged.
+
 ## 0.6.1 - 2026-07-10
 
 - Refresh the 30-minute signed form fallback after 25 minutes so a long-open browser session retains a safe submission margin.

@@ -105,6 +105,120 @@ final class CEFA_Conversion_Tracking_Attribution {
 	}
 
 	/**
+	 * Correct parent Form 4 attribution when the current touch has a paid click.
+	 *
+	 * This adapter does not require broad primary mode and never touches field
+	 * 32 or event identity. First-touch fields are written only when canonical
+	 * evidence is present, while stale last-touch and click-ID fields are cleared
+	 * as part of the proven paid-touch replacement.
+	 *
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return void
+	 */
+	public static function apply_parent_paid_click_fields( array $form_config ): void {
+		if (
+			! CEFA_Conversion_Tracking_Config::parent_paid_click_writeback_enabled() ||
+			'parent' !== CEFA_Conversion_Tracking_Config::site_context() ||
+			'off' === CEFA_Conversion_Tracking_Config::attribution_v2_mode() ||
+			4 !== (int) ( $form_config['id'] ?? 0 )
+		) {
+			return;
+		}
+
+		$envelope = CEFA_Conversion_Tracking_Entry_Attribution::current_verified_envelope();
+		$last     = is_array( $envelope['last_non_direct_touch'] ?? null ) ? $envelope['last_non_direct_touch'] : array();
+		$clicks   = is_array( $envelope['click_ids'] ?? null ) ? $envelope['click_ids'] : array();
+		$type     = sanitize_key( (string) ( $last['click_id_type'] ?? '' ) );
+
+		if (
+			! in_array( $type, array( 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid' ), true ) ||
+			'' === self::map_value( $clicks, $type ) ||
+			( 'fbclid' === $type && ! self::has_meta_paid_context( $envelope, $last ) )
+		) {
+			return;
+		}
+
+		$fields = is_array( $form_config['attribution_fields'] ?? null ) ? $form_config['attribution_fields'] : array();
+		$values = self::canonical_compatibility_values( $envelope, $form_config );
+
+		foreach ( array( 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid' ) as $click_key ) {
+			$values[ $click_key ] = $type === $click_key ? self::map_value( $clicks, $type ) : '';
+		}
+
+		foreach ( array( 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid' ) as $semantic_key ) {
+			if ( ! isset( $fields[ $semantic_key ] ) || ! array_key_exists( $semantic_key, $values ) ) {
+				continue;
+			}
+
+			self::write_approved_post_field(
+				(int) $form_config['id'],
+				(string) $fields[ $semantic_key ],
+				(string) $values[ $semantic_key ],
+				'cefa_ct_parent_paid_click_form_'
+			);
+		}
+
+		foreach ( array( 'first_landing_page', 'first_referrer' ) as $semantic_key ) {
+			if ( ! isset( $fields[ $semantic_key ] ) || empty( $values[ $semantic_key ] ) ) {
+				continue;
+			}
+
+			self::write_approved_post_field(
+				(int) $form_config['id'],
+				(string) $fields[ $semantic_key ],
+				(string) $values[ $semantic_key ],
+				'cefa_ct_parent_paid_click_form_'
+			);
+		}
+	}
+
+	/**
+	 * Return the compatibility writeback applied to the current request.
+	 *
+	 * @param int $form_id Gravity Forms form ID.
+	 * @return string
+	 */
+	public static function compatibility_writeback_status( int $form_id ): string {
+		if ( isset( $_POST[ 'cefa_ct_parent_paid_click_form_' . $form_id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Internal same-request marker only.
+			return 'parent_paid_click';
+		}
+
+		if ( isset( $_POST[ 'cefa_ct_primary_form_' . $form_id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Internal same-request marker only.
+			return 'primary';
+		}
+
+		return 'none';
+	}
+
+	/**
+	 * Require governed campaign evidence before treating fbclid as paid.
+	 *
+	 * Facebook appends fbclid to organic outbound links too. CEFA paid URLs add
+	 * campaign metadata, and may also add governed Meta platform IDs.
+	 *
+	 * @param array<string, mixed> $envelope Canonical attribution envelope.
+	 * @param array<string, mixed> $last     Current last non-direct touch.
+	 * @return bool
+	 */
+	private static function has_meta_paid_context( array $envelope, array $last ): bool {
+		$platform_ids = is_array( $envelope['platform_ids'] ?? null ) ? $envelope['platform_ids'] : array();
+
+		foreach ( array( 'meta_campaign_id', 'meta_adset_id', 'meta_ad_id' ) as $key ) {
+			if ( '' !== self::map_value( $platform_ids, $key ) ) {
+				return true;
+			}
+		}
+
+		return in_array( self::touch_value( $last, 'source' ), array( 'facebook', 'instagram', 'meta' ), true )
+			&& 'paid_social' === self::touch_value( $last, 'medium' )
+			&& (
+				'' !== self::touch_value( $last, 'campaign' ) ||
+				'' !== self::touch_value( $last, 'content' ) ||
+				'' !== self::touch_value( $last, 'term' )
+			);
+	}
+
+	/**
 	 * Convert canonical entry attribution to an existing form compatibility map.
 	 *
 	 * @param array<string, mixed> $envelope    Canonical envelope.
@@ -198,9 +312,10 @@ final class CEFA_Conversion_Tracking_Attribution {
 	 * @param int    $form_id  Form ID.
 	 * @param string $field_id Field ID.
 	 * @param string $value    Canonical value, including an intentional blank.
+	 * @param string $marker   Internal request marker prefix.
 	 * @return void
 	 */
-	private static function write_approved_post_field( int $form_id, string $field_id, string $value ): void {
+	private static function write_approved_post_field( int $form_id, string $field_id, string $value, string $marker = 'cefa_ct_primary_form_' ): void {
 		$max_length = in_array( $field_id, array( '20', '21', '28', '45', '46' ), true ) ? 1000 : 220;
 		$value      = substr( sanitize_text_field( $value ), 0, $max_length );
 
@@ -208,7 +323,7 @@ final class CEFA_Conversion_Tracking_Attribution {
 			$_POST[ $post_key ] = $value; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		}
 
-		$_POST[ 'cefa_ct_primary_form_' . $form_id ] = '1'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$_POST[ $marker . $form_id ] = '1'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Internal same-request marker only.
 	}
 
 	/**
