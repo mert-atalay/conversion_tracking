@@ -106,8 +106,33 @@ final class CEFA_Conversion_Tracking_REST_Controller {
 			$_COOKIE
 		);
 		$stored       = CEFA_Conversion_Tracking_Attribution_Envelope::persist_prepared_cookie( $prepared );
-		$response     = new WP_REST_Response(
-			array( 'status' => $stored ? 'stored' : 'unchanged' ),
+		$envelope     = array();
+
+		if ( ! empty( $prepared['value'] ) ) {
+			$envelope = CEFA_Conversion_Tracking_Attribution_Envelope::decode(
+				(string) $prepared['value'],
+				CEFA_Conversion_Tracking_Config::attribution_v2_secret(),
+				CEFA_Conversion_Tracking_Config::site_context()
+			);
+		}
+
+		if ( empty( $envelope ) ) {
+			$envelope = CEFA_Conversion_Tracking_Entry_Attribution::current_verified_envelope();
+		}
+
+		$ledger_result = ! empty( $envelope )
+			? CEFA_Conversion_Tracking_Attribution_Ledger::capture( $envelope, $_COOKIE )
+			: array();
+		$response_data = array(
+			'status' => ( $stored || ! empty( $ledger_result['cookie_set'] ) ) ? 'stored' : 'unchanged',
+		);
+
+		if ( ! empty( $ledger_result['capture_token'] ) ) {
+			$response_data['capture_token'] = (string) $ledger_result['capture_token'];
+		}
+
+		$response = new WP_REST_Response(
+			$response_data,
 			200
 		);
 

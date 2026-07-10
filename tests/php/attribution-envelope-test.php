@@ -167,6 +167,18 @@ final class CEFA_Conversion_Tracking_Config {
 		return 'cefa_parent_attr_v1';
 	}
 
+	public static function ledger_mode() {
+		return 'off';
+	}
+
+	public static function ledger_secret() {
+		return '';
+	}
+
+	public static function ledger_cookie_name() {
+		return 'cefa_parent_capture_v2';
+	}
+
 	public static function crm_identity_enabled() {
 		return self::$crm_enabled;
 	}
@@ -317,6 +329,7 @@ cefa_assert(
 	'Transport fallback rewrote an unchanged envelope.'
 );
 
+require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution-ledger.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-entry-attribution.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution.php';
 require_once dirname( __DIR__, 2 ) . '/includes/class-cefa-conversion-tracking-attribution-parity.php';

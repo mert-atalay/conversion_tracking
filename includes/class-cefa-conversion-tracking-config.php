@@ -49,6 +49,42 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Return the guarded server-side attribution ledger mode.
+	 *
+	 * @return string
+	 */
+	public static function ledger_mode(): string {
+		$value = self::hostname_config_value( 'CEFA_CT_LEDGER_MODE' );
+		$mode  = strtolower( trim( (string) $value ) );
+
+		return in_array( $mode, array( 'off', 'shadow', 'primary' ), true ) ? $mode : 'off';
+	}
+
+	/**
+	 * Return the server-only ledger token signing secret.
+	 *
+	 * @return string
+	 */
+	public static function ledger_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_LEDGER_SECRET' ) );
+	}
+
+	/**
+	 * Return the host-only opaque capture cookie name.
+	 *
+	 * @return string
+	 */
+	public static function ledger_cookie_name(): string {
+		$names = array(
+			'parent'       => 'cefa_parent_capture_v2',
+			'franchise_ca' => 'cefa_fr_ca_capture_v2',
+			'franchise_us' => 'cefa_fr_us_capture_v2',
+		);
+
+		return $names[ self::site_context() ] ?? '';
+	}
+
+	/**
 	 * Return the server-only Attribution Bridge signing secret.
 	 *
 	 * @return string
@@ -154,6 +190,7 @@ final class CEFA_Conversion_Tracking_Config {
 		return array(
 			'siteContext'         => self::site_context(),
 			'runtimeProfile'      => self::runtime_profile(),
+			'ledgerMode'          => self::ledger_mode(),
 			'ownHosts'            => self::approved_cefa_hosts(),
 			'formId'              => (int) ( $primary_form['id'] ?? CEFA_CONVERSION_TRACKING_FORM_ID ),
 			'forms'               => array_values( $forms ),

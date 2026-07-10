@@ -4,6 +4,14 @@
 
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
+## 0.6.0 - 2026-07-10
+
+- Added a disabled-by-default server-side attribution ledger for canonical acquisition evidence.
+- Added host-scoped opaque HttpOnly capture cookies; raw attribution remains server-side.
+- Added a 30-minute signed Gravity Forms fallback token stored only for the browser session to recover attribution when the opaque cookie is unavailable.
+- Added entry-level capture-reference and recovery-provenance metadata without changing existing form fields, CRM/Synuma delivery, confirmation events, or conversion ownership.
+- Added tampering, expiry, cross-context, ledger recovery, browser injection, and off-mode compatibility tests.
+
 ## 0.5.2 - 2026-07-09
 
 - Added a guarded `attribution_only` runtime profile for future franchise shadow deployment beside the existing WPCode conversion bridge.

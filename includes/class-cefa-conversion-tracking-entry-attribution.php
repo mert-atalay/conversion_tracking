@@ -35,6 +35,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 			return $entry;
 		}
 
+		$ledger   = CEFA_Conversion_Tracking_Attribution_Ledger::resolve( $_COOKIE, $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Signed ledger token is verified before use.
 		$envelope = self::current_verified_envelope();
 
 		if ( empty( $envelope ) ) {
@@ -54,6 +55,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 		$provenance = wp_json_encode(
 			array(
 				'attribution'   => 'signed_envelope',
+				'ledger'        => ! empty( $ledger ) ? sanitize_key( (string) ( $ledger['source'] ?? '' ) ) : 'not_resolved',
 				'legacy_fields' => 'preserved',
 				'mode'          => $mode,
 			),
@@ -74,6 +76,8 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 			self::update_meta_if_changed( $entry_id, $form_id, $meta_key, $value );
 			$entry[ $meta_key ] = $value;
 		}
+
+		CEFA_Conversion_Tracking_Attribution_Ledger::persist_entry_reference( $entry_id, $form_id, $ledger );
 
 		return $entry;
 	}
@@ -106,13 +110,17 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 		$site_context = CEFA_Conversion_Tracking_Config::site_context();
 		$cookie_name  = CEFA_Conversion_Tracking_Config::attribution_cookie_name();
 
-		if ( '' === $secret || 'unknown' === $site_context || '' === $cookie_name || ! isset( $_COOKIE[ $cookie_name ] ) ) {
-			return array();
+		$envelope = array();
+
+		if ( '' !== $secret && 'unknown' !== $site_context && '' !== $cookie_name && isset( $_COOKIE[ $cookie_name ] ) ) {
+			$token    = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$envelope = CEFA_Conversion_Tracking_Attribution_Envelope::decode( $token, $secret, $site_context );
 		}
 
-		$token = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-		$envelope = CEFA_Conversion_Tracking_Attribution_Envelope::decode( $token, $secret, $site_context );
+		if ( empty( $envelope ) ) {
+			$resolved = CEFA_Conversion_Tracking_Attribution_Ledger::resolve( $_COOKIE, $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Signed fallback token is verified before use.
+			$envelope = is_array( $resolved['envelope'] ?? null ) ? $resolved['envelope'] : array();
+		}
 
 		return CEFA_Conversion_Tracking_Attribution_Envelope::with_browser_ids( $envelope, $_COOKIE );
 	}
