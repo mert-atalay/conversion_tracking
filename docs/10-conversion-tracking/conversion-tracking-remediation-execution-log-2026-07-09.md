@@ -281,6 +281,33 @@ The reusable monitor is `tools/wp-shadow-parity-report.php`. It is read-only and
 wp eval-file tools/wp-shadow-parity-report.php 4 '2026-07-10 00:00:00' 500
 ```
 
+### Parent and franchise health recheck, 2026-07-10
+
+Read-only parent sample through `2026-07-10 19:42:28 UTC`:
+
+- `68` active Form `4` entries;
+- `68/68` reserved server event IDs and `68/68` unique IDs;
+- `68/68` CEFA Brain webhook successes and `68/68` School Manager delivery notes;
+- `64` signed canonical attribution records, `3` expected direct entries, and `1` unexpected signed-capture gap;
+- `14` paid entries with `68/74` comparable fields matched, or `91.89%` core paid parity;
+- all six paid-field mismatches came from one iOS Safari Meta journey where canonical attribution retained source, medium, campaign metadata, and `fbclid`, while the legacy fields were blank;
+- the single signed-capture gap also came from iOS Safari and retained legacy UTM values;
+- one secondary Mailchimp error note occurred, while the same lead still had successful CEFA Brain and School Manager delivery.
+
+Franchise read-back for the same UTC day:
+
+- Franchise Canada Form `1`: `1/1` entry has a Synuma lead ID;
+- Franchise USA Form `1`: `3/3` entries have Synuma lead IDs;
+- both Form `2` properties had zero entries, not failures;
+- existing franchise control plugins remain active and the CEFA Conversion Tracking plugin remains absent from both franchise properties.
+
+Decision:
+
+- core lead delivery is healthy across parent and franchise;
+- parent remains in shadow mode;
+- do not deploy the franchise candidate yet because the paid parity gate is below `98%` and the current sample identifies an iOS Safari-specific inconsistency;
+- gather a larger Safari cohort before deciding whether the browser bridge needs a narrowly scoped retry change.
+
 ### Prepared franchise shadow candidate
 
 A runtime-only `0.5.2` franchise coexistence candidate was packaged from merged commit `d592fea701ed79b6c6209c07aa99377f423647c3`:
