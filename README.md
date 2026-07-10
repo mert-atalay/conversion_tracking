@@ -62,7 +62,7 @@ Keep runtime plugin changes and documentation-only changes separate when practic
 
 ## Current Live-Domain Audit Status
 
-- Parent `cefa.ca` is live on plugin `0.4.5` and `GTM-NZ6N7WNC`; confirmed `school_inquiry_submit` reaches GA4, Google Ads, and Meta. Parent GTM authenticated API access still needs to be restored for the service account.
+- Parent `cefa.ca` is live on plugin `0.6.0` with Attribution Bridge and ledger shadow modes; confirmed `school_inquiry_submit` ownership remains unchanged across GA4, Google Ads, and Meta. The ledger uses an opaque HttpOnly cookie and signed form fallback without replacing Form 4, School Manager, Synuma, or existing compatibility fields.
 - Parent branded Search and Oakville Eighth Line Search now use explicit inquiry-only campaign goals. Parent GA4 click events remain collected but are no longer key events.
 - Franchise Canada `franchise.cefa.ca` uses the WPCode fallback bridge and live GTM Version `54`; confirmed Form `1` and Form `2` helper paths remain active.
 - Franchise Canada application/email/phone clicks remain collected but are no longer GA4 key events.
@@ -273,7 +273,7 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Attribution Bridge Runtime Flags
 
-Plugin `0.6.0` ships every new attribution/cutover path disabled by default.
+Plugin `0.6.1` ships every new attribution/cutover path disabled by default.
 
 When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
 
@@ -300,7 +300,7 @@ Safe deployment sequence:
 
 For franchise coexistence, set `CEFA_CT_RUNTIME_PROFILE=attribution_only` before activation. This profile does not register event IDs, confirmation payloads, final events, legacy-field writeback, or micro-events; it only captures signed attribution and stores shadow/parity entry metadata.
 
-The ledger is additive to the existing signed attribution envelope. It stores the canonical envelope in a first-party WordPress table, sends only an opaque signed capture handle to the browser, and injects a 30-minute signed fallback handle into configured Gravity Forms. No existing Gravity Forms field, GAConnector field, CRM feed, conversion event, or campaign parameter is replaced. The ledger table is not installed and no ledger cookie is issued unless both `CEFA_CT_LEDGER_MODE` and `CEFA_CT_LEDGER_SECRET` are configured.
+The ledger is additive to the existing signed attribution envelope. It stores the canonical envelope in a first-party WordPress table, sends only an opaque signed capture handle to the browser, and injects a 30-minute signed fallback handle into configured Gravity Forms. The browser refreshes that handle after 25 minutes so long-open forms retain a five-minute submission margin. No existing Gravity Forms field, GAConnector field, CRM feed, conversion event, or campaign parameter is replaced. The ledger table is not installed and no ledger cookie is issued unless both `CEFA_CT_LEDGER_MODE` and `CEFA_CT_LEDGER_SECRET` are configured.
 
 ## Install On Staging
 

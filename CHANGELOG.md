@@ -4,6 +4,10 @@
 
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
+## 0.6.1 - 2026-07-10
+
+- Refresh the 30-minute signed form fallback after 25 minutes so a long-open browser session retains a safe submission margin.
+
 ## 0.6.0 - 2026-07-10
 
 - Added a disabled-by-default server-side attribution ledger for canonical acquisition evidence.

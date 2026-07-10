@@ -12,7 +12,7 @@ function assert(condition, message) {
 const sourcePath = 'assets/js/cefa-conversion-tracking.js';
 const source = fs.readFileSync(sourcePath, 'utf8').replace(
 	/\}\)\(\);\s*$/,
-	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl, captureSignedAttribution: captureSignedAttribution, storeAttributionFormToken: storeAttributionFormToken, syncAttributionFormToken: syncAttributionFormToken };})();'
+	'window.__cefaTests = { referrerIsOwnSite: referrerIsOwnSite, buildAdvertisingTouchFromUrl: buildAdvertisingTouchFromUrl, captureSignedAttribution: captureSignedAttribution, readAttributionFormToken: readAttributionFormToken, storeAttributionFormToken: storeAttributionFormToken, syncAttributionFormToken: syncAttributionFormToken };})();'
 );
 const localValues = {};
 const sessionValues = {};
@@ -147,6 +147,10 @@ capturePromise.then(function () {
 	assert(captureFields[0].type === 'hidden', 'Signed capture token field was not hidden.');
 	assert(captureFields[0].name === 'cefa_capture_token', 'Signed capture token field name changed.');
 	assert(captureFields[0].value === 'signed.capture_token-1', 'Signed capture token field value was not preserved.');
+	assert(Number(sessionValues.cefa_attribution_form_token_stored_at_v1) > 0, 'Signed capture token receipt time was not stored.');
+
+	sessionValues.cefa_attribution_form_token_stored_at_v1 = String(Date.now() - 25 * 60 * 1000);
+	assert(tests.readAttributionFormToken() === '', 'A stale signed form fallback was not scheduled for refresh.');
 
 	console.log('Parent attribution browser tests passed.');
 });

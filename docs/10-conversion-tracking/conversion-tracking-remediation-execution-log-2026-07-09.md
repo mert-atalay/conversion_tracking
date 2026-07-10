@@ -437,3 +437,34 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 - Parent plugin rollback: restore the retained `0.5.0` or pre-`0.5.0` runtime backup, then purge WP Engine page/object cache and verify the active version.
 
 Do not roll back to Version `22` merely to undo agency clearing, because that would also remove the repaired Google Ads Form `1` conversion tag.
+
+## 2026-07-10 Parent Server Ledger Phase
+
+Implemented and merged in PR `#10`:
+
+- disabled-by-default server-side canonical attribution ledger;
+- host-scoped opaque HttpOnly capture cookie;
+- 30-minute signed Gravity Forms fallback handle stored only for the browser session;
+- entry-level capture reference and recovery provenance metadata;
+- no changes to existing Gravity Forms fields, School Manager, Synuma, webhook delivery, GTM, GA4, Google Ads, Meta, or final conversion ownership.
+
+Live parent rollout:
+
+- upgraded `cefa.ca` from plugin `0.5.1` to `0.6.0`;
+- verified ledger mode `off` before activation and confirmed the ledger table was absent;
+- enabled only `CEFA_CT_LEDGER_MODE=shadow` with a separate server-only secret;
+- confirmed the ledger table was created only after shadow enablement;
+- confirmed the same-origin capture endpoint returned `status=stored` plus an opaque signed form handle;
+- confirmed `cefa_parent_attr_v1` and `cefa_parent_capture_v2` are Secure, HttpOnly, SameSite=Lax, host-only cookies;
+- confirmed live Form `4` receives the session fallback in hidden `cefa_capture_token` without exposing raw attribution;
+- confirmed the ledger accumulated live and QA capture rows immediately;
+- confirmed a post-deployment Form `4` entry retained canonical attribution, a unique reserved server ID, School Manager delivery, and webhook success.
+
+Release follow-up `0.6.1` adds a 25-minute browser refresh for the 30-minute form handle, preserving a five-minute submission margin for long-open forms. This does not change the ledger schema, conversion events, or downstream delivery.
+
+Remaining validation:
+
+1. Observe the next paid and Safari/iOS Form `4` submissions and confirm ledger capture-reference coverage beside the existing parity report.
+2. Add aggregate ledger coverage/status counts to the read-only WP-CLI monitor.
+3. Keep ledger mode in `shadow`; do not enable primary CRM compatibility writeback.
+4. Keep franchise properties unchanged until a separate `attribution_only` coexistence rollout is approved.
