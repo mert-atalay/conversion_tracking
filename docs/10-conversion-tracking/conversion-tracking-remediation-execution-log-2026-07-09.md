@@ -170,9 +170,9 @@ Automated tests cover metadata persistence, off-mode no-write behavior, idempote
 
 ### CEFA-owned script versus current GAConnector contract
 
-| Capability | Live parent `0.4.5` | `0.5.0` release candidate | Current franchise GAConnector fields `14-30` |
+| Capability | Live parent `0.5.1` shadow | CEFA canonical contract | Current franchise GAConnector fields `14-30` |
 |---|---|---|---|
-| Source/medium/campaign/content/term | Saved as parent last-touch fields | Signed first and last non-direct entry meta | Saved as first/last-click fields |
+| Source/medium/campaign/content/term | Legacy fields remain active; signed evidence is captured in parallel | Signed first and last non-direct entry meta | Saved as first/last-click fields |
 | Landing/referrer | First landing/referrer saved | Normalized host/path for first, current, last, and history | First/last landing and referrer fields |
 | Google click IDs | `gclid`, `gbraid`, `wbraid` fields | Same plus signed canonical storage | Current mapped field exposes `gclid` |
 | Meta/Microsoft click IDs | `fbclid`, `msclkid` fields | Same plus signed canonical storage | Not present in the current mapped fields |
@@ -183,7 +183,7 @@ Automated tests cover metadata persistence, off-mode no-write behavior, idempote
 | Direct/internal protection | Internal-referrer defect in live script | Exact-host defect fixed and tested | Dependent on GAConnector classification |
 | Tamper protection | Browser cookies/local storage | HMAC-signed, host-scoped envelope | No CEFA-controlled signature contract |
 | CRM availability | Legacy parent fields are available | Canonical entry meta is not yet mapped into CRM | Existing hidden fields are available to current form/feed paths |
-| Final server event identity | Existing event ID flow is only partially server-enforced | Still pending unique reservation/cutover | Not supplied by GAConnector |
+| Final server event identity | Existing platform ID remains primary; a reserved server ID is shadow-only | Unique reservation and guarded primary adapter are implemented | Not supplied by GAConnector |
 
 Decision:
 
@@ -193,7 +193,7 @@ Decision:
 
 ### Server identity and replacement adapters
 
-Implemented in source control only; not deployed:
+Implemented in source control. Parent shadow components are deployed; franchise adapters remain undeployed:
 
 - plugin-owned event-ID registry with a unique primary key;
 - 10,000 generated/reserved UUID contract test with zero duplicates;
@@ -226,6 +226,33 @@ For each supported saved entry in shadow mode, the plugin can now store:
 - canonical-missing semantic keys.
 
 The parity record stores no raw attribution values, URLs, click IDs, browser IDs, or PII. It supports both parent fields `35-46` and franchise fields `14-30`.
+
+## Live WordPress Inventory And Parent Shadow Rollout
+
+Read-only inventory confirmed the live contracts before deployment:
+
+- Parent Form `4` is active and retains School Manager field `32` plus hidden attribution fields `35-46`.
+- Parent webhook feed `4` remains active as JSON `POST` with `all_fields` to `cefa-brain.vercel.app/api/webhooks/gravity-forms`; no conditional rule was added or changed.
+- Franchise Canada and USA Forms `1` and `2` are active and both retain the exact GAConnector-compatible field map `14-30`.
+- Franchise business delivery does not use a registered Gravity Forms webhook feed. The existing `cefa-franchise-mcp-control` plugin handles `gform_after_submission_1` and `_2` and sends directly to Synuma.
+- The franchise Synuma adapter already forwards first/last-click fields, `gclid`, GA client ID, IP, and user agent and stores `cefa_synuma_lead_id` to prevent duplicate successful delivery.
+- The same CEFA franchise tracking bridge code is active on both franchise properties. Canada has a published WPCode record; USA currently loads the same code from WPCode's active snippet cache.
+- The franchise bridge still reads GAConnector cookies. No franchise plugin, snippet, form, Synuma route, or GAConnector setting changed during the parent rollout.
+
+Parent deployment result:
+
+- `0.5.0` was first deployed with all new flags off and the live plugin remained active.
+- Anonymous page testing then showed that WP Engine cache misses did not return the page-load `Set-Cookie` header.
+- `0.5.1` added a same-origin, no-store `POST /wp-json/cefa-conversion-tracking/v1/attribution-capture` fallback, following [WP Engine's guidance to use an uncached request for PHP cookie work on cached pages](https://wpengine.com/support/cookies-and-php-sessions/).
+- GitHub PR `#4` passed PHP `7.4` and `8.2` CI and merged as `51286876f6b86ae2f7e3351db364776a0ba1cfb2` before deployment.
+- A real anonymous request returned HTTP `200`, `Cache-Control: no-store`, and the signed HttpOnly `cefa_parent_attr_v1` cookie.
+- A follow-up request with the signed cookie and no new acquisition evidence returned `unchanged` with no replacement cookie.
+- Wrong-origin requests and requests missing the CEFA bridge header were rejected.
+- Parent is now `CEFA_CT_ATTRIBUTION_V2_MODE=shadow` with a configured server-only secret. `CEFA_CT_CRM_IDENTITY_ENABLED` and `CEFA_CT_PAYLOAD_V2_ENABLED` remain false.
+- Home and thank-you pages return HTTP `200`; cached HTML references plugin `0.5.1`, shadow mode, and the same-origin capture endpoint.
+- No real lead form was submitted during this deployment test, so conversion counts, CRM records, and Synuma records were not intentionally created.
+
+Rollback material exists on the parent host for the pre-`0.5.0` plugin, the pre-shadow WordPress configuration, and the prior `0.5.0` runtime directory. Secrets are not recorded in this repository or log.
 
 ## QA Evidence
 
@@ -323,14 +350,15 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 ## Remaining Priority Order
 
 1. Confirm delayed Google Ads action receipt/status without expecting campaign attribution from the QA test.
-2. Merge reviewed GitHub PR `#3`; the `0.5.0` release candidate and CI are ready.
-3. Export live Gravity Forms and destination feed maps before changing WordPress.
-4. Deploy parent shadow mode with server secrets and compare it beside fields `35-46`.
-5. Observe at least 98% paid-entry parity and 100% reserved server-ID uniqueness without routing regressions.
-6. Deploy franchise shadow mode beside GAConnector fields `14-30`, one property at a time.
+2. Observe parent shadow entries and verify at least 98% paid-entry parity plus 100% reserved server-ID uniqueness without routing regressions.
+3. Confirm parent canonical entry metadata can be exported or mapped without changing the existing all-fields webhook contract.
+4. Deploy plugin `0.5.1` to one franchise property with shadow mode only; do not enable CRM compatibility writing.
+5. Compare canonical evidence beside GAConnector fields `14-30`, including direct/internal classification and click-ID retention.
+6. Add missing retry/monitoring for Synuma delivery before changing its current delivery ownership.
 7. Enable signed confirmation payload V2 only after browser prefetch/replay QA.
 8. Create approved CRM destination fields and map event/form identity without changing routing.
-9. Complete the Google URL-option cleanup, warehouse reconciliation, and lifecycle propagation.
+9. Retire franchise GAConnector only after both properties pass parity, delivery, rollback, and stakeholder signoff gates.
+10. Complete the Google URL-option cleanup, warehouse reconciliation, and lifecycle propagation.
 
 ## Rollback
 
@@ -338,5 +366,7 @@ This proves the landing URL and parameter syntax. It does not claim a served-ad 
 - Value-only rollback: publish Version `23` only if the action value contract is intentionally changed away from `600 CAD`.
 - Agency clearing rollback: publish Version `24` to restore the prior writer.
 - Google URL pilot rollback: clear `tracking_url_template` and `final_url_suffix` on campaign `14995905347` in a validated two-field campaign mutate. The unchanged account tracking template will resume inheritance.
+- Parent shadow rollback: set `CEFA_CT_ATTRIBUTION_V2_MODE` to `off`; this stops signed capture without changing legacy Form 4 fields or the webhook.
+- Parent plugin rollback: restore the retained `0.5.0` or pre-`0.5.0` runtime backup, then purge WP Engine page/object cache and verify the active version.
 
 Do not roll back to Version `22` merely to undo agency clearing, because that would also remove the repaired Google Ads Form `1` conversion tag.

@@ -471,9 +471,9 @@ Rules:
 
 Foundation result, 2026-07-09:
 
-- The hostname-scoped mode parser and server-only secret contract are implemented in the remediation PR.
-- Unknown modes fail closed to `off`; the production default remains `off`.
-- No plugin release or WordPress deployment has been made.
+- The hostname-scoped mode parser and server-only secret contract are implemented and merged.
+- Unknown modes fail closed to `off`; CRM compatibility writes and payload V2 remain off unless separately enabled.
+- Parent plugin `0.5.1` is deployed in `shadow` mode only. Franchise properties remain on their existing WPCode/GAConnector runtime.
 
 ### C2. File-level implementation plan
 
@@ -506,6 +506,14 @@ Add tests under:
 ### C3. Server request capture
 
 Run early on public front-end requests for supported hostnames.
+
+Managed-cache requirement:
+
+- keep early page-request capture for hosts where PHP executes on the landing request;
+- also expose a same-origin, no-store anonymous `POST` endpoint for managed hosts where cached anonymous pages bypass PHP cookie handling;
+- require the CEFA browser marker header and exact current-site origin;
+- submit only the existing query allowlist plus normalized landing path and external referrer host/path;
+- return no raw attribution data and set only the signed HttpOnly host cookie.
 
 Algorithm:
 
@@ -612,10 +620,11 @@ Raw click IDs belong in the top-level restricted `click_ids` object and approved
 
 Foundation result, 2026-07-09:
 
-- The canonical envelope capture/sign/verify class is implemented in source control.
+- The canonical envelope capture/sign/verify class is implemented in source control and deployed on the parent site.
 - Focused tests cover Google paid capture, allowlist enforcement, path-only landing storage, HMAC round trip, tamper rejection, cross-context rejection, expiry rejection, internal/direct preservation, Google click-ID family replacement, and the approved in-house marker.
 - CI now runs the envelope contract test on PHP `7.4` and `8.2` in addition to syntax and WordPress coding standards.
-- Entry-meta persistence, browser envelope exposure, hidden-field adapters, and production shadow activation remain gated work.
+- The WP Engine-safe browser transport is tested with real HTTP: valid same-origin requests set the cookie, unchanged evidence does not rewrite it, and invalid-origin/unmarked requests are rejected.
+- Hidden-field primary adapters remain gated; production primary mode is not enabled.
 
 Parent entry-meta result, 2026-07-09:
 
@@ -624,7 +633,7 @@ Parent entry-meta result, 2026-07-09:
 - Server-side browser identity parsing adds GA client ID, GA session ID, `_fbp`, and `_fbc` without placing these values in URLs.
 - The parent browser script's internal-referrer defect is fixed with exact approved CEFA host matching and regression tests.
 - The owned bridge now exceeds the current GAConnector field map for click-ID coverage, Meta browser IDs, signed history, and saved multi-touch depth.
-- Operational parity remains gated on CRM propagation, final server event-ID enforcement, and production shadow evidence.
+- Parent shadow observation has started. Operational parity remains gated on enough real paid entries, CRM propagation, and final server event-ID enforcement.
 
 ### C7. Browser multi-form writer
 
@@ -1236,6 +1245,8 @@ Exit gate:
 - staging tests pass and no business field/routing is changed.
 
 ### Phase 3: Shadow rollout, week 5-8
+
+Status on 2026-07-09: parent Form `4` shadow capture is active on plugin `0.5.1`; franchise rollout has not started.
 
 Order:
 
