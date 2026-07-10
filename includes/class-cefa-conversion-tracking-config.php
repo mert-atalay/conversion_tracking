@@ -103,6 +103,18 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Whether verified parent paid clicks may correct Form 4 attribution fields.
+	 *
+	 * This is intentionally independent from the broad primary cutover so paid
+	 * attribution can be corrected without changing event-ID ownership.
+	 *
+	 * @return bool
+	 */
+	public static function parent_paid_click_writeback_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED' ) );
+	}
+
+	/**
 	 * Whether signed, replay-safe confirmation payloads are enabled.
 	 *
 	 * @return bool

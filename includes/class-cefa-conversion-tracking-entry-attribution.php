@@ -17,6 +17,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 	public const SCHEMA_META_KEY      = 'cefa_conversion_tracking_schema_version';
 	public const STATUS_META_KEY      = 'cefa_conversion_tracking_delivery_status';
 	public const PROVENANCE_META_KEY  = 'cefa_conversion_tracking_attribution_provenance';
+	public const WRITEBACK_META_KEY   = 'cefa_conversion_tracking_writeback_status';
 
 	/**
 	 * Persist the verified request envelope after Gravity Forms saves an entry.
@@ -52,11 +53,13 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 
 		$form_id    = (int) ( $form_config['id'] ?? rgar( $entry, 'form_id' ) );
 		$entry_id   = (int) $entry['id'];
+		$writeback  = CEFA_Conversion_Tracking_Attribution::compatibility_writeback_status( $form_id );
 		$provenance = wp_json_encode(
 			array(
 				'attribution'   => 'signed_envelope',
 				'ledger'        => ! empty( $ledger ) ? sanitize_key( (string) ( $ledger['source'] ?? '' ) ) : 'not_resolved',
 				'legacy_fields' => 'preserved',
+				'writeback'     => $writeback,
 				'mode'          => $mode,
 			),
 			JSON_UNESCAPED_SLASHES
@@ -66,6 +69,7 @@ final class CEFA_Conversion_Tracking_Entry_Attribution {
 			self::SCHEMA_META_KEY      => (string) ( $envelope['schema_version'] ?? '' ),
 			self::STATUS_META_KEY      => 'attribution_' . $mode,
 			self::PROVENANCE_META_KEY  => is_string( $provenance ) ? $provenance : '',
+			self::WRITEBACK_META_KEY   => $writeback,
 		);
 
 		foreach ( $values as $meta_key => $value ) {

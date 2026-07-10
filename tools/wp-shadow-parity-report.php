@@ -112,6 +112,9 @@ $summary    = array(
 	'server_id_count'                => 0,
 	'unique_server_id_count'         => 0,
 	'identity_statuses'              => array(),
+	'ledger_capture_count'           => 0,
+	'ledger_statuses'                => array(),
+	'writeback_statuses'             => array(),
 	'channels'                       => array(),
 	'paid_entry_count'               => 0,
 	'paid_raw_checked'               => 0,
@@ -131,6 +134,9 @@ foreach ( $entries as $entry ) {
 	$entry_ids[] = $entry_id;
 	$server_id   = (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_server_event_id' );
 	$identity    = (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_identity_status' );
+	$capture_id  = (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_capture_id' );
+	$ledger      = sanitize_key( (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_ledger_status' ) );
+	$writeback   = sanitize_key( (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_writeback_status' ) );
 
 	if ( '' !== $server_id ) {
 		++$summary['server_id_count'];
@@ -139,6 +145,18 @@ foreach ( $entries as $entry ) {
 
 	if ( '' !== $identity ) {
 		$summary['identity_statuses'][ $identity ] = ( $summary['identity_statuses'][ $identity ] ?? 0 ) + 1;
+	}
+
+	if ( '' !== $capture_id ) {
+		++$summary['ledger_capture_count'];
+	}
+
+	if ( '' !== $ledger ) {
+		$summary['ledger_statuses'][ $ledger ] = ( $summary['ledger_statuses'][ $ledger ] ?? 0 ) + 1;
+	}
+
+	if ( '' !== $writeback ) {
+		$summary['writeback_statuses'][ $writeback ] = ( $summary['writeback_statuses'][ $writeback ] ?? 0 ) + 1;
 	}
 
 	$encoded  = (string) gform_get_meta( $entry_id, 'cefa_conversion_tracking_attribution_v1' );
@@ -233,7 +251,7 @@ if ( ! empty( $entry_ids ) ) {
 	}
 }
 
-foreach ( array( 'identity_statuses', 'channels', 'paid_core_issue_keys', 'delivery_note_types' ) as $key ) {
+foreach ( array( 'identity_statuses', 'ledger_statuses', 'writeback_statuses', 'channels', 'paid_core_issue_keys', 'delivery_note_types' ) as $key ) {
 	ksort( $summary[ $key ] );
 }
 

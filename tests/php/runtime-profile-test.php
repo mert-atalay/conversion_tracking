@@ -117,5 +117,15 @@ $filter_hooks = array_column( $GLOBALS['cefa_test_filters'], 'hook' );
 cefa_runtime_assert( in_array( 'gform_pre_submission_1', $action_hooks, true ), 'Full mode lost its pre-submission hook.' );
 cefa_runtime_assert( in_array( 'gform_after_submission_1', $action_hooks, true ), 'Full mode lost its confirmed-submit hook.' );
 cefa_runtime_assert( in_array( 'gform_confirmation_1', $filter_hooks, true ), 'Full mode lost its confirmation filter.' );
+$form_one_pre_submission_priorities = array();
+
+foreach ( $GLOBALS['cefa_test_actions'] as $action ) {
+	if ( 'gform_pre_submission_1' === $action['hook'] ) {
+		$form_one_pre_submission_priorities[] = $action['priority'];
+	}
+}
+
+sort( $form_one_pre_submission_priorities );
+cefa_runtime_assert( array( 5, 50 ) === $form_one_pre_submission_priorities, 'Full mode lost the late paid-click correction hook.' );
 
 echo "Runtime profile tests passed.\n";

@@ -150,6 +150,8 @@ final class CEFA_Conversion_Tracking_Config {
 	public static $mode        = 'shadow';
 	public static $crm_enabled = false;
 	public static $payload_v2  = false;
+	public static $paid_click_writeback = false;
+	public static $site_context = 'parent';
 
 	public static function attribution_v2_mode() {
 		return self::$mode;
@@ -160,7 +162,7 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	public static function site_context() {
-		return 'parent';
+		return self::$site_context;
 	}
 
 	public static function attribution_cookie_name() {
@@ -181,6 +183,10 @@ final class CEFA_Conversion_Tracking_Config {
 
 	public static function crm_identity_enabled() {
 		return self::$crm_enabled;
+	}
+
+	public static function parent_paid_click_writeback_enabled() {
+		return self::$paid_click_writeback;
 	}
 
 	public static function payload_v2_enabled() {
@@ -384,6 +390,150 @@ $parent_fields = array(
 );
 CEFA_Conversion_Tracking_Attribution::apply_primary_compatibility_fields( $parent_fields );
 cefa_assert( 'legacy-source' === $_POST['input_35'], 'Shadow mode overwrote a parent compatibility field.' );
+
+$paid_click_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array( 'gclid' => 'new-paid-gclid' ),
+	array(
+		'HTTP_HOST'   => 'cefa.ca',
+		'REQUEST_URI' => '/find-a-school/',
+	),
+	'parent',
+	array(),
+	time()
+);
+$paid_click_envelope['first_touch'] = array();
+$_COOKIE['cefa_parent_attr_v1']     = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $paid_click_envelope, 'entry-test-secret' );
+$_POST = array( 'input_35' => 'writeback-disabled' );
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'writeback-disabled' === $_POST['input_35'], 'Disabled paid-click adapter changed a parent field.' );
+$_POST = array(
+	'input_35' => 'google_business_profile',
+	'input_36' => 'local_listing',
+	'input_37' => 'old-local-campaign',
+	'input_38' => 'old-local-term',
+	'input_39' => 'old-local-content',
+	'input_40' => 'old-gclid',
+	'input_43' => 'old-fbclid',
+	'input_45' => 'https://cefa.ca/original-landing/',
+	'input_46' => 'https://www.google.com/original-referrer/',
+);
+CEFA_Conversion_Tracking_Config::$paid_click_writeback = true;
+CEFA_Conversion_Tracking_Config::$mode                 = 'off';
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'google_business_profile' === $_POST['input_35'], 'Paid-click adapter wrote while canonical attribution was off.' );
+CEFA_Conversion_Tracking_Config::$mode = 'shadow';
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'google' === $_POST['input_35'] && 'cpc' === $_POST['input_36'], 'Paid-click adapter did not correct stale source and medium.' );
+cefa_assert( '' === $_POST['input_37'] && '' === $_POST['input_38'] && '' === $_POST['input_39'], 'Paid-click adapter retained stale last-touch campaign values.' );
+cefa_assert( 'new-paid-gclid' === $_POST['input_40'], 'Paid-click adapter did not write the current click ID.' );
+cefa_assert( '' === $_POST['input_41'] && '' === $_POST['input_42'] && '' === $_POST['input_43'] && '' === $_POST['input_44'], 'Paid-click adapter retained a competing click ID.' );
+cefa_assert( 'https://cefa.ca/original-landing/' === $_POST['input_45'], 'Paid-click adapter blanked a valid first landing page.' );
+cefa_assert( 'https://www.google.com/original-referrer/' === $_POST['input_46'], 'Paid-click adapter blanked a valid first referrer.' );
+cefa_assert( 'parent_paid_click' === CEFA_Conversion_Tracking_Attribution::compatibility_writeback_status( 4 ), 'Paid-click writeback status was not recorded.' );
+$paid_saved = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission(
+	array( 'id' => 103, 'form_id' => 4, 'status' => 'active' ),
+	array( 'id' => 4 )
+);
+cefa_assert( 'parent_paid_click' === $paid_saved[ CEFA_Conversion_Tracking_Entry_Attribution::WRITEBACK_META_KEY ], 'Paid-click entry did not retain writeback provenance.' );
+
+$paid_click_cases = array(
+	'gbraid'  => array( 'google', 'cpc', '41' ),
+	'wbraid'  => array( 'google', 'cpc', '42' ),
+	'msclkid' => array( 'bing', 'cpc', '44' ),
+);
+
+foreach ( $paid_click_cases as $click_type => $expectation ) {
+	$case_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+		array( $click_type => 'current-' . $click_type ),
+		array(
+			'HTTP_HOST'   => 'cefa.ca',
+			'REQUEST_URI' => '/find-a-school/',
+		),
+		'parent',
+		array(),
+		time()
+	);
+	$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $case_envelope, 'entry-test-secret' );
+	$_POST = array(
+		'input_35' => 'stale-source',
+		'input_36' => 'stale-medium',
+	);
+	CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+	cefa_assert( $expectation[0] === $_POST['input_35'] && $expectation[1] === $_POST['input_36'], strtoupper( $click_type ) . ' source/medium correction failed.' );
+	cefa_assert( 'current-' . $click_type === $_POST[ 'input_' . $expectation[2] ], strtoupper( $click_type ) . ' was not written to its approved field.' );
+}
+
+$meta_paid_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array(
+		'fbclid'       => 'current-fbclid',
+		'utm_source'   => 'meta',
+		'utm_medium'   => 'paid_social',
+		'utm_campaign' => 'parent-paid-social',
+	),
+	array(
+		'HTTP_HOST'   => 'cefa.ca',
+		'REQUEST_URI' => '/find-a-school/',
+	),
+	'parent',
+	array(),
+	time()
+);
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $meta_paid_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'stale-source',
+	'input_36' => 'stale-medium',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'meta' === $_POST['input_35'] && 'paid_social' === $_POST['input_36'], 'Governed Meta paid-social correction failed.' );
+cefa_assert( 'current-fbclid' === $_POST['input_43'], 'Governed Meta click ID was not written.' );
+
+$meta_organic_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array( 'fbclid' => 'organic-fbclid' ),
+	array(
+		'HTTP_HOST'   => 'cefa.ca',
+		'REQUEST_URI' => '/find-a-school/',
+	),
+	'parent',
+	array(),
+	time()
+);
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $meta_organic_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'facebook',
+	'input_36' => 'referral',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'facebook' === $_POST['input_35'] && 'referral' === $_POST['input_36'], 'Bare fbclid was incorrectly treated as paid evidence.' );
+
+$organic_after_paid = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array(),
+	array(
+		'HTTP_HOST'    => 'cefa.ca',
+		'REQUEST_URI'  => '/find-a-school/',
+		'HTTP_REFERER' => 'https://www.google.com/search?q=cefa',
+	),
+	'parent',
+	$paid_click_envelope,
+	time() + 60
+);
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $organic_after_paid, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'google',
+	'input_36' => 'organic',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'google' === $_POST['input_35'] && 'organic' === $_POST['input_36'], 'Historical paid click overwrote a newer organic touch.' );
+cefa_assert( 'none' === CEFA_Conversion_Tracking_Attribution::compatibility_writeback_status( 4 ), 'Organic touch received a paid-click writeback marker.' );
+
+CEFA_Conversion_Tracking_Config::$site_context = 'franchise_us';
+$_POST = array( 'input_35' => 'franchise-value' );
+CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
+cefa_assert( 'franchise-value' === $_POST['input_35'], 'Parent paid-click adapter changed a franchise context.' );
+
+CEFA_Conversion_Tracking_Config::$site_context          = 'parent';
+CEFA_Conversion_Tracking_Config::$paid_click_writeback = false;
+$_COOKIE['cefa_parent_attr_v1']                         = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $entry_envelope, 'entry-test-secret' );
+$_POST = array( 'input_35' => 'legacy-source' );
 
 CEFA_Conversion_Tracking_Config::$mode = 'primary';
 CEFA_Conversion_Tracking_Config::$crm_enabled = false;

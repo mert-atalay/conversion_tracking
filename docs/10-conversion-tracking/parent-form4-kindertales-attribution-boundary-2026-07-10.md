@@ -135,18 +135,23 @@ A live-container no-send test then pushed a synthetic `school_inquiry_submit` wh
 
 This proves current website-side tag triggering after the ledger rollout. It does not replace delayed platform reporting confirmation.
 
-## Safe Next Step
+## Parent Paid-Click Writeback Policy
 
-Do not enable canonical CRM compatibility writeback yet. The current primary adapter can replace all approved fields, including intentional blanks.
+Plugin `0.6.2` separates paid-click correction from broad primary mode through `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED`.
 
-Before any promotion:
+When enabled, the adapter:
 
-1. Define the exact last-non-direct rule for `gclid`, `gbraid`, `wbraid`, `fbclid`, and explicit UTMs.
-2. Decide whether canonical values should fill only missing fields or replace stale existing values.
-3. Add regression tests for `gclid`-only visits after an older organic/local touch.
-4. Confirm the resulting fields still appear correctly in the KinderTales inquiry record.
-5. Add `event_id` and `capture_id` to KinderTales metadata only after the KinderTales API contract is confirmed to accept those keys.
-6. Keep one final conversion event and preserve the existing event ID for future browser/server deduplication.
+1. Requires parent context, Form `4`, canonical attribution, and a click type attached to the current last non-direct touch.
+2. Supports `gclid`, `gbraid`, `wbraid`, and `msclkid` directly; `fbclid` also requires CEFA campaign metadata or governed Meta platform IDs because it can occur on organic links.
+3. Replaces stale source, medium, campaign, term, content, and click-ID fields `35-44`.
+4. Clears competing click-ID fields so the saved entry represents one proven paid touch.
+5. Writes first landing and first referrer fields `45-46` only when canonical first-touch values exist.
+6. Records `cefa_conversion_tracking_writeback_status=parent_paid_click` for audit and rollback verification.
+7. Does not change field `32`, event identity, School Manager code, KinderTales routing, or conversion destinations.
+
+Regression coverage includes a `gclid`-only visit after an older local-listing touch, stale campaign clearing, first-touch preservation, historical-click/newer-organic protection, and franchise isolation.
+
+Future work may add `event_id` and `capture_id` to KinderTales metadata only after the KinderTales API contract is confirmed to accept those keys.
 
 ## Operational Guardrail
 
