@@ -3,7 +3,7 @@
 Date opened: 2026-07-10  
 Property: parent `cefa.ca`  
 Form and CRM: Gravity Forms Form `4` -> CEFA School Manager -> KinderTales  
-Status: live, technically verified, awaiting the first natural paid submission
+Status: live, production acceptance passed on 2026-07-13
 
 ## Live Configuration
 
@@ -78,5 +78,28 @@ Append the dated aggregate result here after each review:
 | Review date | Natural paid entries | `parent_paid_click` | Ledger coverage | KinderTales success | Webhook success | Decision |
 |---|---:|---:|---:|---:|---:|---|
 | 2026-07-10 | 0 observed immediately after enablement | 0 observed | Not yet assessable | Not yet assessable | Not yet assessable | Await natural paid inquiry |
+| 2026-07-13 | 44 paid-classified; 40 eligible paid clicks | 40 | 227/234 overall; 40/40 writebacks | 234/234 | 233/234 | Pass; keep adapter enabled |
+
+## 2026-07-13 Production Review
+
+The read-only follow-up covered 234 natural Form `4` submissions created after the `2026-07-10T21:35:00Z` activation boundary.
+
+- All 234 submissions had server event IDs, and all 234 IDs were unique.
+- 228 submissions had canonical attribution; five were expected direct submissions and one had legacy attribution without a canonical envelope.
+- 40 entries received `parent_paid_click`; all 40 had ledger references.
+- The corrected cohort included 32 iOS, six Android, one desktop Chrome, and one Safari submission.
+- Policy-aware validation matched all 479 checked fields across the 40 writebacks, for `100%` writeback-policy parity.
+- Four paid-classified entries correctly received no writeback: three had no current click-ID type and one had an `fbclid` without the governed paid context required by the Meta guardrail.
+- KinderTales delivery succeeded for all 234 submissions.
+- The CEFA Brain webhook succeeded for 233 submissions and failed for one. The failed webhook entry had a ledger reference and no paid-click writeback, so there is no evidence connecting that failure to the adapter.
+- Public homepage and Form `4` paths continued to serve CEFA Conversion Tracking `0.6.2`.
+
+The generic parity report showed `96.58%` core paid parity because its historical comparison expects retained click IDs that the approved adapter deliberately clears. The policy-aware check applies the actual production rule: retain only the current click family and clear competing stale IDs. That check passed at `100%`.
+
+Overall ledger coverage was `227/234` (`97.01%`). The seven entries without a ledger reference comprised five iOS, one Safari, and one Chrome submission; six also lacked canonical attribution, while one retained canonical attribution through the existing browser path. This is a separate reliability follow-up, not a paid-writeback failure: all 40 paid writebacks, including the iOS/Safari cohort, had ledger references.
+
+Decision: keep `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` enabled. Keep broad attribution and ledger modes in `shadow`. Investigate the isolated Brain webhook failure and continue improving Safari/iOS ledger recovery without changing School Manager, KinderTales, Form `4`, or conversion destinations.
+
+Recommended next observation: rerun the aggregate report on or after 2026-07-16, or after another 100 Form `4` submissions, whichever comes first. Confirm that writeback-policy parity remains `100%`, KinderTales remains at `100%`, ledger coverage trends upward, and webhook failures do not repeat.
 
 Architecture and ownership details remain canonical in [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
