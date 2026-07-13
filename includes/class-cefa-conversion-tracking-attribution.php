@@ -118,6 +118,7 @@ final class CEFA_Conversion_Tracking_Attribution {
 	public static function apply_parent_paid_click_fields( array $form_config ): void {
 		if (
 			! CEFA_Conversion_Tracking_Config::parent_paid_click_writeback_enabled() ||
+			CEFA_Conversion_Tracking_Config::parent_canonical_writeback_enabled() ||
 			'parent' !== CEFA_Conversion_Tracking_Config::site_context() ||
 			'off' === CEFA_Conversion_Tracking_Config::attribution_v2_mode() ||
 			4 !== (int) ( $form_config['id'] ?? 0 )
@@ -173,12 +174,118 @@ final class CEFA_Conversion_Tracking_Attribution {
 	}
 
 	/**
+	 * Populate parent Form 4 attribution fields from canonical current evidence.
+	 *
+	 * This adapter remains independent from broad primary mode and event-ID
+	 * ownership. It replaces last-touch fields only when the verified canonical
+	 * envelope has a meaningful non-direct touch. A bare fbclid is downgraded
+	 * to referral unless governed campaign evidence proves that it was paid.
+	 *
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return void
+	 */
+	public static function apply_parent_canonical_fields( array $form_config ): void {
+		if (
+			! CEFA_Conversion_Tracking_Config::parent_canonical_writeback_enabled() ||
+			'parent' !== CEFA_Conversion_Tracking_Config::site_context() ||
+			'off' === CEFA_Conversion_Tracking_Config::attribution_v2_mode() ||
+			4 !== (int) ( $form_config['id'] ?? 0 )
+		) {
+			return;
+		}
+
+		$envelope = CEFA_Conversion_Tracking_Entry_Attribution::current_verified_envelope();
+		$values   = self::parent_canonical_writeback_values( $envelope, $form_config );
+
+		if ( empty( $values ) ) {
+			return;
+		}
+
+		$fields = is_array( $form_config['attribution_fields'] ?? null ) ? $form_config['attribution_fields'] : array();
+
+		foreach ( array( 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid' ) as $semantic_key ) {
+			if ( ! isset( $fields[ $semantic_key ] ) || ! array_key_exists( $semantic_key, $values ) ) {
+				continue;
+			}
+
+			self::write_approved_post_field(
+				(int) $form_config['id'],
+				(string) $fields[ $semantic_key ],
+				(string) $values[ $semantic_key ],
+				'cefa_ct_parent_canonical_form_'
+			);
+		}
+
+		foreach ( array( 'first_landing_page', 'first_referrer' ) as $semantic_key ) {
+			if ( ! isset( $fields[ $semantic_key ] ) || empty( $values[ $semantic_key ] ) ) {
+				continue;
+			}
+
+			self::write_approved_post_field(
+				(int) $form_config['id'],
+				(string) $fields[ $semantic_key ],
+				(string) $values[ $semantic_key ],
+				'cefa_ct_parent_canonical_form_'
+			);
+		}
+	}
+
+	/**
+	 * Build the safe parent Form 4 compatibility values for one envelope.
+	 *
+	 * Historical click IDs remain useful in the canonical audit envelope, but
+	 * the CRM fields represent only the current last non-direct touch. Therefore
+	 * every competing click-ID family is intentionally blanked here.
+	 *
+	 * @param array<string, mixed> $envelope    Verified canonical envelope.
+	 * @param array<string, mixed> $form_config Active form configuration.
+	 * @return array<string, string>
+	 */
+	public static function parent_canonical_writeback_values( array $envelope, array $form_config ): array {
+		$last      = is_array( $envelope['last_non_direct_touch'] ?? null ) ? $envelope['last_non_direct_touch'] : array();
+		$clicks    = is_array( $envelope['click_ids'] ?? null ) ? $envelope['click_ids'] : array();
+		$type      = sanitize_key( (string) ( $last['click_id_type'] ?? '' ) );
+		$types     = array( 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid' );
+		$bare_meta = 'fbclid' === $type && ! self::has_meta_paid_context( $envelope, $last );
+
+		if (
+			empty( $last ) ||
+			'' === self::touch_value( $last, 'source' ) ||
+			'' === self::touch_value( $last, 'medium' ) ||
+			( '' !== $type && ! in_array( $type, $types, true ) ) ||
+			( '' !== $type && '' === self::map_value( $clicks, $type ) )
+		) {
+			return array();
+		}
+
+		$values = self::canonical_compatibility_values( $envelope, $form_config );
+
+		if ( $bare_meta ) {
+			$values['utm_source']   = in_array( self::touch_value( $last, 'source' ), array( 'facebook', 'instagram', 'meta' ), true ) ? self::touch_value( $last, 'source' ) : 'facebook';
+			$values['utm_medium']   = 'referral';
+			$values['utm_campaign'] = '';
+			$values['utm_term']     = '';
+			$values['utm_content']  = '';
+		}
+
+		foreach ( $types as $click_type ) {
+			$values[ $click_type ] = ! $bare_meta && $type === $click_type ? self::map_value( $clicks, $type ) : '';
+		}
+
+		return $values;
+	}
+
+	/**
 	 * Return the compatibility writeback applied to the current request.
 	 *
 	 * @param int $form_id Gravity Forms form ID.
 	 * @return string
 	 */
 	public static function compatibility_writeback_status( int $form_id ): string {
+		if ( isset( $_POST[ 'cefa_ct_parent_canonical_form_' . $form_id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Internal same-request marker only.
+			return 'parent_canonical';
+		}
+
 		if ( isset( $_POST[ 'cefa_ct_parent_paid_click_form_' . $form_id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Internal same-request marker only.
 			return 'parent_paid_click';
 		}

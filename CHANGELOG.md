@@ -4,6 +4,15 @@
 
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
+## 0.6.3 - 2026-07-13
+
+- Added a separately gated parent canonical writeback for Gravity Forms Form `4` fields `35-46` while broad attribution mode remains `shadow`.
+- Write canonical last-non-direct source, medium, and campaign context; retain only the current click-ID family and clear stale competing IDs.
+- Preserve existing Form `4` values when canonical evidence is unavailable and preserve first-touch fields when canonical first-touch values are absent.
+- Classify a bare ungoverned `fbclid` as `facebook / referral` without sending the click ID to KinderTales; governed Meta campaign evidence remains paid social.
+- Added policy-aware aggregate monitoring and regression coverage for organic, referral, email, paid, historical-click, Meta, missing-evidence, and franchise-isolation cases.
+- Kept Form `4` field `32`, School Manager, KinderTales routing, event-ID ownership, confirmation events, platform conversions, and franchise properties unchanged.
+
 ## 0.6.2 - 2026-07-10
 
 - Added a parent-only paid-click attribution writeback flag independent from broad primary mode.

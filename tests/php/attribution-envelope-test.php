@@ -151,6 +151,7 @@ final class CEFA_Conversion_Tracking_Config {
 	public static $crm_enabled = false;
 	public static $payload_v2  = false;
 	public static $paid_click_writeback = false;
+	public static $canonical_writeback = false;
 	public static $site_context = 'parent';
 
 	public static function attribution_v2_mode() {
@@ -187,6 +188,10 @@ final class CEFA_Conversion_Tracking_Config {
 
 	public static function parent_paid_click_writeback_enabled() {
 		return self::$paid_click_writeback;
+	}
+
+	public static function parent_canonical_writeback_enabled() {
+		return self::$canonical_writeback;
 	}
 
 	public static function payload_v2_enabled() {
@@ -525,13 +530,135 @@ CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fi
 cefa_assert( 'google' === $_POST['input_35'] && 'organic' === $_POST['input_36'], 'Historical paid click overwrote a newer organic touch.' );
 cefa_assert( 'none' === CEFA_Conversion_Tracking_Attribution::compatibility_writeback_status( 4 ), 'Organic touch received a paid-click writeback marker.' );
 
+$_POST = array( 'input_35' => 'canonical-disabled' );
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'canonical-disabled' === $_POST['input_35'], 'Disabled canonical parent adapter changed a field.' );
+
+CEFA_Conversion_Tracking_Config::$canonical_writeback = true;
+CEFA_Conversion_Tracking_Config::$mode                = 'off';
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'canonical-disabled' === $_POST['input_35'], 'Canonical parent adapter wrote while attribution was off.' );
+
+CEFA_Conversion_Tracking_Config::$mode = 'shadow';
+$_COOKIE['cefa_parent_attr_v1']        = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $organic_after_paid, 'entry-test-secret' );
+$_POST = array(
+	'input_32_4' => 'business-event-id',
+	'input_35'   => 'stale-paid-source',
+	'input_36'   => 'stale-paid-medium',
+	'input_37'   => 'stale-campaign',
+	'input_38'   => 'stale-term',
+	'input_39'   => 'stale-content',
+	'input_40'   => 'historical-gclid',
+	'input_43'   => 'historical-fbclid',
+	'input_45'   => 'https://cefa.ca/legacy-first/',
+	'input_46'   => 'https://legacy.example/referrer/',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'google' === $_POST['input_35'] && 'organic' === $_POST['input_36'], 'Canonical organic source/medium writeback failed.' );
+cefa_assert( '' === $_POST['input_37'] && '' === $_POST['input_38'] && '' === $_POST['input_39'], 'Canonical organic writeback retained stale campaign data.' );
+cefa_assert( '' === $_POST['input_40'] && '' === $_POST['input_41'] && '' === $_POST['input_42'] && '' === $_POST['input_43'] && '' === $_POST['input_44'], 'Canonical organic writeback retained historical click IDs.' );
+cefa_assert( 'business-event-id' === $_POST['input_32_4'], 'Canonical parent adapter changed Form 4 business identity.' );
+cefa_assert( 'parent_canonical' === CEFA_Conversion_Tracking_Attribution::compatibility_writeback_status( 4 ), 'Canonical parent writeback status was not recorded.' );
+$canonical_saved = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission(
+	array( 'id' => 104, 'form_id' => 4, 'status' => 'active' ),
+	array( 'id' => 4 )
+);
+cefa_assert( 'parent_canonical' === $canonical_saved[ CEFA_Conversion_Tracking_Entry_Attribution::WRITEBACK_META_KEY ], 'Canonical parent entry did not retain writeback provenance.' );
+
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $paid_click_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'stale-source',
+	'input_36' => 'stale-medium',
+	'input_40' => 'stale-gclid',
+	'input_43' => 'stale-fbclid',
+	'input_45' => 'https://cefa.ca/preserved-first/',
+	'input_46' => 'https://preserved.example/referrer/',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'google' === $_POST['input_35'] && 'cpc' === $_POST['input_36'], 'Canonical paid source/medium writeback failed.' );
+cefa_assert( 'new-paid-gclid' === $_POST['input_40'] && '' === $_POST['input_43'], 'Canonical paid writeback did not retain only the current click family.' );
+cefa_assert( 'https://cefa.ca/preserved-first/' === $_POST['input_45'] && 'https://preserved.example/referrer/' === $_POST['input_46'], 'Canonical paid writeback erased unavailable first-touch context.' );
+
+$referral_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array(),
+	array(
+		'HTTP_HOST'    => 'cefa.ca',
+		'REQUEST_URI'  => '/find-a-school/',
+		'HTTP_REFERER' => 'https://partner.example/article/',
+	),
+	'parent',
+	array(),
+	time()
+);
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $referral_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'stale-source',
+	'input_36' => 'stale-medium',
+	'input_40' => 'stale-gclid',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'partner.example' === $_POST['input_35'] && 'referral' === $_POST['input_36'], 'Canonical referral source/medium writeback failed.' );
+cefa_assert( '' === $_POST['input_40'], 'Canonical referral writeback retained a stale click ID.' );
+cefa_assert( 'https://cefa.ca/find-a-school/' === $_POST['input_45'], 'Canonical referral first landing writeback failed.' );
+cefa_assert( 'https://partner.example/article/' === $_POST['input_46'], 'Canonical referral first referrer writeback failed.' );
+
+$utm_envelope = CEFA_Conversion_Tracking_Attribution_Envelope::capture(
+	array(
+		'utm_source'   => 'newsletter',
+		'utm_medium'   => 'email',
+		'utm_campaign' => 'family-update',
+	),
+	array(
+		'HTTP_HOST'   => 'cefa.ca',
+		'REQUEST_URI' => '/find-a-school/',
+	),
+	'parent',
+	array(),
+	time()
+);
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $utm_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'stale-source',
+	'input_36' => 'stale-medium',
+	'input_37' => 'stale-campaign',
+	'input_43' => 'stale-fbclid',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'newsletter' === $_POST['input_35'] && 'email' === $_POST['input_36'], 'Canonical explicit campaign source/medium writeback failed.' );
+cefa_assert( 'family-update' === $_POST['input_37'], 'Canonical explicit campaign name writeback failed.' );
+cefa_assert( '' === $_POST['input_43'], 'Canonical explicit campaign writeback retained a stale click ID.' );
+
+$_COOKIE['cefa_parent_attr_v1'] = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $meta_organic_envelope, 'entry-test-secret' );
+$_POST = array(
+	'input_35' => 'stale-meta-source',
+	'input_36' => 'stale-meta-medium',
+	'input_37' => 'stale-meta-campaign',
+	'input_43' => 'organic-fbclid',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'facebook' === $_POST['input_35'] && 'referral' === $_POST['input_36'], 'Bare fbclid was not downgraded to referral attribution.' );
+cefa_assert( '' === $_POST['input_37'] && '' === $_POST['input_43'], 'Bare fbclid retained paid campaign or click attribution.' );
+
+$missing_cookie = $_COOKIE['cefa_parent_attr_v1'];
+unset( $_COOKIE['cefa_parent_attr_v1'] );
+$_POST = array(
+	'input_35' => 'legacy-preserved',
+	'input_45' => 'https://cefa.ca/legacy-first/',
+);
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'legacy-preserved' === $_POST['input_35'] && 'https://cefa.ca/legacy-first/' === $_POST['input_45'], 'Missing canonical evidence erased legacy attribution.' );
+$_COOKIE['cefa_parent_attr_v1'] = $missing_cookie;
+
 CEFA_Conversion_Tracking_Config::$site_context = 'franchise_us';
 $_POST = array( 'input_35' => 'franchise-value' );
+CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $parent_fields );
+cefa_assert( 'franchise-value' === $_POST['input_35'], 'Parent canonical adapter changed a franchise context.' );
 CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $parent_fields );
 cefa_assert( 'franchise-value' === $_POST['input_35'], 'Parent paid-click adapter changed a franchise context.' );
 
 CEFA_Conversion_Tracking_Config::$site_context          = 'parent';
 CEFA_Conversion_Tracking_Config::$paid_click_writeback = false;
+CEFA_Conversion_Tracking_Config::$canonical_writeback  = false;
 $_COOKIE['cefa_parent_attr_v1']                         = CEFA_Conversion_Tracking_Attribution_Envelope::encode( $entry_envelope, 'entry-test-secret' );
 $_POST = array( 'input_35' => 'legacy-source' );
 

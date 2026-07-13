@@ -273,7 +273,7 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 
 ## Attribution Bridge Runtime Flags
 
-Plugin `0.6.2` ships every new attribution/cutover path disabled by default.
+Plugin `0.6.3` ships every new attribution/cutover path disabled by default.
 
 When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
 
@@ -286,6 +286,7 @@ When shadow or primary mode is enabled, the browser bridge posts allowlisted acq
 | `CEFA_CT_LEDGER_SECRET` | empty | Separate server-only HMAC secret required before the ledger table, opaque cookie, or form fallback can operate. |
 | `CEFA_CT_CRM_IDENTITY_ENABLED` | `false` | Allows primary mode to populate only the approved parent `35-46` or franchise `14-30` compatibility fields. |
 | `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` | `false` | Corrects parent Form `4` fields `35-46` only when the canonical current touch contains a verified paid click ID. Does not require or enable broad primary mode. |
+| `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED` | `false` | Writes safe canonical current-touch attribution to parent Form `4` fields `35-46` for KinderTales without enabling broad primary mode or changing event identity. Supersedes the paid-only writer when enabled. |
 | `CEFA_CT_PAYLOAD_V2_ENABLED` | `false` | Enables signed, replay-safe confirmation payload retrieval. |
 | `CEFA_CT_PAYLOAD_SECRET` | empty | Server-only signing secret required for payload V2. |
 | `CEFA_CT_COLLECTOR_ENABLED` | `false` | Preserves the existing optional collector gate. |
@@ -304,6 +305,8 @@ For franchise coexistence, set `CEFA_CT_RUNTIME_PROFILE=attribution_only` before
 The ledger is additive to the existing signed attribution envelope. It stores the canonical envelope in a first-party WordPress table, sends only an opaque signed capture handle to the browser, and injects a 30-minute signed fallback handle into configured Gravity Forms. The browser refreshes that handle after 25 minutes so long-open forms retain a five-minute submission margin. No existing Gravity Forms field, GAConnector field, CRM feed, conversion event, or campaign parameter is replaced. The ledger table is not installed and no ledger cookie is issued unless both `CEFA_CT_LEDGER_MODE` and `CEFA_CT_LEDGER_SECRET` are configured.
 
 The parent paid-click adapter is a separate narrow control. When enabled on `cefa.ca`, it uses only the click type attached to the canonical last non-direct touch. Google and Microsoft click IDs are direct paid evidence; `fbclid` additionally requires CEFA campaign metadata or governed Meta platform IDs because Facebook also adds it to organic links. The adapter runs after School Manager's cookie fallback, replaces stale last-touch fields `35-44`, clears competing click IDs, writes first-touch fields `45-46` only when canonical values exist, and records `cefa_conversion_tracking_writeback_status=parent_paid_click` beside the entry. It never changes field `32`, event-ID ownership, School Manager routing, KinderTales delivery code, or destination tags.
+
+The parent canonical adapter extends that correction to organic, referral, email, and explicit campaign touches while attribution mode remains `shadow`. It writes only a verified canonical last-non-direct touch, retains only that touch's current click-ID family, preserves existing values when canonical evidence is unavailable, and writes first-touch fields only when canonical first-touch evidence exists. A bare ungoverned `fbclid` becomes `facebook / referral` and its click ID remains only in the audit envelope. The adapter records `cefa_conversion_tracking_writeback_status=parent_canonical`; it does not touch field `32`, event identity, School Manager, KinderTales routing, conversion events, or franchise properties.
 
 ## Install On Staging
 
@@ -325,6 +328,7 @@ The parent paid-click adapter is a separate narrow control. When enabled on `cef
 - Fields `32.1` through `32.7` appear as clean separate parameters.
 - Attribution fields `35` through `46` are saved as clean separate values when UTM/click-ID parameters are present.
 - A verified paid click corrects stale parent fields `35-44` without blanking valid first-touch fields `45-46`.
+- A verified canonical organic, referral, email, or explicit campaign touch replaces stale parent attribution while preserving business fields and unavailable first-touch context.
 - A historical click ID does not overwrite a newer organic last-non-direct touch.
 - Invalid form submission fires no final conversion event.
 - Direct `/thank-you/?location=<slug>&inquiry=true` visit without a plugin token fires no final conversion event.

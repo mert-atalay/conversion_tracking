@@ -115,6 +115,18 @@ final class CEFA_Conversion_Tracking_Config {
 	}
 
 	/**
+	 * Whether canonical parent attribution may populate Form 4 CRM fields.
+	 *
+	 * This remains independent from broad primary mode so it cannot promote
+	 * event identity or affect franchise compatibility fields.
+	 *
+	 * @return bool
+	 */
+	public static function parent_canonical_writeback_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED' ) );
+	}
+
+	/**
 	 * Whether signed, replay-safe confirmation payloads are enabled.
 	 *
 	 * @return bool
