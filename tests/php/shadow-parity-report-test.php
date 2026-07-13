@@ -46,5 +46,21 @@ cefa_shadow_report_assert(
 	'mismatch' === cefa_ct_shadow_core_comparison( 'utm_campaign', 'legacy-campaign', 'canonical-campaign' ),
 	'Comparable campaign mismatch was not reported.'
 );
+cefa_shadow_report_assert(
+	'match' === cefa_ct_writeback_policy_comparison( 'utm_source', 'Google', 'google' ),
+	'Writeback source comparison is not case-normalized.'
+);
+cefa_shadow_report_assert(
+	'match' === cefa_ct_writeback_policy_comparison( 'fbclid', '', '' ),
+	'Cleared competing click ID did not match writeback policy.'
+);
+cefa_shadow_report_assert(
+	'mismatch' === cefa_ct_writeback_policy_comparison( 'gclid', 'historical-click', '' ),
+	'Historical click ID was not rejected by writeback policy.'
+);
+cefa_shadow_report_assert(
+	'skip' === cefa_ct_writeback_policy_comparison( 'first_referrer', 'https://legacy.example/', '' ),
+	'Missing canonical first-touch context did not preserve the saved value.'
+);
 
 echo "Shadow parity report tests passed.\n";

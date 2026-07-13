@@ -61,6 +61,28 @@ function cefa_ct_shadow_core_comparison( string $semantic_key, $legacy, $canonic
 	return hash_equals( $canonical, $legacy ) ? 'match' : 'mismatch';
 }
 
+/**
+ * Compare one saved field with the active parent writeback policy.
+ *
+ * Missing canonical first-touch context is intentionally preserved instead of
+ * blanked, so those fields are excluded when the expected value is empty.
+ *
+ * @param string $semantic_key Attribution semantic key.
+ * @param mixed  $saved        Saved Gravity Forms value.
+ * @param mixed  $expected     Policy-approved canonical value.
+ * @return string `skip`, `match`, or `mismatch`.
+ */
+function cefa_ct_writeback_policy_comparison( string $semantic_key, $saved, $expected ): string {
+	$saved    = cefa_ct_shadow_normalize_value( $semantic_key, $saved );
+	$expected = cefa_ct_shadow_normalize_value( $semantic_key, $expected );
+
+	if ( preg_match( '/(?:landing|referrer)/', $semantic_key ) && '' === $expected ) {
+		return 'skip';
+	}
+
+	return hash_equals( $expected, $saved ) ? 'match' : 'mismatch';
+}
+
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
 }
@@ -115,6 +137,10 @@ $summary    = array(
 	'ledger_capture_count'           => 0,
 	'ledger_statuses'                => array(),
 	'writeback_statuses'             => array(),
+	'writeback_policy_checked'       => 0,
+	'writeback_policy_matched'       => 0,
+	'writeback_policy_parity'        => null,
+	'writeback_policy_issue_keys'    => array(),
 	'channels'                       => array(),
 	'paid_entry_count'               => 0,
 	'paid_raw_checked'               => 0,
@@ -192,6 +218,38 @@ foreach ( $entries as $entry ) {
 
 	$summary['channels'][ $channel ] = ( $summary['channels'][ $channel ] ?? 0 ) + 1;
 
+	if ( in_array( $writeback, array( 'parent_paid_click', 'parent_canonical' ), true ) ) {
+		$policy_values = CEFA_Conversion_Tracking_Attribution::parent_canonical_writeback_values( $envelope, $form_config );
+
+		if ( empty( $policy_values ) ) {
+			$summary['writeback_policy_issue_keys']['unsafe_envelope'] = ( $summary['writeback_policy_issue_keys']['unsafe_envelope'] ?? 0 ) + 1;
+		} else {
+			foreach ( $field_map as $semantic_key => $field_id ) {
+				if ( ! array_key_exists( $semantic_key, $policy_values ) ) {
+					continue;
+				}
+
+				$result = cefa_ct_writeback_policy_comparison(
+					(string) $semantic_key,
+					rgar( $entry, (string) $field_id ),
+					$policy_values[ $semantic_key ]
+				);
+
+				if ( 'skip' === $result ) {
+					continue;
+				}
+
+				++$summary['writeback_policy_checked'];
+
+				if ( 'match' === $result ) {
+					++$summary['writeback_policy_matched'];
+				} else {
+					$summary['writeback_policy_issue_keys'][ $semantic_key ] = ( $summary['writeback_policy_issue_keys'][ $semantic_key ] ?? 0 ) + 1;
+				}
+			}
+		}
+	}
+
 	if ( ! $is_paid ) {
 		continue;
 	}
@@ -237,6 +295,10 @@ if ( $summary['paid_core_checked'] > 0 ) {
 	$summary['paid_core_parity'] = round( $summary['paid_core_matched'] / $summary['paid_core_checked'], 4 );
 }
 
+if ( $summary['writeback_policy_checked'] > 0 ) {
+	$summary['writeback_policy_parity'] = round( $summary['writeback_policy_matched'] / $summary['writeback_policy_checked'], 4 );
+}
+
 if ( ! empty( $entry_ids ) ) {
 	$notes = GFAPI::get_notes( array( 'entry_id' => $entry_ids ) );
 
@@ -251,7 +313,7 @@ if ( ! empty( $entry_ids ) ) {
 	}
 }
 
-foreach ( array( 'identity_statuses', 'ledger_statuses', 'writeback_statuses', 'channels', 'paid_core_issue_keys', 'delivery_note_types' ) as $key ) {
+foreach ( array( 'identity_statuses', 'ledger_statuses', 'writeback_statuses', 'writeback_policy_issue_keys', 'channels', 'paid_core_issue_keys', 'delivery_note_types' ) as $key ) {
 	ksort( $summary[ $key ] );
 }
 

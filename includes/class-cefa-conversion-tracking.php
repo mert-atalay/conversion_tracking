@@ -60,9 +60,10 @@ final class CEFA_Conversion_Tracking {
 			add_action(
 				'gform_pre_submission_' . $form_id,
 				static function () use ( $form_id ): void {
-					CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields(
-						CEFA_Conversion_Tracking_Config::form_config( $form_id )
-					);
+					$form_config = CEFA_Conversion_Tracking_Config::form_config( $form_id );
+
+					CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $form_config );
+					CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $form_config );
 				},
 				50
 			);
