@@ -509,3 +509,24 @@ Remaining validation:
 2. Add aggregate ledger coverage/status counts to the read-only WP-CLI monitor.
 3. Keep ledger mode in `shadow`; do not enable primary CRM compatibility writeback.
 4. Keep franchise properties unchanged until a separate `attribution_only` coexistence rollout is approved.
+
+## 2026-07-13 Parent Canonical KinderTales Attribution
+
+Release `0.6.3` and PR `#19` added an independent parent canonical writeback for Gravity Forms fields `35-46`. It does not use broad primary mode, does not promote event identity, and does not change field `32`, School Manager, KinderTales routing, confirmation events, conversion destinations, or franchise properties.
+
+Validation and rollout:
+
+- local PHPCS, PHP contracts, PHP lint, browser attribution tests, and diff checks passed;
+- GitHub PHP `7.4` and `8.2` CI passed;
+- release checksum: `26bb77a6f797c8b2b75604906ef4b4021398bde5db61f9027315ad66f2c1cdc4`;
+- deployed `0.6.3` with the new flag absent and confirmed the prior paid-only behavior remained active;
+- production dry-run reviewed 235 entries, found 229 safe canonical writebacks, preserved six entries without canonical evidence, and confirmed writes were confined to fields `35-46`;
+- production dry-run found zero current-click-family violations and safely downgraded one bare ungoverned `fbclid` to referral;
+- live-container no-send tests passed before and after activation for GA4 `generate_lead`, Google Ads `Inquiry Submit_ollo`, and Meta `Inquiry Submit` with `eventID`;
+- enabled only `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED=1` at `2026-07-13T19:54:40Z` while attribution and ledger remained `shadow` and broad CRM identity remained disabled;
+- WP Engine object, Memcached, and Varnish caches were purged;
+- post-enable in-memory QA matched fields `35-44` to policy, preserved first-touch context and field `32`, saved no Gravity Forms entry, and made no KinderTales call;
+- normal homepage and Form `4` paths served plugin asset `0.6.3`;
+- immediate post-enable monitoring found zero natural entries, so the first natural `parent_canonical` entry remains the next read-only KinderTales observation.
+
+Rollback: remove or disable `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED`. The still-enabled paid-click flag then resumes the validated `0.6.2` behavior automatically.

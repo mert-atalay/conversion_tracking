@@ -9,13 +9,14 @@ Status: live, production acceptance passed on 2026-07-13
 
 | Control | Production value |
 |---|---|
-| CEFA Conversion Tracking | `0.6.2` |
+| CEFA Conversion Tracking | `0.6.3` |
 | `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` | enabled |
+| `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED` | enabled; supersedes paid-only writing while active |
 | `CEFA_CT_ATTRIBUTION_V2_MODE` | `shadow` |
 | `CEFA_CT_LEDGER_MODE` | `shadow` |
 | Broad `CEFA_CT_CRM_IDENTITY_ENABLED` | disabled |
 
-Only the parent paid-click adapter was enabled. Broad attribution writeback remains disabled, and franchise Canada/USA are outside this rollout.
+The paid-click adapter was the only writeback enabled at the original 2026-07-10 checkpoint. The parent canonical adapter now supersedes it for Form `4`; broad primary writeback remains disabled, and franchise Canada/USA remain outside this rollout.
 
 ## Test Status At Activation
 
@@ -101,5 +102,22 @@ Overall ledger coverage was `227/234` (`97.01%`). The seven entries without a le
 Decision: keep `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` enabled. Keep broad attribution and ledger modes in `shadow`. Investigate the isolated Brain webhook failure and continue improving Safari/iOS ledger recovery without changing School Manager, KinderTales, Form `4`, or conversion destinations.
 
 Recommended next observation: rerun the aggregate report on or after 2026-07-16, or after another 100 Form `4` submissions, whichever comes first. Confirm that writeback-policy parity remains `100%`, KinderTales remains at `100%`, ledger coverage trends upward, and webhook failures do not repeat.
+
+## 2026-07-13 Canonical Expansion
+
+Release `0.6.3` and PR `#19` expanded the parent writeback from verified paid clicks to every safe canonical last-non-direct touch. The expansion remains independent from broad primary mode and changes only Form `4` fields `35-46` before School Manager builds the existing KinderTales payload.
+
+- GitHub PHP `7.4` and `8.2` CI passed.
+- PHPCS, all PHP contracts, PHP lint, browser attribution tests, and diff checks passed.
+- Release checksum: `26bb77a6f797c8b2b75604906ef4b4021398bde5db61f9027315ad66f2c1cdc4`.
+- Production deployment was verified with the canonical flag off before activation.
+- Dry-run coverage was 229/235 entries; six missing canonical envelopes would retain existing values.
+- The dry-run found zero field-map violations, zero field `32` scope, and zero multiple-current-click-family violations.
+- Pre-enable and post-enable live-container no-send tests passed for GA4, Google Ads, and Meta with event-ID deduplication; no synthetic conversion was transmitted.
+- Post-enable in-memory QA passed without saving an entry or calling KinderTales.
+- Public homepage and Form `4` paths serve `cefa-conversion-tracking.js?ver=0.6.3`.
+- The flag was enabled at `2026-07-13T19:54:40Z`; the immediate monitor found no natural post-activation entry yet.
+
+Rollback: disable only `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED`. The existing paid-click flag remains enabled and automatically resumes the previously validated paid-only behavior.
 
 Architecture and ownership details remain canonical in [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
