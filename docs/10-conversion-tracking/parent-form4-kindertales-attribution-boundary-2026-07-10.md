@@ -21,7 +21,7 @@ Production evidence on 2026-07-10:
 
 - Gravity Forms `2.10.5` is active.
 - CEFA School Manager `1.0.21` is active.
-- CEFA Conversion Tracking `0.6.2` is active.
+- CEFA Conversion Tracking `0.6.3` is active as of 2026-07-13.
 - Form `4` has active Mailchimp and CEFA Brain webhook feeds.
 - The generic Gravity Forms Zoho CRM add-on is active globally but has no Form `4` feed.
 - KinderTales delivery is not a generic Gravity Forms feed. It is the custom `gform_after_submission` handler in CEFA School Manager.
@@ -171,6 +171,27 @@ The dated test evidence, follow-up window, acceptance criteria, and result table
 Immediate rollback is to remove or set `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` false. This does not require changing attribution mode, ledger mode, School Manager, KinderTales, GTM, GA4, Google Ads, or Meta.
 
 Future work may add `event_id` and `capture_id` to KinderTales metadata only after the KinderTales API contract is confirmed to accept those keys.
+
+## Parent Canonical KinderTales Attribution
+
+Release `0.6.3` extends the proven paid-click correction to every verified canonical last-non-direct parent touch through the independent `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED` flag.
+
+When enabled on `cefa.ca`, the adapter:
+
+1. Runs only for parent Form `4` while broad attribution and ledger modes remain `shadow`.
+2. Writes only configured fields `35-46`, which School Manager already sends to KinderTales `metaData`.
+3. Uses canonical current source, medium, campaign, content, and term values for paid search, paid social, organic search, referral, email, and explicit campaign traffic.
+4. Retains only the click-ID family attached to the canonical current last-non-direct touch and clears stale competing click IDs.
+5. Treats a bare ungoverned `fbclid` as `facebook / referral`; governed Meta campaign or platform evidence remains `paid_social`.
+6. Preserves existing values when no canonical envelope exists and preserves first landing/referrer when canonical first-touch context is unavailable.
+7. Records `cefa_conversion_tracking_writeback_status=parent_canonical` beside the entry.
+8. Never changes field `32`, event-ID ownership, School Manager code, school/program routing, KinderTales delivery, confirmation events, GTM, GA4, Google Ads, Meta, or franchise properties.
+
+Production dry-run at `2026-07-13T19:51:09Z` reviewed 235 natural entries. Canonical attribution was eligible for 229; six unavailable envelopes would remain unchanged. The proposed writes were confined to the approved field map, field `32` was outside scope, no result retained more than one click-ID family, one bare `fbclid` was safely classified as referral, and 14 unavailable first-touch values were preserved.
+
+The flag was enabled at `2026-07-13T19:54:40Z` after PHP `7.4`/`8.2` CI, local PHPCS/PHP/browser tests, disabled-state deployment, dry-run, cache purge, and live-container no-send QA passed. Post-enable in-memory QA matched fields `35-44` to policy, preserved first-touch behavior and field `32`, returned `parent_canonical`, saved no Gravity Forms entry, and made no KinderTales call. A second no-send test confirmed unchanged GA4 `generate_lead`, Google Ads `Inquiry Submit_ollo`, and Meta `Inquiry Submit` with `eventID` while destination transport was blocked.
+
+Immediate rollback is to remove or disable only `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED`. Because `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` remains enabled, rollback automatically restores the already validated paid-only correction without changing any CRM, form, event, or platform setting.
 
 ## Operational Guardrail
 
