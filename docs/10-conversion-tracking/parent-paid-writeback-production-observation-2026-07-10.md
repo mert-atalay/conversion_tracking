@@ -121,3 +121,32 @@ Release `0.6.3` and PR `#19` expanded the parent writeback from verified paid cl
 Rollback: disable only `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED`. The existing paid-click flag remains enabled and automatically resumes the previously validated paid-only behavior.
 
 Architecture and ownership details remain canonical in [Parent Form 4, KinderTales, and attribution boundary](./parent-form4-kindertales-attribution-boundary-2026-07-10.md).
+
+## 2026-07-20 Google Paid-Source Hardening
+
+A read-only Form `4` versus GA4 review after canonical activation found that Gravity Forms/KinderTales classified `130` inquiries as paid while GA4 contained `185` unique paid `generate_lead` event IDs for the same activation window. Meta was close; the material gap was Google paid attribution. The canonical writer already maps `gclid`, `gbraid`, or `wbraid` to `google / cpc` without requiring UTMs, so the classification rule was not the missing component.
+
+Google Ads API readback identified the acquisition-input gap:
+
+- account `4159217891` had auto-tagging enabled;
+- only the branded Search campaign had a governed final URL suffix;
+- the other `17` enabled parent campaigns, including all three regional PMax campaigns and active LSM Search campaigns, had blank campaign-level final URL suffixes.
+
+After Google Ads API `validateOnly=true` succeeded, the following suffix was applied to those `17` campaigns:
+
+```text
+utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_id={campaignid}&utm_content={creative}&utm_term={keyword}&google_adgroup_id={adgroupid}&google_network={network}&google_device={device}&google_matchtype={matchtype}
+```
+
+Post-apply readback found zero enabled campaigns with a blank suffix. Auto-tagging remains enabled. No campaign status, budget, bidding, geography, audience, destination URL, creative, conversion goal, or GTM/GA4/Meta/KinderTales setting changed.
+
+Expected behavior for new Google clicks:
+
+1. Google auto-tagging continues to provide `gclid`, `gbraid`, or `wbraid` when available.
+2. The suffix independently provides stable `google / cpc` acquisition evidence and campaign/platform IDs.
+3. The existing signed canonical envelope captures that evidence on the first landing.
+4. Parent canonical writeback stores it in Form `4` fields `35-46` before School Manager sends the existing KinderTales payload.
+
+Monitor the next `25` Google-attributed Form `4` inquiries, or seven days, whichever comes first. Compare unique `event_id` values between Gravity Forms and GA4. Target Google paid parity is at least `95%`, with `100%` writeback-policy parity and unchanged KinderTales/event-ID health.
+
+Rollback is campaign-scoped: clear only the newly added final URL suffixes from the `17` recorded campaign IDs. Do not disable auto-tagging, the canonical writer, the ledger, School Manager, GTM, GA4, Google Ads conversion actions, Meta, or KinderTales.

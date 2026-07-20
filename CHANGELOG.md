@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added and documented governed Google Ads final URL suffixes for all enabled parent campaigns that lacked them, preserving auto-tagging while strengthening first-party Google paid attribution.
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
 ## 0.6.3 - 2026-07-13
