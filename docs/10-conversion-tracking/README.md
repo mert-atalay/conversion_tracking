@@ -9,6 +9,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 
 ## Current Canonical Files
 
+- [Franchise GAConnector shadow rollout, 2026-07-20](./franchise-gaconnector-shadow-rollout-2026-07-20.md)
 - [Parent paid-click writeback production observation, 2026-07-10](./parent-paid-writeback-production-observation-2026-07-10.md)
 - [Parent Form 4, KinderTales, and attribution boundary, 2026-07-10](./parent-form4-kindertales-attribution-boundary-2026-07-10.md)
 - [CEFA conversion tracking remediation blueprint, 2026-07-09](./cefa-conversion-tracking-remediation-blueprint-2026-07-09.md)

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a reusable no-submit browser QA tool and production record for the guarded Franchise Canada/USA GAConnector shadow rollout.
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
 ## 0.6.3 - 2026-07-13
