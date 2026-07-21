@@ -97,3 +97,18 @@ If any delivery or conversion regression appears, deactivate `cefa-conversion-tr
 - USA: `/home/wpe-user/wp-config.cefa-shadow-before-20260720-us.bak`
 
 Do not expose or copy the signing-secret values into GitHub or an evidence export.
+
+## Daily Observations
+
+### 2026-07-21 - Day 1
+
+The shadow runtime remained active and correctly guarded on both properties: version `0.6.3`, `attribution_only`, attribution `shadow`, ledger `shadow`, and CRM identity/payload/collector disabled.
+
+| Property / form | Entries | Canonical evidence | Paid entries | Paid core result | Synuma lead ID |
+|---|---:|---:|---:|---|---:|
+| Canada Form 1 | 2 | 1 paid; 1 direct as expected | 1 | Source matched; legacy `Paid Other` versus canonical `paid_social` remains an intentional classification review | 2/2 |
+| Canada Form 2 | 0 | 0 | 0 | No evidence yet | 0/0 |
+| USA Form 1 | 2 | 2/2 | 2 | Source aliases `fb`/`facebook` and channel separators normalize to full core parity | 0/2 |
+| USA Form 2 | 0 | 0 | 0 | No evidence yet | 0/0 |
+
+The two USA entries had State and Country present, so the known blank-State failure did not recur. A read-only Synuma API health request returned HTTP `200`, but neither entry had received `cefa_synuma_lead_id` and both were marked `missing`. This is a CRM delivery alert independent of the attribution shadow runtime, which cannot alter the Synuma payload in `attribution_only` mode. Do not approve a GAConnector cutover while this delivery issue is unresolved or while attribution volume remains this small.

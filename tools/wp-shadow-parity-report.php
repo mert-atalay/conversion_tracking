@@ -23,10 +23,55 @@ function cefa_ct_shadow_normalize_value( string $semantic_key, $value ): string 
 	$value = trim( sanitize_text_field( (string) $value ) );
 
 	if ( preg_match( '/(?:source|medium|channel)/', $semantic_key ) ) {
-		return strtolower( $value );
+		$value = strtolower( $value );
+	}
+
+	if ( preg_match( '/source/', $semantic_key ) ) {
+		$aliases = array(
+			'fb' => 'facebook',
+			'ig' => 'instagram',
+		);
+
+		return $aliases[ $value ] ?? $value;
+	}
+
+	if ( preg_match( '/channel/', $semantic_key ) ) {
+		return trim( (string) preg_replace( '/[\s-]+/', '_', $value ), '_' );
 	}
 
 	return $value;
+}
+
+/**
+ * Determine whether a legacy value is real acquisition evidence.
+ *
+ * GAConnector writes explicit direct placeholders. They must not turn a
+ * direct entry with no canonical envelope into a false capture failure.
+ *
+ * @param string $semantic_key Attribution semantic key.
+ * @param mixed  $value        Legacy field value.
+ * @return bool
+ */
+function cefa_ct_shadow_has_acquisition_signal( string $semantic_key, $value ): bool {
+	$value = cefa_ct_shadow_normalize_value( $semantic_key, $value );
+
+	if ( 'ga_client_id' === $semantic_key ) {
+		return false;
+	}
+
+	if ( '' === $value || in_array( $value, array( '(direct)', 'direct', '(none)', 'none', '(not set)', 'not set', 'undefined', 'null' ), true ) ) {
+		return false;
+	}
+
+	if ( preg_match( '/source/', $semantic_key ) && in_array( $value, array( '(direct)', 'direct' ), true ) ) {
+		return false;
+	}
+
+	if ( preg_match( '/medium/', $semantic_key ) && in_array( $value, array( '(none)', 'none', 'direct' ), true ) ) {
+		return false;
+	}
+
+	return ! ( preg_match( '/channel/', $semantic_key ) && 'direct' === $value );
 }
 
 /**
@@ -196,7 +241,7 @@ foreach ( $entries as $entry ) {
 				continue;
 			}
 
-			if ( '' !== trim( (string) rgar( $entry, (string) $field_id ) ) ) {
+			if ( cefa_ct_shadow_has_acquisition_signal( (string) $semantic_key, rgar( $entry, (string) $field_id ) ) ) {
 				++$acquisition_fields;
 			}
 		}

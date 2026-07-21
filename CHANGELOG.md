@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Normalized known legacy Meta source/channel aliases in the read-only shadow monitor and stopped GAConnector direct placeholders from being reported as capture failures.
 - Added a reusable no-submit browser QA tool and production record for the guarded Franchise Canada/USA GAConnector shadow rollout.
 - Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
 
