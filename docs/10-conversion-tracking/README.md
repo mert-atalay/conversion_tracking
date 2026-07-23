@@ -9,6 +9,11 @@ This folder is the routing surface for CEFA conversion tracking across:
 
 ## Current Canonical Files
 
+- [Parent paid-click writeback production observation, 2026-07-10](./parent-paid-writeback-production-observation-2026-07-10.md)
+- [Parent Form 4, KinderTales, and attribution boundary, 2026-07-10](./parent-form4-kindertales-attribution-boundary-2026-07-10.md)
+- [CEFA conversion tracking remediation blueprint, 2026-07-09](./cefa-conversion-tracking-remediation-blueprint-2026-07-09.md)
+- [Conversion tracking remediation execution log, 2026-07-09](./conversion-tracking-remediation-execution-log-2026-07-09.md)
+- [Full conversion tracking assessment and execution plan, 2026-07-09](./full-conversion-tracking-assessment-and-execution-plan-2026-07-09.md)
 - [Plugin README](../../README.md)
 - [Live conversion tracking status](../live-conversion-tracking-status-2026-05-01.md)
 - [Parent production cutover checklist](../parent-production-cutover-checklist.md)
@@ -40,6 +45,7 @@ This folder is the routing surface for CEFA conversion tracking across:
 - Franchise Canada Form `1` specifically preserves destination continuity by mapping neutral `franchise_inquiry_submit` to existing Google Ads primary `fr_application_submit` and Meta `Fr Application Submit`; do not revert it to secondary `fr_inquiry_submit` without paid-media signoff. Post-v54 browser QA passed for Google Ads/GA4 and Meta script execution; still confirm delayed Meta Events Manager and platform reporting receipt.
 - Keep Gravity Forms Measurement Protocol audit-only unless explicitly approved as a final source.
 - Keep parent, franchise Canada, and franchise USA separated by property, hostname, GA4 property, and platform mapping.
+- Parent Form `4` is delivered to KinderTales by CEFA School Manager. Synuma/SiteZeus applies only to the franchise properties.
 
 ## BigQuery / Dashboard Registry
 

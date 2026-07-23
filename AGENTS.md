@@ -31,6 +31,7 @@ Keep those responsibilities separate.
 - Update the relevant workstream `README.md` when adding or changing docs in that workstream.
 - If a decision affects more than one workstream, update `docs/00-governance/source-of-truth-rules.md` or add a cross-link from the relevant workstream README.
 - Keep parent `cefa.ca`, franchise Canada `franchise.cefa.ca`, and franchise USA `www.franchisecefa.com` separate unless the document is explicitly cross-property.
+- Parent `cefa.ca` Form `4` is delivered to KinderTales by CEFA School Manager and uses attribution fields `35-46`. Synuma/SiteZeus is franchise-only; never describe it as the parent CRM path.
 - For conversion tracking, `school_uuid` is the parent school join key unless a future verified source changes that.
 - Do not promote assumptions into verified sections. Use `Verified`, `Partial`, `Pending`, or `Open question`.
 - If a file is mainly a source index or handoff for another agent, say that directly in the file.

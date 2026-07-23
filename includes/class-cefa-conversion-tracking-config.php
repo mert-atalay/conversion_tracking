@@ -19,6 +19,158 @@ final class CEFA_Conversion_Tracking_Config {
 	public const EVENT_ID_META_KEY = 'cefa_conversion_tracking_event_id';
 
 	/**
+	 * Return the guarded Attribution Bridge runtime mode.
+	 *
+	 * The value may be a scalar or a hostname-keyed array/JSON object. Unknown
+	 * values fail closed to off.
+	 *
+	 * @return string
+	 */
+	public static function attribution_v2_mode(): string {
+		$value = self::hostname_config_value( 'CEFA_CT_ATTRIBUTION_V2_MODE' );
+		$mode  = strtolower( trim( (string) $value ) );
+
+		return in_array( $mode, array( 'off', 'shadow', 'primary' ), true ) ? $mode : 'off';
+	}
+
+	/**
+	 * Return the guarded runtime profile for bridge coexistence.
+	 *
+	 * Full preserves the current conversion lifecycle. Attribution-only captures
+	 * shadow evidence without competing with an existing WPCode event bridge.
+	 *
+	 * @return string
+	 */
+	public static function runtime_profile(): string {
+		$value   = self::hostname_config_value( 'CEFA_CT_RUNTIME_PROFILE' );
+		$profile = strtolower( trim( (string) $value ) );
+
+		return 'attribution_only' === $profile ? $profile : 'full';
+	}
+
+	/**
+	 * Return the guarded server-side attribution ledger mode.
+	 *
+	 * @return string
+	 */
+	public static function ledger_mode(): string {
+		$value = self::hostname_config_value( 'CEFA_CT_LEDGER_MODE' );
+		$mode  = strtolower( trim( (string) $value ) );
+
+		return in_array( $mode, array( 'off', 'shadow', 'primary' ), true ) ? $mode : 'off';
+	}
+
+	/**
+	 * Return the server-only ledger token signing secret.
+	 *
+	 * @return string
+	 */
+	public static function ledger_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_LEDGER_SECRET' ) );
+	}
+
+	/**
+	 * Return the host-only opaque capture cookie name.
+	 *
+	 * @return string
+	 */
+	public static function ledger_cookie_name(): string {
+		$names = array(
+			'parent'       => 'cefa_parent_capture_v2',
+			'franchise_ca' => 'cefa_fr_ca_capture_v2',
+			'franchise_us' => 'cefa_fr_us_capture_v2',
+		);
+
+		return $names[ self::site_context() ] ?? '';
+	}
+
+	/**
+	 * Return the server-only Attribution Bridge signing secret.
+	 *
+	 * @return string
+	 */
+	public static function attribution_v2_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_ATTRIBUTION_SECRET' ) );
+	}
+
+	/**
+	 * Whether canonical attribution may populate approved CRM compatibility fields.
+	 *
+	 * @return bool
+	 */
+	public static function crm_identity_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_CRM_IDENTITY_ENABLED' ) );
+	}
+
+	/**
+	 * Whether verified parent paid clicks may correct Form 4 attribution fields.
+	 *
+	 * This is intentionally independent from the broad primary cutover so paid
+	 * attribution can be corrected without changing event-ID ownership.
+	 *
+	 * @return bool
+	 */
+	public static function parent_paid_click_writeback_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED' ) );
+	}
+
+	/**
+	 * Whether canonical parent attribution may populate Form 4 CRM fields.
+	 *
+	 * This remains independent from broad primary mode so it cannot promote
+	 * event identity or affect franchise compatibility fields.
+	 *
+	 * @return bool
+	 */
+	public static function parent_canonical_writeback_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED' ) );
+	}
+
+	/**
+	 * Whether signed, replay-safe confirmation payloads are enabled.
+	 *
+	 * @return bool
+	 */
+	public static function payload_v2_enabled(): bool {
+		return self::truthy_config_value( self::hostname_config_value( 'CEFA_CT_PAYLOAD_V2_ENABLED' ) );
+	}
+
+	/**
+	 * Return the server-only confirmation payload signing secret.
+	 *
+	 * @return string
+	 */
+	public static function payload_v2_secret(): string {
+		return trim( (string) self::config_value( 'CEFA_CT_PAYLOAD_SECRET' ) );
+	}
+
+	/**
+	 * Return the current governed site context.
+	 *
+	 * @return string
+	 */
+	public static function site_context(): string {
+		$context = self::active_context();
+
+		return sanitize_key( (string) ( $context['context_key'] ?? 'unknown' ) );
+	}
+
+	/**
+	 * Return the host-only attribution cookie name for the current context.
+	 *
+	 * @return string
+	 */
+	public static function attribution_cookie_name(): string {
+		$names = array(
+			'parent'       => 'cefa_parent_attr_v1',
+			'franchise_ca' => 'cefa_fr_ca_attr_v1',
+			'franchise_us' => 'cefa_fr_us_attr_v1',
+		);
+
+		return $names[ self::site_context() ] ?? '';
+	}
+
+	/**
 	 * Return active form configs for the current hostname.
 	 *
 	 * @return array<int, array<string, mixed>>
@@ -60,6 +212,10 @@ final class CEFA_Conversion_Tracking_Config {
 		$primary_form = self::primary_form( $forms );
 
 		return array(
+			'siteContext'         => self::site_context(),
+			'runtimeProfile'      => self::runtime_profile(),
+			'ledgerMode'          => self::ledger_mode(),
+			'ownHosts'            => self::approved_cefa_hosts(),
 			'formId'              => (int) ( $primary_form['id'] ?? CEFA_CONVERSION_TRACKING_FORM_ID ),
 			'forms'               => array_values( $forms ),
 			'finalEvents'         => self::final_event_names( $forms ),
@@ -70,6 +226,96 @@ final class CEFA_Conversion_Tracking_Config {
 				'input[data-cefa-si-meta="4"]',
 			),
 		);
+	}
+
+	/**
+	 * Return exact CEFA journey hosts that must not become referral sources.
+	 *
+	 * @return string[]
+	 */
+	private static function approved_cefa_hosts(): array {
+		$hosts = array();
+
+		foreach ( self::contexts() as $context ) {
+			if ( is_array( $context['hostnames'] ?? null ) ) {
+				$hosts = array_merge( $hosts, $context['hostnames'] );
+			}
+		}
+
+		return array_values( array_unique( array_map( 'strtolower', $hosts ) ) );
+	}
+
+	/**
+	 * Optional server-side collector configuration.
+	 *
+	 * The collector is disabled unless explicitly enabled through constants or
+	 * environment variables. This keeps production behavior unchanged after
+	 * deployment until staging validation and explicit enablement happen.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function collector_config(): array {
+		return array(
+			'enabled' => self::truthy_config_value( self::config_value( 'CEFA_CT_COLLECTOR_ENABLED' ) ),
+			'url'     => esc_url_raw( (string) self::config_value( 'CEFA_CT_COLLECTOR_URL' ) ),
+			'secret'  => (string) self::config_value( 'CEFA_CT_COLLECTOR_SECRET' ),
+		);
+	}
+
+	/**
+	 * Read a constant or environment variable without exposing secret values.
+	 *
+	 * @param string $name Constant/environment variable name.
+	 * @return mixed
+	 */
+	private static function config_value( string $name ) {
+		if ( defined( $name ) ) {
+			return constant( $name );
+		}
+
+		$value = getenv( $name );
+
+		return false === $value ? '' : $value;
+	}
+
+	/**
+	 * Read a scalar or hostname-keyed configuration value.
+	 *
+	 * @param string $name Constant/environment variable name.
+	 * @return mixed
+	 */
+	private static function hostname_config_value( string $name ) {
+		$value = self::config_value( $name );
+
+		if ( is_string( $value ) && '' !== trim( $value ) && in_array( substr( trim( $value ), 0, 1 ), array( '{', '[' ), true ) ) {
+			$decoded = json_decode( $value, true );
+
+			if ( is_array( $decoded ) ) {
+				$value = $decoded;
+			}
+		}
+
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		$host = self::current_host();
+
+		if ( array_key_exists( $host, $value ) ) {
+			return $value[ $host ];
+		}
+
+		return $value['default'] ?? '';
+	}
+
+	/**
+	 * Interpret common truthy config strings.
+	 *
+	 * @param mixed $value Config value.
+	 * @return bool
+	 */
+	private static function truthy_config_value( $value ): bool {
+		return in_array( strtolower( trim( (string) $value ) ), array( '1', 'true', 'yes', 'on' ), true );
 	}
 
 	/**

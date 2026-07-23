@@ -32,9 +32,13 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		}
 
 		$entry   = CEFA_Conversion_Tracking_Event_ID::ensure_entry_event_id( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Submission_Identity::finalize_after_submission( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Attribution_Parity::persist_after_submission( $entry, $form_config );
 		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry, $form_config );
 
 		CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
+		CEFA_Conversion_Tracking_Collector::send_form4_event( $payload, $entry, $form_config );
 	}
 
 	/**
@@ -60,6 +64,9 @@ final class CEFA_Conversion_Tracking_Confirmation_Payload {
 		}
 
 		$entry   = CEFA_Conversion_Tracking_Event_ID::ensure_entry_event_id( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Submission_Identity::finalize_after_submission( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $entry, $form_config );
+		$entry   = CEFA_Conversion_Tracking_Attribution_Parity::persist_after_submission( $entry, $form_config );
 		$payload = CEFA_Conversion_Tracking_DataLayer_Payload::from_entry( $entry, $form_config );
 		$token   = CEFA_Conversion_Tracking_Duplicate_Guard::store_payload( $payload );
 

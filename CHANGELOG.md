@@ -2,6 +2,65 @@
 
 ## Unreleased
 
+- Added a read-only, aggregate-only WP-CLI shadow monitor for attribution parity, event-ID uniqueness, expected direct traffic, and existing delivery-note status.
+
+## 0.6.3 - 2026-07-13
+
+- Added a separately gated parent canonical writeback for Gravity Forms Form `4` fields `35-46` while broad attribution mode remains `shadow`.
+- Write canonical last-non-direct source, medium, and campaign context; retain only the current click-ID family and clear stale competing IDs.
+- Preserve existing Form `4` values when canonical evidence is unavailable and preserve first-touch fields when canonical first-touch values are absent.
+- Classify a bare ungoverned `fbclid` as `facebook / referral` without sending the click ID to KinderTales; governed Meta campaign evidence remains paid social.
+- Added policy-aware aggregate monitoring and regression coverage for organic, referral, email, paid, historical-click, Meta, missing-evidence, and franchise-isolation cases.
+- Kept Form `4` field `32`, School Manager, KinderTales routing, event-ID ownership, confirmation events, platform conversions, and franchise properties unchanged.
+
+## 0.6.2 - 2026-07-10
+
+- Added a parent-only paid-click attribution writeback flag independent from broad primary mode.
+- Correct stale Form `4` last-touch fields only when a Google/Microsoft click ID, or `fbclid` plus governed Meta campaign evidence, is attached to the canonical current last-non-direct touch.
+- Clear stale competing click IDs while preserving existing first landing/referrer values when canonical first-touch evidence is unavailable.
+- Record per-entry compatibility writeback status and expose aggregate ledger/writeback coverage in the read-only shadow monitor.
+- Kept field `32`, event-ID ownership, School Manager, KinderTales, franchise contexts, and conversion destinations unchanged.
+
+## 0.6.1 - 2026-07-10
+
+- Refresh the 30-minute signed form fallback after 25 minutes so a long-open browser session retains a safe submission margin.
+
+## 0.6.0 - 2026-07-10
+
+- Added a disabled-by-default server-side attribution ledger for canonical acquisition evidence.
+- Added host-scoped opaque HttpOnly capture cookies; raw attribution remains server-side.
+- Added a 30-minute signed Gravity Forms fallback token stored only for the browser session to recover attribution when the opaque cookie is unavailable.
+- Added entry-level capture-reference and recovery-provenance metadata without changing existing form fields, CRM/Synuma delivery, confirmation events, or conversion ownership.
+- Added tampering, expiry, cross-context, ledger recovery, browser injection, and off-mode compatibility tests.
+
+## 0.5.2 - 2026-07-09
+
+- Added a guarded `attribution_only` runtime profile for future franchise shadow deployment beside the existing WPCode conversion bridge.
+- In attribution-only mode, the plugin captures signed attribution and saves no-PII parity metadata without registering event IDs, confirmation payloads, final conversion events, field writeback, or micro-events.
+- Kept the existing `full` runtime as the fail-safe default so the live parent behavior is unchanged.
+
+## 0.5.1 - 2026-07-09
+
+- Added a same-origin, no-store REST fallback so signed attribution cookies are captured reliably when WP Engine serves anonymous pages from cache.
+- Restricted the fallback to shadow/primary modes, an explicit browser marker header, the current site origin, and the existing attribution allowlist.
+- Kept conversion events, Gravity Forms values, CRM/Synuma delivery, and primary writeback behavior unchanged.
+
+## 0.5.0 - 2026-07-09
+
+- Added fail-closed, hostname-scoped `off`, `shadow`, and `primary` attribution modes.
+- Added a signed first-touch, current-touch, last-non-direct, click-ID, platform-ID, browser-ID, experiment, and eight-touch attribution envelope.
+- Added idempotent Gravity Forms entry-meta persistence that leaves legacy parent and franchise fields unchanged in shadow mode.
+- Added a plugin-owned unique server event-ID registry and separate browser submission-attempt identity.
+- Added guarded compatibility adapters for parent fields `35-46` and franchise fields `14-30`; writing requires both primary mode and the CRM identity flag.
+- Added signed, replay-safe confirmation payload tokens behind a separate feature flag and signing secret.
+- Added no-PII per-entry shadow parity summaries for parent and franchise attribution contracts.
+- Fixed parent internal CEFA navigation being classified as referral traffic.
+- Added server-side GA client/session and Meta `_fbp`/`_fbc` parsing.
+- Added PHP 7.4/8.2 attribution, identity, adapter, payload, and browser contract tests.
+- Kept all new write, payload, and cutover behavior disabled by default.
+
+## 0.4.5 - 2026-07-08
+
 - Prevented school/program/day metadata values from being accepted as `event_id` values if Form 4 field `32.4` is ever prefilled incorrectly.
 - Added the live-domain status note for the parent cutover and franchise WPCode bridge rollout.
 - Added `snippets/franchise-wpcode-bridge.php` as a temporary live franchise deployment fallback for hosts where normal plugin-file writes are blocked.

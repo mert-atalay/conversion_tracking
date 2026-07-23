@@ -24,8 +24,25 @@ final class CEFA_Conversion_Tracking {
 	 * @return void
 	 */
 	public static function init(): void {
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Envelope', 'capture_request' ), 1 );
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Attribution_Ledger', 'maybe_install' ), 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_action( 'rest_api_init', array( 'CEFA_Conversion_Tracking_REST_Controller', 'register_routes' ) );
+
+		if ( 'attribution_only' === CEFA_Conversion_Tracking_Config::runtime_profile() ) {
+			foreach ( CEFA_Conversion_Tracking_Config::active_form_ids() as $form_id ) {
+				add_action(
+					'gform_after_submission_' . $form_id,
+					array( __CLASS__, 'persist_attribution_only' ),
+					30,
+					2
+				);
+			}
+
+			return;
+		}
+
+		add_action( 'init', array( 'CEFA_Conversion_Tracking_Event_ID_Registry', 'maybe_install' ), 3 );
 
 		foreach ( CEFA_Conversion_Tracking_Config::active_form_ids() as $form_id ) {
 			add_action(
@@ -34,9 +51,21 @@ final class CEFA_Conversion_Tracking {
 					$form_config = CEFA_Conversion_Tracking_Config::form_config( $form_id );
 
 					CEFA_Conversion_Tracking_Attribution::backfill_posted_fields( $form_config );
+					CEFA_Conversion_Tracking_Attribution::apply_primary_compatibility_fields( $form_config );
 					CEFA_Conversion_Tracking_Event_ID::ensure_event_id_before_submission( $form_config );
+					CEFA_Conversion_Tracking_Submission_Identity::prepare_before_submission( $form_config );
 				},
 				5
+			);
+			add_action(
+				'gform_pre_submission_' . $form_id,
+				static function () use ( $form_id ): void {
+					$form_config = CEFA_Conversion_Tracking_Config::form_config( $form_id );
+
+					CEFA_Conversion_Tracking_Attribution::apply_parent_canonical_fields( $form_config );
+					CEFA_Conversion_Tracking_Attribution::apply_parent_paid_click_fields( $form_config );
+				},
+				50
 			);
 
 			add_action(
@@ -52,6 +81,25 @@ final class CEFA_Conversion_Tracking {
 				4
 			);
 		}
+	}
+
+	/**
+	 * Save canonical shadow evidence without registering a conversion lifecycle.
+	 *
+	 * @param array<string, mixed> $entry Gravity Forms entry.
+	 * @param array<string, mixed> $form  Gravity Forms form.
+	 * @return void
+	 */
+	public static function persist_attribution_only( array $entry, array $form ): void {
+		$form_config = CEFA_Conversion_Tracking_Config::form_config( (int) rgar( $form, 'id' ) );
+
+		if ( empty( $form_config ) || 'spam' === (string) rgar( $entry, 'status' ) ) {
+			return;
+		}
+
+		$entry = CEFA_Conversion_Tracking_Entry_Attribution::persist_after_submission( $entry, $form_config );
+
+		CEFA_Conversion_Tracking_Attribution_Parity::persist_after_submission( $entry, $form_config );
 	}
 
 	/**
@@ -86,6 +134,8 @@ final class CEFA_Conversion_Tracking {
 				array(
 					'restPayloadBase'       => esc_url_raw( rest_url( self::REST_NAMESPACE . '/tracking-payload/' ) ),
 					'restEventBase'         => esc_url_raw( rest_url( self::REST_NAMESPACE . '/tracking-payload-by-event/' ) ),
+					'restAttributionUrl'    => esc_url_raw( rest_url( self::REST_NAMESPACE . '/attribution-capture' ) ),
+					'attributionMode'       => CEFA_Conversion_Tracking_Config::attribution_v2_mode(),
 					'queryFlag'             => 'cefa_tracking',
 					'queryToken'            => 'cefa_tracking_token',
 					'consumedKey'           => 'cefa_conversion_tracking_consumed_event_ids',

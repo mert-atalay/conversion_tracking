@@ -14,11 +14,13 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - Uses the saved Gravity Forms entry as the source of truth.
 - Creates a short-lived one-time thank-you-page token after successful submission.
 - Pushes one clean `school_inquiry_submit` event into `window.dataLayer`.
+- Provides a disabled-by-default, HMAC-signed Form 4 collector send path for no-PII BigQuery audit events.
 - Pushes one clean `franchise_inquiry_submit` event for Franchise Canada Form 1.
 - Pushes one clean `real_estate_site_submit` event for Franchise Canada Form 2.
 - Prevents direct thank-you-page false positives and reload duplicates.
 - Pushes plugin-owned micro-conversion events for inquiry CTA clicks, Find a School clicks, phone clicks, email clicks, Form 4 starts, submit attempts, and validation errors.
 - Stores first-touch and last-touch attribution in the same first-party cookie pattern used by the old parent site.
+- Provides a guarded server-side attribution ledger with an opaque HttpOnly capture cookie and a short-lived signed Gravity Forms fallback token.
 - Backfills Form 4 attribution fields `35` through `46` before submission if they are empty.
 - Reads Franchise Canada GAConnector hidden fields `14` through `30` when present; it does not overwrite them.
 - Uses GA4-style structured metadata instead of legacy Universal Analytics event category/action/label fields.
@@ -36,7 +38,8 @@ It does not replace Gravity Forms, CEFA School Manager, CEFA Franchise API, Fiel
 - KinderTales/business submission delivery.
 - CEFA Franchise API delivery.
 - GAConnector attribution capture on franchise forms.
-- GA4, Google Ads, Meta, CAPI, Measurement Protocol, collector, or sGTM outbound calls.
+- GA4, Google Ads, Meta, CAPI, Measurement Protocol, or sGTM outbound calls.
+- Production collector delivery unless `CEFA_CT_COLLECTOR_ENABLED`, `CEFA_CT_COLLECTOR_URL`, and `CEFA_CT_COLLECTOR_SECRET` are explicitly configured.
 
 ## Repo Operating Model
 
@@ -59,10 +62,14 @@ Keep runtime plugin changes and documentation-only changes separate when practic
 
 ## Current Live-Domain Audit Status
 
-- Parent `cefa.ca` is live on `GTM-NZ6N7WNC` with the helper-plugin `school_inquiry_submit` path working and the old `GTM-PPV9ZRZ` path treated as archived/reference-only.
-- Franchise Canada `franchise.cefa.ca` now renders the WPCode fallback bridge and has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, GAConnector hidden-field writeback, and live GTM destination mapping through `GTM-TPJGHFS`.
-- Franchise USA `franchisecefa.com` now renders the WPCode fallback bridge, has verified Form `1` `franchise_inquiry_submit` and Form `2` `real_estate_site_submit` dataLayer events, and has live GTM Version `18` helper-event mapping / Meta USA dataset cleanup through `GTM-5LZMHBZL`.
-- Franchise Canada and Franchise USA now have GA4 custom dimensions registered for the low-cardinality helper payload fields. Canada still needs Meta custom-conversion confirmation and a Google Ads primary/secondary decision. USA has post-Version-15 controlled helper/dispatch evidence for both current live forms and browser-level GA4 `generate_lead` evidence for Form `2`; USA still needs processed GA4 report confirmation, Form `1` GA4 hit confirmation, and USA-specific Google Ads and Meta final mapping decisions before bidding signoff.
+- Parent `cefa.ca` is live on plugin `0.6.3` with Attribution Bridge and ledger shadow modes plus the separately scoped parent canonical Form `4` writeback. CEFA School Manager still owns Form `4`, fields `32.*`, fields `35-46`, and KinderTales delivery; the tracking plugin improves only the attribution values saved in fields `35-46` before School Manager sends them to KinderTales. Confirmed `school_inquiry_submit` ownership remains unchanged across GA4, Google Ads, and Meta. Synuma/SiteZeus applies to the franchise properties, not the parent site.
+- Parent branded Search and Oakville Eighth Line Search now use explicit inquiry-only campaign goals. Parent GA4 click events remain collected but are no longer key events.
+- Franchise Canada `franchise.cefa.ca` uses the WPCode fallback bridge and live GTM Version `54`; confirmed Form `1` and Form `2` helper paths remain active.
+- Franchise Canada application/email/phone clicks remain collected but are no longer GA4 key events.
+- Franchise USA `franchisecefa.com` uses the WPCode fallback bridge and live GTM Version `25`; GA4 and Meta final-submit paths remain active, and the existing Google Ads `Application Submit (USA)` action now fires only on the confirmed Form `1` inquiry dispatch with server `event_id` transaction deduplication and the existing `600 CAD` value.
+- Current cross-platform assessment: [Full conversion tracking assessment and execution plan, 2026-07-09](docs/10-conversion-tracking/full-conversion-tracking-assessment-and-execution-plan-2026-07-09.md).
+- Detailed implementation sequence: [CEFA conversion tracking remediation blueprint, 2026-07-09](docs/10-conversion-tracking/cefa-conversion-tracking-remediation-blueprint-2026-07-09.md).
+- Current remediation execution status: [Conversion tracking remediation execution log, 2026-07-09](docs/10-conversion-tracking/conversion-tracking-remediation-execution-log-2026-07-09.md).
 - Current detailed review: `docs/live-conversion-tracking-status-2026-05-01.md`.
 - Phase 1B Measurement Protocol/server-side options: `docs/phase1b-measurement-protocol-server-side-options-2026-05-01.md`.
 - School/program taxonomy status: `docs/canonical-school-program-taxonomy-2026-05-03.md`.
@@ -264,6 +271,43 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 - It fetches the thank-you payload with `POST` and `cache: no-store`.
 - It does not change GAConnector attribution fields or CRM delivery.
 
+## Attribution Bridge Runtime Flags
+
+Plugin `0.6.3` ships every new attribution/cutover path disabled by default.
+
+When shadow or primary mode is enabled, the browser bridge posts allowlisted acquisition evidence to the same-origin, no-store `attribution-capture` endpoint. This preserves the signed HttpOnly cookie on managed hosts such as WP Engine where anonymous page caching can bypass PHP page-load cookie logic.
+
+| Setting | Default | Purpose |
+|---|---|---|
+| `CEFA_CT_RUNTIME_PROFILE` | `full` | Use `attribution_only` during franchise shadow coexistence so the existing WPCode bridge remains the sole conversion-event owner. |
+| `CEFA_CT_ATTRIBUTION_V2_MODE` | `off` | `shadow` saves canonical evidence without replacing existing fields/IDs; `primary` allows approved cutover behavior. |
+| `CEFA_CT_ATTRIBUTION_SECRET` | empty | Server-only HMAC secret required before shadow or primary attribution can operate. |
+| `CEFA_CT_LEDGER_MODE` | `off` | `shadow` stores canonical attribution server-side and records recovery provenance without replacing current fields; `primary` is reserved for a separately approved cutover. |
+| `CEFA_CT_LEDGER_SECRET` | empty | Separate server-only HMAC secret required before the ledger table, opaque cookie, or form fallback can operate. |
+| `CEFA_CT_CRM_IDENTITY_ENABLED` | `false` | Allows primary mode to populate only the approved parent `35-46` or franchise `14-30` compatibility fields. |
+| `CEFA_CT_PARENT_PAID_CLICK_WRITEBACK_ENABLED` | `false` | Corrects parent Form `4` fields `35-46` only when the canonical current touch contains a verified paid click ID. Does not require or enable broad primary mode. |
+| `CEFA_CT_PARENT_CANONICAL_WRITEBACK_ENABLED` | `false` | Writes safe canonical current-touch attribution to parent Form `4` fields `35-46` for KinderTales without enabling broad primary mode or changing event identity. Supersedes the paid-only writer when enabled. |
+| `CEFA_CT_PAYLOAD_V2_ENABLED` | `false` | Enables signed, replay-safe confirmation payload retrieval. |
+| `CEFA_CT_PAYLOAD_SECRET` | empty | Server-only signing secret required for payload V2. |
+| `CEFA_CT_COLLECTOR_ENABLED` | `false` | Preserves the existing optional collector gate. |
+
+Safe deployment sequence:
+
+1. Deploy with all defaults unchanged.
+2. Verify plugin load and existing confirmed-submit behavior.
+3. Configure server secrets without exposing them to WordPress content or source control.
+4. Enable `shadow` on one hostname only.
+5. Review no-PII parity evidence before considering `primary`.
+6. Never enable CRM compatibility writing during the initial shadow period.
+
+For franchise coexistence, set `CEFA_CT_RUNTIME_PROFILE=attribution_only` before activation. This profile does not register event IDs, confirmation payloads, final events, legacy-field writeback, or micro-events; it only captures signed attribution and stores shadow/parity entry metadata.
+
+The ledger is additive to the existing signed attribution envelope. It stores the canonical envelope in a first-party WordPress table, sends only an opaque signed capture handle to the browser, and injects a 30-minute signed fallback handle into configured Gravity Forms. The browser refreshes that handle after 25 minutes so long-open forms retain a five-minute submission margin. No existing Gravity Forms field, GAConnector field, CRM feed, conversion event, or campaign parameter is replaced. The ledger table is not installed and no ledger cookie is issued unless both `CEFA_CT_LEDGER_MODE` and `CEFA_CT_LEDGER_SECRET` are configured.
+
+The parent paid-click adapter is a separate narrow control. When enabled on `cefa.ca`, it uses only the click type attached to the canonical last non-direct touch. Google and Microsoft click IDs are direct paid evidence; `fbclid` additionally requires CEFA campaign metadata or governed Meta platform IDs because Facebook also adds it to organic links. The adapter runs after School Manager's cookie fallback, replaces stale last-touch fields `35-44`, clears competing click IDs, writes first-touch fields `45-46` only when canonical values exist, and records `cefa_conversion_tracking_writeback_status=parent_paid_click` beside the entry. It never changes field `32`, event-ID ownership, School Manager routing, KinderTales delivery code, or destination tags.
+
+The parent canonical adapter extends that correction to organic, referral, email, and explicit campaign touches while attribution mode remains `shadow`. It writes only a verified canonical last-non-direct touch, retains only that touch's current click-ID family, preserves existing values when canonical evidence is unavailable, and writes first-touch fields only when canonical first-touch evidence exists. A bare ungoverned `fbclid` becomes `facebook / referral` and its click ID remains only in the audit envelope. The adapter records `cefa_conversion_tracking_writeback_status=parent_canonical`; it does not touch field `32`, event identity, School Manager, KinderTales routing, conversion events, or franchise properties.
+
 ## Install On Staging
 
 1. Create a ZIP:
@@ -283,6 +327,9 @@ For live franchise deployments, `snippets/franchise-wpcode-bridge.php` is the cu
 - `dataLayer.event_id` equals entry field `32.4`.
 - Fields `32.1` through `32.7` appear as clean separate parameters.
 - Attribution fields `35` through `46` are saved as clean separate values when UTM/click-ID parameters are present.
+- A verified paid click corrects stale parent fields `35-44` without blanking valid first-touch fields `45-46`.
+- A verified canonical organic, referral, email, or explicit campaign touch replaces stale parent attribution while preserving business fields and unavailable first-touch context.
+- A historical click ID does not overwrite a newer organic last-non-direct touch.
 - Invalid form submission fires no final conversion event.
 - Direct `/thank-you/?location=<slug>&inquiry=true` visit without a plugin token fires no final conversion event.
 - Thank-you page reload does not fire a second conversion.
