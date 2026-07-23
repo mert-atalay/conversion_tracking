@@ -9,8 +9,9 @@ production dispatch disabled on deterministic blockers
 
 ## Executive Status
 
-The restricted warehouse, GreenRope poller, outbox dispatcher, diagnostics
-runtime, and three Google reporting actions are deployed. A successful
+The restricted warehouse, GreenRope poller, Form 4 identity capture, identity
+binder, outbox dispatcher, diagnostics runtime, and three Google reporting
+actions are deployed. A successful
 2026-07-23 baseline stored `22,328` unique current-state opportunities as
 `baseline_non_uploadable`; it created zero lifecycle events, outbox rows, or
 delivery attempts. A disabled-dispatcher execution also processed and sent
@@ -18,11 +19,15 @@ zero rows.
 
 Production sending remains disabled. The live GreenRope opportunity schema
 lacks the two exact identity fields required to connect a CRM outcome safely
-to one Form 4 submission. Google Data Manager validation is blocked until the
-runtime service account is added to the Google Ads account. The new Meta
-custom event types must pass Test Events before their reporting custom
-conversions can be created. Per-record consent/eligibility remains fail-closed
-as `unknown`.
+to one Form 4 submission. CEFA's isolated prospective identity path is active:
+it captures Form 4 entries every five minutes into a restricted HMAC-only
+inbox, and the binder checks GreenRope every 15 minutes. GreenRope writes
+remain disabled until its vendor creates the required fields and one
+controlled write/read-back test passes. Google Data Manager validation is
+blocked until the runtime service account is added to the Google Ads account.
+The new Meta custom event types must pass Test Events before their reporting
+custom conversions can be created. Per-record consent/eligibility remains
+fail-closed as `unknown`.
 
 The approved rollout does not wait for aggregate identity coverage or a fixed
 number of days. Once the exact identity handoff passes one controlled inquiry
@@ -48,8 +53,15 @@ changed.
 
 | Resource | 2026-07-23 deployed state |
 |---|---|
-| Container | `parent-crm-activation:20260723-full-rollout-v5` |
-| Image digest | `sha256:bd0873b5a1923f57c7f38ba3096343d90845ecb5ce40b918d9098a7768b31ba2` |
+| Activation container | `parent-crm-activation:20260723-full-rollout-v8` |
+| Activation image digest | `sha256:6561f28328a6925d3ad4ac3f6bcc710811d3adf40d2bb05c3ce7c7a4425941fe` |
+| Form 4 capture job | `cefa-parent-form4-identity-capture` |
+| Form 4 capture schedule | `cefa-parent-form4-identity-capture-5m`; every five minutes; enabled |
+| Capture scheduler smoke test | Manual execution `cefa-parent-form4-identity-capture-swfwf` completed successfully; automatic execution created at `2026-07-23 21:05 UTC` |
+| Identity binder job | `cefa-parent-greenrope-identity-binder` |
+| Identity binder schedule | `cefa-parent-greenrope-identity-binder-15m`; minutes 2, 17, 32, and 47; enabled |
+| Identity binder write mode | `PARENT_GREENROPE_IDENTITY_WRITE_ENABLED=false` |
+| Binder scheduler smoke test | Scheduled execution `cefa-parent-greenrope-identity-binder-brpl2` completed successfully; two delayed candidates remained retryable; zero writes |
 | Poller job | `cefa-parent-crm-lifecycle-refresh` |
 | Dispatcher job | `cefa-parent-offline-conversion-dispatch` |
 | Diagnostics job | `cefa-parent-conversion-diagnostics` |
@@ -68,6 +80,12 @@ changed.
 |---|---|---|
 | Form identity | Form 4 field `32.4` is the CEFA event ID | Available |
 | Form attribution | Form 4 fields `35-46` save UTMs, click IDs, landing page, and referrer | Available |
+| Prospective Form capture | Form 4 entries after `2026-07-23 20:45:00 UTC` are HMAC-captured into the restricted inbox | Enabled every five minutes |
+| Capture safety | Raw parent identity is normalized/HMACed in Cloud Run memory; no raw email, phone, name, child data, or payload is persisted | Passed schema and focused tests |
+| Initial live capture | Two prospective Form 4 entries captured; zero invalid entries | Passed |
+| Delayed CRM creation | A Form 4 entry without a GreenRope candidate remains `retryable_failure`, not permanently quarantined | Implemented |
+| Identity binder | Deterministic same-school, same-email-HMAC, 24-hour matcher with unique-best safeguards | Enabled read-only; GreenRope writes disabled |
+| Historical matcher audit | 490 of 500 recent Form 4 entries resolved deterministically; 10 remained safely unmatched | 98% resolution; audit only |
 | Form handoff | Feed `4` is `CEFA Dashboard Parent Inquiry Handoff` to `cefa-brain.vercel.app` | Existing |
 | KinderTales | School Manager independently performs KinderTales business delivery | Existing and out of activation path |
 | WordPress GreenRope writer | Live plugin review found no GreenRope writer in CEFA Conversion Tracking or School Manager | Not found |
@@ -77,7 +95,7 @@ changed.
 | GreenRope scope | 52 approved parent-school groups; `TEST - Systems` excluded | Enforced by poller allowlist |
 | Restricted warehouse | `marketing-api-488017.cefa_parent_activation_restricted` | Deployed with narrowed dataset IAM |
 | Initial baseline | 22,328 unique snapshots in one poll run | 100% `baseline_non_uploadable`; zero activation rows |
-| Cloud Run runtime | Poller, dispatcher, and diagnostics jobs on v5 image | Deployed; send switches disabled |
+| Cloud Run runtime | Capture, binder, poller, dispatcher, and diagnostics jobs on activation v8 where applicable | Deployed; GreenRope/platform send switches disabled |
 | Google CRM actions | Actions `7695582127`, `7695186674`, and `7695186677` | Created, secondary, non-biddable, no campaign/custom-goal inclusion |
 | Google Data Manager API | Enabled in project `marketing-api-488017` | API enabled; `validateOnly` blocked by destination-account access |
 | Meta CRM events/conversions | Three planned CRM reporting outcomes | Adapters deployed; Test Events/custom conversions pending |
@@ -113,7 +131,12 @@ changed.
 - BigQuery batching, stable insert IDs, and retry behavior.
 - Recursive PII/log guards with an explicit governed opaque-ID allowlist.
 - Three secondary Google CRM conversion actions and non-biddable goal safety.
-- Focused automated test suite: 58 passing tests on 2026-07-23.
+- Explicit current Form 4 UUID-to-GreenRope group map for 52 CEFA schools.
+- HMAC-only Form 4 identity inbox and prospective WordPress polling capture.
+- Deterministic identity binder with delayed-GreenRope retry behavior.
+- Five-minute capture and 15-minute binder Cloud Scheduler jobs with
+  job-specific Cloud Run Invoker permissions.
+- Focused automated test suite: 69 passing tests on 2026-07-23.
 
 Relevant implementation commits at the time of this report:
 
@@ -131,18 +154,22 @@ Relevant implementation commits at the time of this report:
 | `ef24fef` | Parent-school GreenRope allowlist |
 | `5ba8d72` | Batched BigQuery inserts |
 | `0f80982` | Governed opaque-ID PII-guard fix |
+| `1e31bbf` | Parent Form 4 identity bridge and school map |
+| `c0bb015` | Prospective Form 4 identity capture |
+| `38d9c20` | Delayed GreenRope identity-match retry behavior |
 
 ### Pending
 
 - GreenRope field creation.
-- A confirmed writer/handoff for Form 4 identity into GreenRope.
+- GreenRope write-mode activation after field creation and controlled
+  write/read-back.
 - One controlled inquiry and exclusion from business reporting.
 - Google Ads user access for the runtime service account.
 - Three Google Data Manager `validateOnly` calls.
 - Three Meta Test Events and three reporting custom conversions.
 - An approved per-record consent/eligibility source or inherited-policy
   decision; the runtime currently fails closed on `unknown`.
-- Prospective poller schedule.
+- Prospective lifecycle poller schedule.
 - Production activation and acceptance monitoring.
 
 ### Blocked
@@ -152,7 +179,9 @@ waiting:
 
 1. Live GreenRope does not have `cefa_event_id`.
 2. Live GreenRope does not have `cefa_form_entry_id`.
-3. No verified Form 4-to-GreenRope writer/handoff exists.
+3. The identity binder is deployed but GreenRope write mode is intentionally
+   disabled until the field contract exists and a controlled write/read-back
+   passes.
 4. The controlled identity test has not run.
 5. `marketing-cefa-795@marketing-api-488017.iam.gserviceaccount.com` is not a
    Google Ads user in account `4159217891`; all three Data Manager validation
@@ -177,9 +206,11 @@ Gravity Forms entry.id -> GreenRope cefa_form_entry_id
 `cefa_form_entry_id` must identify that same entry. Missing or conflicting
 identity quarantines only that CRM record.
 
-The integration that writes these values still needs to be selected and proven.
-Documentation must not imply that School Manager or the CEFA Conversion
-Tracking plugin currently writes to GreenRope.
+CEFA's selected integration is the isolated Form 4 capture and GreenRope
+identity binder. It does not alter the existing Gravity Forms feed, School
+Manager, KinderTales, Supabase, GTM, or current conversion events. The binder
+will be enabled only after GreenRope's field dictionary exposes both fields
+and the controlled test proves an exact read-back.
 
 ## KinderTales Separation
 
@@ -253,7 +284,7 @@ Complete this table during activation:
 | Check | Status | Evidence reference |
 |---|---|---|
 | GreenRope identity fields created | Pending | |
-| Identity writer/handoff deployed | Pending | |
+| Identity capture/binder deployed | Passed, write-gated | Five-minute capture and 15-minute binder schedules enabled; GreenRope write flag false |
 | Controlled Form 4 event ID match | Pending | |
 | Controlled Form entry ID match | Pending | |
 | Controlled KinderTales delivery | Pending | |
@@ -294,3 +325,6 @@ selection. Preserve the ledger and delivery history for diagnosis.
 | 2026-07-23 | Established 22,328-row non-uploadable GreenRope baseline with zero activation rows |
 | 2026-07-23 | Created/read back three secondary, non-biddable Google CRM reporting actions |
 | 2026-07-23 | Proved dispatcher kill switch; documented Google account-access, Meta Test Events, GreenRope identity, and consent blockers |
+| 2026-07-23 | Deployed isolated HMAC-only prospective Form 4 identity capture and deterministic GreenRope binder |
+| 2026-07-23 | Enabled five-minute capture and 15-minute binder schedules while keeping GreenRope writes and all platform delivery disabled |
+| 2026-07-23 | Changed delayed GreenRope opportunity creation from permanent quarantine to retryable matching |
