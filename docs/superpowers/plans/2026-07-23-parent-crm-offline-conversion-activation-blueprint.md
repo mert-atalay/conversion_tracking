@@ -607,19 +607,21 @@ No dashboard dataset view or dashboard KPI is part of the initial rollout.
 | Work item | Status on 2026-07-23 | Activation implication |
 |---|---|---|
 | Approved immediate rollout blueprint | Implemented by this document | Source-of-truth decision recorded |
-| Pure identity/lifecycle primitives | Implemented in repository | Ready for integration testing |
-| Restricted table contract | Implemented in repository | Not yet deployed or IAM-proven |
-| GreenRope read-only adapter/poller primitives | Implemented in repository | Correctly blocked on missing identity fields |
-| Google/Meta payload adapters | Implemented and safety-hardened | Live destination validation pending |
+| Pure identity/lifecycle primitives | Implemented; 58 focused tests pass | Ready for controlled integration testing |
+| Restricted table contract | Deployed to `cefa_parent_activation_restricted`; IAM narrowed | Restricted activation ledger is live |
+| GreenRope read-only adapter/poller | Deployed with exact 52-school-group allowlist | Initial baseline succeeded; correctly blocked on missing identity fields |
+| Initial GreenRope baseline | 22,328 unique snapshots, all `baseline_non_uploadable` | Zero lifecycle, outbox, and delivery rows |
+| Google/Meta payload adapters | Deployed and safety-hardened | Live destination validation pending |
 | GreenRope identity fields | Blocked: absent in live field dictionary | Production record eligibility cannot pass |
 | GreenRope identity writer/handoff | Blocked: no WordPress writer found | Must be implemented and controlled-tested |
 | KinderTales separation | Verified architectural requirement | Must remain untouched |
-| Google CRM actions | Pending: do not exist | Create and read back |
-| Google Data Manager API | Pending: not enabled | Enable before validation |
-| Meta CRM custom events/conversions | Pending: do not exist | Test then create reporting conversions |
-| Dedicated restricted dataset | Pending deployment | Do not use shared `cefa_restricted` |
-| Dispatcher/runtime deployment | Pending | Keep send switches disabled until gates pass |
-| Production activation | Blocked on identity and platform tests | Activate immediately after deterministic gates |
+| Google CRM actions | Created/read back: `7695582127`, `7695186674`, `7695186677` | Secondary; exclusive customer goals non-biddable; zero campaign/custom-goal inclusions |
+| Google Data Manager API | Enabled; validation returns permission denied | Add runtime service account to Google Ads, then rerun all three validations |
+| Meta CRM custom events/conversions | Adapter deployed; Test Events/custom conversions pending | Test events must register before reporting conversions can be created |
+| Dedicated restricted dataset | Deployed with restricted IAM | Do not use shared `cefa_restricted` |
+| Dispatcher/runtime deployment | Three Cloud Run jobs deployed on hardened v5 image | Send switches disabled; kill-switch test passed with zero sends |
+| Consent/eligibility | Runtime value is `unknown` and fail-closed | Resolve inherited policy or capture per-record state before sends |
+| Production activation | Blocked on exact identity, controlled test, platform validation, and consent decision | Activate immediately after deterministic gates |
 
 ## 21. Definition Of Done
 
