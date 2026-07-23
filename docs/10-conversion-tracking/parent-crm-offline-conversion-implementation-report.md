@@ -23,11 +23,12 @@ to one Form 4 submission. CEFA's isolated prospective identity path is active:
 it captures Form 4 entries every five minutes into a restricted HMAC-only
 inbox, and the binder checks GreenRope every 15 minutes. GreenRope writes
 remain disabled until its vendor creates the required fields and one
-controlled write/read-back test passes. Google Data Manager validation is
-blocked until the runtime service account is added to the Google Ads account.
-The new Meta custom event types must pass Test Events before their reporting
-custom conversions can be created. Per-record consent/eligibility remains
-fail-closed as `unknown`.
+controlled write/read-back test passes. Google Data Manager validation has
+passed for all three actions under the production service account. Meta Test
+Events has accepted all three synthetic CRM event types under the production
+runtime; Meta's custom-conversion endpoint still returns subcode `1760020`
+until those event types enter its live event registry. Per-record
+consent/eligibility remains fail-closed as `unknown`.
 
 The approved rollout does not wait for aggregate identity coverage or a fixed
 number of days. Once the exact identity handoff passes one controlled inquiry
@@ -53,8 +54,8 @@ changed.
 
 | Resource | 2026-07-23 deployed state |
 |---|---|
-| Activation container | `parent-crm-activation:20260723-full-rollout-v8` |
-| Activation image digest | `sha256:6561f28328a6925d3ad4ac3f6bcc710811d3adf40d2bb05c3ce7c7a4425941fe` |
+| Activation container | `parent-crm-activation:20260723-full-rollout-v10` |
+| Activation image digest | `sha256:87669f97ff05ba6646fe109aa489b5d549d4e7337812c215cc7010130ee6aa6c` |
 | Form 4 capture job | `cefa-parent-form4-identity-capture` |
 | Form 4 capture schedule | `cefa-parent-form4-identity-capture-5m`; every five minutes; enabled |
 | Capture scheduler smoke test | Manual execution `cefa-parent-form4-identity-capture-swfwf` completed successfully; automatic execution created at `2026-07-23 21:05 UTC` |
@@ -63,8 +64,13 @@ changed.
 | Identity binder write mode | `PARENT_GREENROPE_IDENTITY_WRITE_ENABLED=false` |
 | Binder scheduler smoke test | Scheduled execution `cefa-parent-greenrope-identity-binder-brpl2` completed successfully; two delayed candidates remained retryable; zero writes |
 | Poller job | `cefa-parent-crm-lifecycle-refresh` |
+| Poller schedule | `cefa-parent-crm-lifecycle-refresh-15m`; enabled; runtime mode remains disabled |
 | Dispatcher job | `cefa-parent-offline-conversion-dispatch` |
+| Dispatcher schedule | `cefa-parent-offline-conversion-dispatch-5m`; enabled; both platform send switches remain false |
 | Diagnostics job | `cefa-parent-conversion-diagnostics` |
+| Diagnostics schedule | `cefa-parent-conversion-diagnostics-30m`; enabled |
+| Google validation job | `cefa-parent-google-data-manager-validate`; execution `cefa-parent-google-data-manager-validate-wqsxk` passed all three actions |
+| Meta Test Events job | `cefa-parent-meta-test-events`; execution `cefa-parent-meta-test-events-ckkft` received all three synthetic events |
 | Runtime identity | `marketing-cefa-795@marketing-api-488017.iam.gserviceaccount.com` |
 | Restricted dataset | `marketing-api-488017.cefa_parent_activation_restricted` |
 | Dataset access | Activation runtime `WRITER`; designated Codex/admin identities `OWNER`; no project-wide group access |
@@ -82,7 +88,7 @@ changed.
 | Form attribution | Form 4 fields `35-46` save UTMs, click IDs, landing page, and referrer | Available |
 | Prospective Form capture | Form 4 entries after `2026-07-23 20:45:00 UTC` are HMAC-captured into the restricted inbox | Enabled every five minutes |
 | Capture safety | Raw parent identity is normalized/HMACed in Cloud Run memory; no raw email, phone, name, child data, or payload is persisted | Passed schema and focused tests |
-| Initial live capture | Two prospective Form 4 entries captured; zero invalid entries | Passed |
+| Prospective live capture | Six Form 4 identities captured as of `2026-07-23 21:32 UTC`; zero raw PII stored | Active |
 | Delayed CRM creation | A Form 4 entry without a GreenRope candidate remains `retryable_failure`, not permanently quarantined | Implemented |
 | Identity binder | Deterministic same-school, same-email-HMAC, 24-hour matcher with unique-best safeguards | Enabled read-only; GreenRope writes disabled |
 | Historical matcher audit | 490 of 500 recent Form 4 entries resolved deterministically; 10 remained safely unmatched | 98% resolution; audit only |
@@ -95,10 +101,11 @@ changed.
 | GreenRope scope | 52 approved parent-school groups; `TEST - Systems` excluded | Enforced by poller allowlist |
 | Restricted warehouse | `marketing-api-488017.cefa_parent_activation_restricted` | Deployed with narrowed dataset IAM |
 | Initial baseline | 22,328 unique snapshots in one poll run | 100% `baseline_non_uploadable`; zero activation rows |
-| Cloud Run runtime | Capture, binder, poller, dispatcher, and diagnostics jobs on activation v8 where applicable | Deployed; GreenRope/platform send switches disabled |
+| Cloud Run runtime | Capture, binder, poller, dispatcher, and diagnostics jobs on activation v10 | Deployed; GreenRope/platform send switches disabled |
 | Google CRM actions | Actions `7695582127`, `7695186674`, and `7695186677` | Created, secondary, non-biddable, no campaign/custom-goal inclusion |
-| Google Data Manager API | Enabled in project `marketing-api-488017` | API enabled; `validateOnly` blocked by destination-account access |
-| Meta CRM events/conversions | Three planned CRM reporting outcomes | Adapters deployed; Test Events/custom conversions pending |
+| Google Data Manager API | Enabled in project `marketing-api-488017` | Three `validateOnly=true` requests passed under the runtime service account |
+| Meta CRM Test Events | Three approved custom event types | Three received, zero API messages, synthetic identity only |
+| Meta reporting conversions | Three reporting-only rules | Creation still returns Meta subcode `1760020`; no broader fallback rule created |
 | Dispatcher kill switch | Disabled execution `cefa-parent-offline-conversion-dispatch-gfmdh` | Zero inspected, validated, accepted, failed, or retried |
 | Existing inquiry conversions | Current Google website inquiry and Meta `Inquiry Submit` | Preserve unchanged |
 
@@ -136,6 +143,11 @@ changed.
 - Deterministic identity binder with delayed-GreenRope retry behavior.
 - Five-minute capture and 15-minute binder Cloud Scheduler jobs with
   job-specific Cloud Run Invoker permissions.
+- Dedicated production-identity Google Data Manager validator permanently
+  locked to synthetic `validateOnly=true` requests.
+- Dedicated Meta Test Events runner restricted to approved CRM events,
+  synthetic identity, and a required `TEST...` event code.
+- Disabled-mode lifecycle, dispatcher, and diagnostics schedules.
 - Focused automated test suite: 69 passing tests on 2026-07-23.
 
 Relevant implementation commits at the time of this report:
@@ -157,6 +169,8 @@ Relevant implementation commits at the time of this report:
 | `1e31bbf` | Parent Form 4 identity bridge and school map |
 | `c0bb015` | Prospective Form 4 identity capture |
 | `38d9c20` | Delayed GreenRope identity-match retry behavior |
+| `a24df2a` | Production-identity Google Data Manager validator |
+| `2a89430` | Synthetic Meta Test Events runner |
 
 ### Pending
 
@@ -164,12 +178,11 @@ Relevant implementation commits at the time of this report:
 - GreenRope write-mode activation after field creation and controlled
   write/read-back.
 - One controlled inquiry and exclusion from business reporting.
-- Google Ads user access for the runtime service account.
-- Three Google Data Manager `validateOnly` calls.
-- Three Meta Test Events and three reporting custom conversions.
+- Three Meta reporting custom conversions after Meta registers the custom
+  event types in its live registry.
 - An approved per-record consent/eligibility source or inherited-policy
   decision; the runtime currently fails closed on `unknown`.
-- Prospective lifecycle poller schedule.
+- Prospective lifecycle poller activation after identity readiness.
 - Production activation and acceptance monitoring.
 
 ### Blocked
@@ -183,15 +196,10 @@ waiting:
    disabled until the field contract exists and a controlled write/read-back
    passes.
 4. The controlled identity test has not run.
-5. `marketing-cefa-795@marketing-api-488017.iam.gserviceaccount.com` is not a
-   Google Ads user in account `4159217891`; all three Data Manager validation
-   calls return permission denied.
-6. The current Google Ads developer token has Explorer access, so it cannot
-   create the required user invitation through the API.
-7. Google `validateOnly=true` has not passed.
-8. Meta Test Events has not passed, so Meta does not yet recognize the three
-   new custom event types for custom-conversion creation.
-9. Per-record consent/eligibility is `unknown` and therefore fail-closed.
+5. Meta Test Events passed, but custom-conversion creation still returns Meta
+   subcode `1760020` because test events have not entered the live event
+   registry. No production event has been manufactured to bypass this.
+6. Per-record consent/eligibility is `unknown` and therefore fail-closed.
 
 ## Identity Handoff Requirement
 
@@ -266,13 +274,13 @@ optimization events. Do not send `Inquiry Submit` from the CRM service.
 2. Run one controlled Form 4 inquiry.
 3. Prove Gravity Forms, GreenRope, KinderTales, and existing conversions all
    agree.
-4. Add the runtime service account as a Standard user in Google Ads account
-   `415-921-7891`.
-5. Pass all three Google Data Manager `validateOnly=true` requests.
-6. Pass all three Meta Test Events and create reporting custom conversions.
-7. Resolve the fail-closed consent/eligibility decision.
-8. Enable prospective polling and production dispatch.
-9. Monitor duplicates, quarantine reasons, delivery diagnostics, PII guards,
+4. Keep the three passed Google Data Manager validations and secondary-action
+   read-back as the Google activation gate.
+5. Create the three Meta reporting custom conversions as soon as Meta exposes
+   the tested custom event types to the live rule registry.
+6. Resolve the fail-closed consent/eligibility decision.
+7. Enable prospective polling and production dispatch.
+8. Monitor duplicates, quarantine reasons, delivery diagnostics, PII guards,
     and existing inquiry continuity.
 
 No seven-day, 14-day, or bounded-pilot delay follows these checks.
@@ -292,11 +300,12 @@ Complete this table during activation:
 | Test excluded from business reporting | Pending | |
 | Restricted dataset IAM passed | Passed | Restricted dataset ACL limited to activation writer and designated owners |
 | Google actions created and read back | Passed | Action IDs `7695582127`, `7695186674`, `7695186677`; secondary/non-biddable |
-| Google `validateOnly` passed for all actions | Pending | |
-| Meta Test Events passed for all events | Pending | |
-| Meta reporting custom conversions created | Pending | |
+| Google `validateOnly` passed for all actions | Passed | Execution `cefa-parent-google-data-manager-validate-wqsxk`; three request IDs; zero failures |
+| Meta Test Events passed for all events | Passed | Execution `cefa-parent-meta-test-events-ckkft`; three received; zero messages |
+| Meta reporting custom conversions created | Pending on Meta live registry | API subcode `1760020`; no fallback or production test event created |
 | Initial baseline committed non-uploadable | Passed | Execution `cefa-parent-crm-lifecycle-refresh-hvh5p`; 22,328/22,328 rows |
-| Poller production schedule enabled | Pending | |
+| Poller production schedule enabled | Passed, runtime disabled | `cefa-parent-crm-lifecycle-refresh-15m` |
+| Dispatcher production schedule enabled | Passed, sending disabled | `cefa-parent-offline-conversion-dispatch-5m` |
 | Dispatcher production schedule enabled | Pending | |
 | First eligible Google outcome accepted | Pending | |
 | First eligible Meta outcome accepted | Pending | |
@@ -328,3 +337,8 @@ selection. Preserve the ledger and delivery history for diagnosis.
 | 2026-07-23 | Deployed isolated HMAC-only prospective Form 4 identity capture and deterministic GreenRope binder |
 | 2026-07-23 | Enabled five-minute capture and 15-minute binder schedules while keeping GreenRope writes and all platform delivery disabled |
 | 2026-07-23 | Changed delayed GreenRope opportunity creation from permanent quarantine to retryable matching |
+| 2026-07-23 | Added the runtime service account to Google Ads and passed all three Data Manager validation-only requests |
+| 2026-07-23 | Reconfirmed all Google CRM actions are secondary, non-biddable, and absent from campaign/custom goals |
+| 2026-07-23 | Passed all three Meta Test Events under the production runtime using synthetic identity only |
+| 2026-07-23 | Enabled disabled-mode lifecycle, dispatcher, and diagnostics schedules; no platform sending enabled |
+| 2026-07-23 | Reconfirmed restricted warehouse safety after scheduling: 22,328 baseline snapshots; zero lifecycle events, outbox rows, or delivery attempts |
