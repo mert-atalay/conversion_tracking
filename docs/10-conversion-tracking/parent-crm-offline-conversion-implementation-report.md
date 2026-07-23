@@ -54,8 +54,8 @@ changed.
 
 | Resource | 2026-07-23 deployed state |
 |---|---|
-| Activation container | `parent-crm-activation:20260723-full-rollout-v10` |
-| Activation image digest | `sha256:87669f97ff05ba6646fe109aa489b5d549d4e7337812c215cc7010130ee6aa6c` |
+| Activation container | `parent-crm-activation:20260723-full-rollout-v11` |
+| Activation image digest | `sha256:b9b00676ba318548d619fe632da8c99f45f826162dbe9041717356d30af7b93f` |
 | Form 4 capture job | `cefa-parent-form4-identity-capture` |
 | Form 4 capture schedule | `cefa-parent-form4-identity-capture-5m`; every five minutes; enabled |
 | Capture scheduler smoke test | Manual execution `cefa-parent-form4-identity-capture-swfwf` completed successfully; automatic execution created at `2026-07-23 21:05 UTC` |
@@ -64,11 +64,11 @@ changed.
 | Identity binder write mode | `PARENT_GREENROPE_IDENTITY_WRITE_ENABLED=false` |
 | Binder scheduler smoke test | Scheduled execution `cefa-parent-greenrope-identity-binder-brpl2` completed successfully; two delayed candidates remained retryable; zero writes |
 | Poller job | `cefa-parent-crm-lifecycle-refresh` |
-| Poller schedule | `cefa-parent-crm-lifecycle-refresh-15m`; enabled; runtime mode remains disabled |
+| Poller schedule | `cefa-parent-crm-lifecycle-refresh-15m`; provisioned and paused until identity read-back |
 | Dispatcher job | `cefa-parent-offline-conversion-dispatch` |
-| Dispatcher schedule | `cefa-parent-offline-conversion-dispatch-5m`; enabled; both platform send switches remain false |
+| Dispatcher schedule | `cefa-parent-offline-conversion-dispatch-5m`; provisioned and paused; both platform send switches remain false |
 | Diagnostics job | `cefa-parent-conversion-diagnostics` |
-| Diagnostics schedule | `cefa-parent-conversion-diagnostics-30m`; enabled |
+| Diagnostics schedule | `cefa-parent-conversion-diagnostics-30m`; provisioned and paused until activation |
 | Google validation job | `cefa-parent-google-data-manager-validate`; execution `cefa-parent-google-data-manager-validate-wqsxk` passed all three actions |
 | Meta Test Events job | `cefa-parent-meta-test-events`; execution `cefa-parent-meta-test-events-ckkft` received all three synthetic events |
 | Runtime identity | `marketing-cefa-795@marketing-api-488017.iam.gserviceaccount.com` |
@@ -90,6 +90,7 @@ changed.
 | Capture safety | Raw parent identity is normalized/HMACed in Cloud Run memory; no raw email, phone, name, child data, or payload is persisted | Passed schema and focused tests |
 | Prospective live capture | Six Form 4 identities captured as of `2026-07-23 21:32 UTC`; zero raw PII stored | Active |
 | Delayed CRM creation | A Form 4 entry without a GreenRope candidate remains `retryable_failure`, not permanently quarantined | Implemented |
+| Capture overlap safety | Re-reading the one-hour Form 4 overlap preserves binder status and reason instead of resetting rows to `captured` | Implemented and regression-tested |
 | Identity binder | Deterministic same-school, same-email-HMAC, 24-hour matcher with unique-best safeguards | Enabled read-only; GreenRope writes disabled |
 | Historical matcher audit | 490 of 500 recent Form 4 entries resolved deterministically; 10 remained safely unmatched | 98% resolution; audit only |
 | Form handoff | Feed `4` is `CEFA Dashboard Parent Inquiry Handoff` to `cefa-brain.vercel.app` | Existing |
@@ -101,7 +102,7 @@ changed.
 | GreenRope scope | 52 approved parent-school groups; `TEST - Systems` excluded | Enforced by poller allowlist |
 | Restricted warehouse | `marketing-api-488017.cefa_parent_activation_restricted` | Deployed with narrowed dataset IAM |
 | Initial baseline | 22,328 unique snapshots in one poll run | 100% `baseline_non_uploadable`; zero activation rows |
-| Cloud Run runtime | Capture, binder, poller, dispatcher, and diagnostics jobs on activation v10 | Deployed; GreenRope/platform send switches disabled |
+| Cloud Run runtime | Capture, binder, poller, dispatcher, and diagnostics jobs on activation v11 | Deployed; GreenRope/platform send switches disabled |
 | Google CRM actions | Actions `7695582127`, `7695186674`, and `7695186677` | Created, secondary, non-biddable, no campaign/custom-goal inclusion |
 | Google Data Manager API | Enabled in project `marketing-api-488017` | Three `validateOnly=true` requests passed under the runtime service account |
 | Meta CRM Test Events | Three approved custom event types | Three received, zero API messages, synthetic identity only |
@@ -147,8 +148,9 @@ changed.
   locked to synthetic `validateOnly=true` requests.
 - Dedicated Meta Test Events runner restricted to approved CRM events,
   synthetic identity, and a required `TEST...` event code.
-- Disabled-mode lifecycle, dispatcher, and diagnostics schedules.
-- Focused automated test suite: 69 passing tests on 2026-07-23.
+- Provisioned lifecycle, dispatcher, and diagnostics schedules, paused until
+  the deterministic GreenRope identity test passes.
+- Focused automated test suite: 70 passing tests on 2026-07-23.
 
 Relevant implementation commits at the time of this report:
 
@@ -171,6 +173,7 @@ Relevant implementation commits at the time of this report:
 | `38d9c20` | Delayed GreenRope identity-match retry behavior |
 | `a24df2a` | Production-identity Google Data Manager validator |
 | `2a89430` | Synthetic Meta Test Events runner |
+| `a2f04ac` | Preserve binder state across overlapping Form 4 capture |
 
 ### Pending
 
@@ -304,8 +307,8 @@ Complete this table during activation:
 | Meta Test Events passed for all events | Passed | Execution `cefa-parent-meta-test-events-ckkft`; three received; zero messages |
 | Meta reporting custom conversions created | Pending on Meta live registry | API subcode `1760020`; no fallback or production test event created |
 | Initial baseline committed non-uploadable | Passed | Execution `cefa-parent-crm-lifecycle-refresh-hvh5p`; 22,328/22,328 rows |
-| Poller production schedule enabled | Passed, runtime disabled | `cefa-parent-crm-lifecycle-refresh-15m` |
-| Dispatcher production schedule enabled | Passed, sending disabled | `cefa-parent-offline-conversion-dispatch-5m` |
+| Poller production schedule enabled | Pending activation; provisioned and paused | `cefa-parent-crm-lifecycle-refresh-15m` |
+| Dispatcher production schedule enabled | Pending activation; provisioned and paused | `cefa-parent-offline-conversion-dispatch-5m` |
 | Dispatcher production schedule enabled | Pending | |
 | First eligible Google outcome accepted | Pending | |
 | First eligible Meta outcome accepted | Pending | |
@@ -340,5 +343,6 @@ selection. Preserve the ledger and delivery history for diagnosis.
 | 2026-07-23 | Added the runtime service account to Google Ads and passed all three Data Manager validation-only requests |
 | 2026-07-23 | Reconfirmed all Google CRM actions are secondary, non-biddable, and absent from campaign/custom goals |
 | 2026-07-23 | Passed all three Meta Test Events under the production runtime using synthetic identity only |
-| 2026-07-23 | Enabled disabled-mode lifecycle, dispatcher, and diagnostics schedules; no platform sending enabled |
+| 2026-07-23 | Provisioned lifecycle, dispatcher, and diagnostics schedules, then paused them until the GreenRope identity read-back gate; no platform sending enabled |
 | 2026-07-23 | Reconfirmed restricted warehouse safety after scheduling: 22,328 baseline snapshots; zero lifecycle events, outbox rows, or delivery attempts |
+| 2026-07-23 | Fixed overlapping Form 4 capture so retry/match/quarantine state is preserved; deployed activation v11 |
