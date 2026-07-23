@@ -20,6 +20,9 @@ case "${PARENT_ACTIVATION_JOB:-poll}" in
   google_validate)
     exec python /app/tools/warehouse/validate_parent_google_data_manager.py "$@"
     ;;
+  meta_test)
+    exec python /app/tools/warehouse/test_parent_meta_capi.py "$@"
+    ;;
   *)
     echo "Unsupported PARENT_ACTIVATION_JOB" >&2
     exit 2
