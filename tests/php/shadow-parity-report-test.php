@@ -31,6 +31,34 @@ cefa_shadow_report_assert(
 	'Medium comparison is not case-normalized.'
 );
 cefa_shadow_report_assert(
+	'match' === cefa_ct_shadow_core_comparison( 'lc_source', 'fb', 'facebook' ),
+	'Known Meta source aliases were not normalized.'
+);
+cefa_shadow_report_assert(
+	'match' === cefa_ct_shadow_core_comparison( 'lc_channel', 'Paid Social', 'paid_social' ),
+	'Channel separators were not normalized.'
+);
+cefa_shadow_report_assert(
+	! cefa_ct_shadow_has_acquisition_signal( 'lc_source', '(direct)' ),
+	'Direct source placeholder became an acquisition signal.'
+);
+cefa_shadow_report_assert(
+	! cefa_ct_shadow_has_acquisition_signal( 'lc_channel', 'Direct' ),
+	'Direct channel placeholder became an acquisition signal.'
+);
+cefa_shadow_report_assert(
+	! cefa_ct_shadow_has_acquisition_signal( 'lc_campaign', '(direct)' ),
+	'Direct campaign placeholder became an acquisition signal.'
+);
+cefa_shadow_report_assert(
+	! cefa_ct_shadow_has_acquisition_signal( 'ga_client_id', '123.456' ),
+	'GA client identity became an acquisition signal.'
+);
+cefa_shadow_report_assert(
+	cefa_ct_shadow_has_acquisition_signal( 'lc_source', 'google' ),
+	'A real acquisition source was discarded.'
+);
+cefa_shadow_report_assert(
 	'skip' === cefa_ct_shadow_core_comparison( 'first_landing_page', 'https://cefa.ca/old', 'https://cefa.ca/new' ),
 	'First-context deployment-window difference was not excluded.'
 );
