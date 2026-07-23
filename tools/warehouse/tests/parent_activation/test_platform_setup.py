@@ -23,7 +23,7 @@ def google_action_row(
             "status": "ENABLED",
             "type": action_type,
             "category": spec.category,
-            "origin": "UPLOAD",
+            "origin": "WEBSITE",
             "primaryForGoal": primary,
             "countingType": "ONE_PER_CLICK",
         }
@@ -37,10 +37,13 @@ class FakeGoogleClient:
         self,
         before: google_setup.GoogleInventory,
         after: google_setup.GoogleInventory | None = None,
+        final: google_setup.GoogleInventory | None = None,
     ) -> None:
-        self.inventories = [before, after or before]
+        middle = after or before
+        self.inventories = [before, middle, final or middle]
         self.inventory_calls = 0
         self.mutations: list[tuple[str, bool]] = []
+        self.goal_mutations: list[tuple[str, bool, bool]] = []
 
     def inventory(self) -> google_setup.GoogleInventory:
         index = min(self.inventory_calls, len(self.inventories) - 1)
@@ -65,16 +68,64 @@ class FakeGoogleClient:
             }
         )
 
+    def mutate_customer_conversion_goal(
+        self,
+        resource_name: str,
+        *,
+        biddable: bool,
+        validate_only: bool,
+    ) -> dict[str, str | bool]:
+        self.goal_mutations.append((resource_name, biddable, validate_only))
+        return {"validated": True} if validate_only else {
+            "resourceName": resource_name
+        }
+
 
 def google_inventory(
     actions: list[dict[str, object]] | None = None,
     *,
     custom_goals: list[dict[str, object]] | None = None,
+    customer_goal_biddable: bool = False,
+    campaign_goal_biddable: bool = False,
 ) -> google_setup.GoogleInventory:
+    action_rows = actions or []
+    pairs = {
+        (
+            row["conversionAction"]["category"],
+            row["conversionAction"]["origin"],
+        )
+        for row in action_rows
+    }
     return google_setup.GoogleInventory.from_search_rows(
-        actions=actions or [],
-        customer_goals=[],
-        campaign_goals=[],
+        actions=action_rows,
+        customer_goals=[
+            {
+                "customerConversionGoal": {
+                    "resourceName": (
+                        f"customers/{google_setup.CUSTOMER_ID}/"
+                        f"customerConversionGoals/{category}~{origin}"
+                    ),
+                    "category": category,
+                    "origin": origin,
+                    "biddable": customer_goal_biddable,
+                }
+            }
+            for category, origin in pairs
+        ],
+        campaign_goals=[
+            {
+                "campaignConversionGoal": {
+                    "resourceName": (
+                        f"customers/{google_setup.CUSTOMER_ID}/campaignConversionGoals/"
+                        f"1~{category}~{origin}"
+                    ),
+                    "category": category,
+                    "origin": origin,
+                    "biddable": campaign_goal_biddable,
+                }
+            }
+            for category, origin in pairs
+        ],
         custom_goals=custom_goals or [],
         campaign_configs=[],
     )
@@ -125,6 +176,49 @@ class GooglePlatformSetupTests(unittest.TestCase):
         self.assertTrue(
             all(str(row["action_id"]).isdigit() for row in report["actions"])
         )
+
+    def test_apply_disables_exclusive_generated_customer_goals(self) -> None:
+        actions = [
+            google_action_row(spec, str(8050 + index))
+            for index, spec in enumerate(google_setup.PLANNED_ACTIONS)
+        ]
+        client = FakeGoogleClient(
+            google_inventory(actions, customer_goal_biddable=True),
+            google_inventory(actions, customer_goal_biddable=True),
+            google_inventory(actions, customer_goal_biddable=False),
+        )
+
+        report = google_setup.reconcile_google_actions(client, mode="apply")
+
+        self.assertEqual(3, report["goal_mutations"])
+        self.assertEqual(6, len(client.goal_mutations))
+        self.assertTrue(all(call[1] is False for call in client.goal_mutations))
+        self.assertEqual(
+            [True, False, True, False, True, False],
+            [call[2] for call in client.goal_mutations],
+        )
+        self.assertTrue(
+            all(not row["customer_goal_biddable"] for row in report["actions"])
+        )
+
+    def test_shared_category_origin_goal_fails_closed(self) -> None:
+        spec = google_setup.PLANNED_ACTIONS[0]
+        planned = google_action_row(spec, "8090")
+        shared = {
+            "conversionAction": {
+                **planned["conversionAction"],
+                "resourceName": (
+                    f"customers/{google_setup.CUSTOMER_ID}/conversionActions/8091"
+                ),
+                "id": "8091",
+                "name": "Existing shared action",
+            }
+        }
+        with self.assertRaisesRegex(google_setup.SetupError, "shares its"):
+            google_setup.reconcile_google_actions(
+                FakeGoogleClient(google_inventory([planned, shared])),
+                mode="read_back",
+            )
 
     def test_existing_exact_actions_are_idempotent(self) -> None:
         actions = [

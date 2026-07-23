@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import time
 from typing import Any, Iterable, Mapping, Sequence
 
 from .bigquery_store import (
@@ -30,6 +31,10 @@ DELIVERY_ATTEMPT_TABLE = (
 )
 FORM4_EVENT_TABLE = f"{PROJECT_ID}.raw_website_forms.website_form_submission_events"
 FORM4_COLLECTOR_TABLE = f"{PROJECT_ID}.raw_website_forms.form4_event_audit"
+INSERT_ATTEMPTS = 4
+RETRYABLE_INSERT_ERRORS = (
+    OSError,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,7 +117,11 @@ class ParentActivationRepository:
             prepared.append(dict(source))
         if not prepared:
             return
-        errors = self.client.insert_rows_json(SNAPSHOT_TABLE, prepared)
+        row_ids = [
+            f"{row['poll_run_id']}:{row['opportunity_id_hmac']}"
+            for row in prepared
+        ]
+        errors = self._insert_rows_json(SNAPSHOT_TABLE, prepared, row_ids)
         if errors:
             raise RuntimeError(
                 f"BigQuery insert failed for lifecycle snapshots: {len(errors)} redacted error(s)"
@@ -125,11 +134,31 @@ class ParentActivationRepository:
             prepared.append(dict(source))
         if not prepared:
             return
-        errors = self.client.insert_rows_json(LIFECYCLE_TABLE, prepared)
+        row_ids = [str(row["lifecycle_event_id"]) for row in prepared]
+        errors = self._insert_rows_json(LIFECYCLE_TABLE, prepared, row_ids)
         if errors:
             raise RuntimeError(
                 f"BigQuery insert failed for lifecycle events: {len(errors)} redacted error(s)"
             )
+
+    def _insert_rows_json(
+        self,
+        table: str,
+        rows: Sequence[Mapping[str, Any]],
+        row_ids: Sequence[str],
+    ) -> list[dict[str, Any]]:
+        for attempt in range(INSERT_ATTEMPTS):
+            try:
+                return self.client.insert_rows_json(
+                    table,
+                    rows,
+                    row_ids=row_ids,
+                )
+            except RETRYABLE_INSERT_ERRORS:
+                if attempt + 1 >= INSERT_ATTEMPTS:
+                    raise
+                time.sleep(2**attempt)
+        raise RuntimeError("BigQuery insert retries exhausted")
 
     def resolve_form4_matches(
         self,

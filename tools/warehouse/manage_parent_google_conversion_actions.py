@@ -136,6 +136,21 @@ class GoogleInventory:
                 return goal
         return None
 
+    def active_actions_for_goal(
+        self,
+        category: str,
+        origin: str,
+    ) -> list[dict[str, Any]]:
+        return [
+            _field(row, "conversionAction")
+            for row in self.actions
+            if (
+                _field(row, "conversionAction").get("category") == category
+                and _field(row, "conversionAction").get("origin") == origin
+                and _field(row, "conversionAction").get("status") != "REMOVED"
+            )
+        ]
+
     def biddable_campaign_goals(
         self,
         category: str,
@@ -175,6 +190,8 @@ def _verify_existing_action(
     spec: PlannedAction,
     action: dict[str, Any],
     inventory: GoogleInventory,
+    *,
+    require_goal_safe: bool = False,
 ) -> dict[str, Any]:
     resource_name = str(action.get("resourceName") or "")
     action_id = str(action.get("id") or "")
@@ -213,24 +230,53 @@ def _verify_existing_action(
             f"biddable despite secondary status: {', '.join(names)}"
         )
 
-    customer_goal = inventory.customer_goal(spec.category, "UPLOAD")
+    origin = str(action.get("origin") or "")
+    if not origin:
+        raise SetupError(f"{spec.name} does not have a conversion origin.")
+    active_pair_actions = inventory.active_actions_for_goal(spec.category, origin)
+    if len(active_pair_actions) != 1 or str(
+        active_pair_actions[0].get("resourceName") or ""
+    ) != resource_name:
+        names = sorted(
+            str(item.get("name") or item.get("id") or "")
+            for item in active_pair_actions
+        )
+        raise SetupError(
+            f"{spec.name} shares its {spec.category}/{origin} goal pair with "
+            f"another active conversion action: {', '.join(names)}"
+        )
+
+    customer_goal = inventory.customer_goal(spec.category, origin)
+    if not customer_goal:
+        raise SetupError(
+            f"{spec.name} is missing its generated customer conversion goal."
+        )
     campaign_goal_count = len(
-        inventory.biddable_campaign_goals(spec.category, "UPLOAD")
+        inventory.biddable_campaign_goals(spec.category, origin)
     )
+    customer_goal_biddable = _bool(customer_goal.get("biddable"))
+    if require_goal_safe and (customer_goal_biddable or campaign_goal_count):
+        raise SetupError(
+            f"{spec.name} remains biddable through its generated account or "
+            f"campaign conversion goal."
+        )
     return {
         "name": spec.name,
         "action_id": action_id,
         "resource_name": resource_name,
+        "category": spec.category,
+        "origin": origin,
         "status": "existing_match",
         "secondary": True,
-        "customer_goal_biddable": (
-            _bool(customer_goal.get("biddable")) if customer_goal else None
-        ),
+        "customer_goal_resource_name": customer_goal.get("resourceName"),
+        "customer_goal_biddable": customer_goal_biddable,
         "biddable_campaign_goal_count": campaign_goal_count,
         "custom_goal_inclusions": 0,
         "goal_safety": (
-            "primaryForGoal=false keeps the action secondary; shared goals were "
-            "inventoried and not mutated"
+            "the action is secondary and its exclusive category/origin goal is "
+            "excluded from account-default and campaign bidding"
+            if not customer_goal_biddable and not campaign_goal_count
+            else "the exclusive generated category/origin goal must be disabled"
         ),
     }
 
@@ -299,6 +345,30 @@ def reconcile_google_actions(
         }
 
     after: GoogleInventory = before if mode == "read_back" else client.inventory()
+    goal_mutations = 0
+    if mode == "apply":
+        for spec in PLANNED_ACTIONS:
+            matches = after.actions_named(spec.name)
+            if len(matches) != 1:
+                continue
+            item = _verify_existing_action(spec, matches[0], after)
+            if not item["customer_goal_biddable"]:
+                continue
+            goal_resource_name = str(item["customer_goal_resource_name"])
+            client.mutate_customer_conversion_goal(
+                goal_resource_name,
+                biddable=False,
+                validate_only=True,
+            )
+            client.mutate_customer_conversion_goal(
+                goal_resource_name,
+                biddable=False,
+                validate_only=False,
+            )
+            goal_mutations += 1
+        if goal_mutations:
+            after = client.inventory()
+
     verified: list[dict[str, Any]] = []
     missing: list[str] = []
     for spec in PLANNED_ACTIONS:
@@ -308,7 +378,12 @@ def reconcile_google_actions(
             continue
         if len(matches) > 1:
             raise SetupError(f"Duplicate Google conversion action name: {spec.name}")
-        item = _verify_existing_action(spec, matches[0], after)
+        item = _verify_existing_action(
+            spec,
+            matches[0],
+            after,
+            require_goal_safe=True,
+        )
         if spec.name in created_names:
             item["status"] = "created_and_verified"
         verified.append(item)
@@ -323,7 +398,7 @@ def reconcile_google_actions(
         "customer_id": client.customer_id,
         "inventory": after.summary(),
         "actions": verified,
-        "goal_mutations": 0,
+        "goal_mutations": goal_mutations,
     }
 
 
@@ -545,6 +620,43 @@ class GoogleAdsClient:
         )
         _resource_id(resource_name)
         return {"resourceName": resource_name}
+
+    def mutate_customer_conversion_goal(
+        self,
+        resource_name: str,
+        *,
+        biddable: bool,
+        validate_only: bool,
+    ) -> dict[str, Any]:
+        if not resource_name.startswith(
+            f"customers/{self.customer_id}/customerConversionGoals/"
+        ):
+            raise SetupError(
+                f"Unexpected customer conversion goal resource: {resource_name}"
+            )
+        payload = self._post(
+            "customerConversionGoals:mutate",
+            {
+                "operations": [
+                    {
+                        "update": {
+                            "resourceName": resource_name,
+                            "biddable": biddable,
+                        },
+                        "updateMask": "biddable",
+                    }
+                ],
+                "validateOnly": validate_only,
+            },
+        )
+        if validate_only:
+            return {"validated": True}
+        results = payload.get("results") or []
+        if len(results) != 1:
+            raise SetupError(
+                "Google Ads did not return one customer conversion goal result."
+            )
+        return {"resourceName": str(results[0].get("resourceName") or resource_name)}
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

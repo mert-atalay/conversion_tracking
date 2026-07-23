@@ -17,7 +17,12 @@ from parent_activation.poller_runtime import (
     build_lifecycle_decisions,
     build_snapshot_rows,
 )
-from parent_activation.repository import Form4Match
+from parent_activation.repository import (
+    LIFECYCLE_TABLE,
+    SNAPSHOT_TABLE,
+    Form4Match,
+    ParentActivationRepository,
+)
 
 
 NOW = datetime(2026, 7, 23, 20, 0, tzinfo=timezone.utc)
@@ -86,6 +91,45 @@ class CaptureRepository:
 
     def upsert_match_key(self, row):
         self.match_rows.append(dict(row))
+
+
+class RetryInsertClient:
+    def __init__(self, failures: int) -> None:
+        self.failures = failures
+        self.calls: list[tuple[str, list[str]]] = []
+
+    def insert_rows_json(self, table, rows, *, row_ids):
+        self.calls.append((table, list(row_ids)))
+        if len(self.calls) <= self.failures:
+            raise OSError("transient")
+        return []
+
+
+class ParentRepositoryRetryTest(TestCase):
+    @mock.patch("parent_activation.repository.time.sleep")
+    def test_snapshot_insert_retries_with_stable_row_ids(self, sleep) -> None:
+        client = RetryInsertClient(failures=1)
+        repository = ParentActivationRepository(client=client)
+
+        repository.insert_state_snapshots(
+            [{"poll_run_id": "run-1", "opportunity_id_hmac": SHA}]
+        )
+
+        self.assertEqual(2, len(client.calls))
+        self.assertEqual(SNAPSHOT_TABLE, client.calls[0][0])
+        self.assertEqual(client.calls[0][1], client.calls[1][1])
+        self.assertEqual([f"run-1:{SHA}"], client.calls[0][1])
+        sleep.assert_called_once_with(1)
+
+    @mock.patch("parent_activation.repository.time.sleep")
+    def test_lifecycle_insert_uses_event_id_for_deduplication(self, sleep) -> None:
+        client = RetryInsertClient(failures=0)
+        repository = ParentActivationRepository(client=client)
+
+        repository.insert_lifecycle_events([{"lifecycle_event_id": "lifecycle-1"}])
+
+        self.assertEqual([(LIFECYCLE_TABLE, ["lifecycle-1"])], client.calls)
+        sleep.assert_not_called()
 
 
 class ParentPollRuntimeTest(TestCase):
