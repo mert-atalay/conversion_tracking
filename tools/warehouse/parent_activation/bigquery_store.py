@@ -26,12 +26,20 @@ except ModuleNotFoundError:  # pragma: no cover - supports isolated unit tests.
             self.type_ = type_
             self.value = value
 
+    class _ArrayQueryParameter:
+        def __init__(self, name: str, type_: str, values: Sequence[Any]) -> None:
+            self.name = name
+            self.type_ = type_
+            self.values = list(values)
+
     class _QueryJobConfig:
         def __init__(self, *, query_parameters: list[Any] | None = None) -> None:
             self.query_parameters = query_parameters or []
 
     class _BigQueryTestShim:
         ScalarQueryParameter = _ScalarQueryParameter
+        ArrayQueryParameter = _ArrayQueryParameter
+        QueryParameter = object
         QueryJobConfig = _QueryJobConfig
 
         class Client:
@@ -517,6 +525,182 @@ class ParentActivationBigQueryStore:
                 )
             ],
         )
+
+    def mark_processing(
+        self,
+        outbox_id: str,
+        worker_id: str,
+        *,
+        request_id: str,
+    ) -> bool:
+        """Release a Google request for asynchronous delivery diagnostics."""
+
+        require_safe_opaque_id(request_id, "request_id")
+        query = f"""
+        UPDATE `{OUTBOX_TABLE}`
+        SET
+          delivery_status = 'processing',
+          lease_owner = NULL,
+          lease_expires_at = NULL,
+          next_attempt_at = NULL,
+          last_error_code = NULL,
+          last_error_message = NULL,
+          updated_at = CURRENT_TIMESTAMP()
+        WHERE outbox_id = @outbox_id
+          AND delivery_status = 'leased'
+          AND lease_owner = @worker_id
+          AND lease_expires_at > CURRENT_TIMESTAMP()
+          AND accepted_at IS NULL
+        """
+        return self._leased_transition(query, outbox_id, worker_id)
+
+    def mark_nonproduction_pass(
+        self,
+        outbox_id: str,
+        worker_id: str,
+        *,
+        delivery_status: str,
+    ) -> bool:
+        """Record validate-only or test receipt without accepting production."""
+
+        allowed = {"validate_only_pass", "test_accepted"}
+        if delivery_status not in allowed:
+            raise ValueError(f"unsupported nonproduction status: {delivery_status}")
+        query = f"""
+        UPDATE `{OUTBOX_TABLE}`
+        SET
+          delivery_status = @delivery_status,
+          lease_owner = NULL,
+          lease_expires_at = NULL,
+          next_attempt_at = NULL,
+          last_error_code = NULL,
+          last_error_message = NULL,
+          updated_at = CURRENT_TIMESTAMP()
+        WHERE outbox_id = @outbox_id
+          AND delivery_status = 'leased'
+          AND lease_owner = @worker_id
+          AND lease_expires_at > CURRENT_TIMESTAMP()
+          AND accepted_at IS NULL
+        """
+        return self._leased_transition(
+            query,
+            outbox_id,
+            worker_id,
+            [
+                bigquery.ScalarQueryParameter(
+                    "delivery_status",
+                    "STRING",
+                    delivery_status,
+                )
+            ],
+        )
+
+    def mark_diagnostic_accepted(
+        self,
+        outbox_id: str,
+        *,
+        request_id: str,
+        accepted_lock_id: str,
+    ) -> bool:
+        """Accept a processing Google row only for its recorded request ID."""
+
+        query = f"""
+        UPDATE `{OUTBOX_TABLE}` AS outbox
+        SET
+          delivery_status = '{ACCEPTED}',
+          accepted_at = CURRENT_TIMESTAMP(),
+          accepted_lock_id = @accepted_lock_id,
+          next_attempt_at = NULL,
+          last_error_code = NULL,
+          last_error_message = NULL,
+          updated_at = CURRENT_TIMESTAMP()
+        WHERE outbox.outbox_id = @outbox_id
+          AND outbox.delivery_status = 'processing'
+          AND outbox.accepted_at IS NULL
+          AND EXISTS (
+            SELECT 1
+            FROM `{DELIVERY_ATTEMPT_TABLE}` AS attempt
+            WHERE attempt.outbox_id = outbox.outbox_id
+              AND attempt.request_id = @request_id
+          )
+        """
+        return self._query(
+            query,
+            [
+                bigquery.ScalarQueryParameter("outbox_id", "STRING", outbox_id),
+                bigquery.ScalarQueryParameter(
+                    "request_id",
+                    "STRING",
+                    require_safe_opaque_id(request_id, "request_id"),
+                ),
+                bigquery.ScalarQueryParameter(
+                    "accepted_lock_id",
+                    "STRING",
+                    require_safe_opaque_id(accepted_lock_id, "accepted_lock_id"),
+                ),
+            ],
+        ) == 1
+
+    def mark_diagnostic_failure(
+        self,
+        outbox_id: str,
+        *,
+        request_id: str,
+        retryable: bool,
+        error_code: str,
+        error_message: str | None,
+        next_attempt_at: datetime | None = None,
+    ) -> bool:
+        """Move a processing Google row to retryable or permanent failure."""
+
+        if retryable and next_attempt_at is None:
+            raise ValueError("next_attempt_at is required for retryable diagnostics")
+        status = "retryable_failure" if retryable else "permanent_failure"
+        query = f"""
+        UPDATE `{OUTBOX_TABLE}` AS outbox
+        SET
+          delivery_status = @delivery_status,
+          next_attempt_at = @next_attempt_at,
+          last_error_code = @error_code,
+          last_error_message = @error_message,
+          updated_at = CURRENT_TIMESTAMP()
+        WHERE outbox.outbox_id = @outbox_id
+          AND outbox.delivery_status = 'processing'
+          AND outbox.accepted_at IS NULL
+          AND EXISTS (
+            SELECT 1
+            FROM `{DELIVERY_ATTEMPT_TABLE}` AS attempt
+            WHERE attempt.outbox_id = outbox.outbox_id
+              AND attempt.request_id = @request_id
+          )
+        """
+        return self._query(
+            query,
+            [
+                bigquery.ScalarQueryParameter("outbox_id", "STRING", outbox_id),
+                bigquery.ScalarQueryParameter(
+                    "request_id",
+                    "STRING",
+                    require_safe_opaque_id(request_id, "request_id"),
+                ),
+                bigquery.ScalarQueryParameter("delivery_status", "STRING", status),
+                bigquery.ScalarQueryParameter(
+                    "next_attempt_at",
+                    "TIMESTAMP",
+                    _utc_timestamp(next_attempt_at) if next_attempt_at else None,
+                ),
+                bigquery.ScalarQueryParameter(
+                    "error_code",
+                    "STRING",
+                    require_safe_opaque_id(error_code, "error_code"),
+                ),
+                bigquery.ScalarQueryParameter(
+                    "error_message",
+                    "STRING",
+                    redact_diagnostic_text(error_message),
+                ),
+            ],
+        ) == 1
 
     def release_lease(self, outbox_id: str, worker_id: str) -> bool:
         """Release a current lease back to the queue without changing attempts."""

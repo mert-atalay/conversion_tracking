@@ -1,0 +1,15 @@
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/marketing-api-488017/cefa-warehouse/parent-crm-activation:manual
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - Dockerfile.parent-activation
+      - -t
+      - ${_IMAGE}
+      - .
+
+images:
+  - ${_IMAGE}

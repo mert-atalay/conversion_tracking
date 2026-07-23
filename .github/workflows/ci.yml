@@ -10,6 +10,23 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  parent-activation:
+    name: Parent activation safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run parent activation tests
+        env:
+          PYTHONPATH: tools/warehouse
+        run: python -m unittest discover -s tools/warehouse/tests/parent_activation -p 'test_*.py' -v
+
   static-checks:
     name: Static checks
     runs-on: ubuntu-latest

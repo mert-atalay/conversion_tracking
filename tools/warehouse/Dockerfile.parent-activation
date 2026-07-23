@@ -1,0 +1,23 @@
+FROM python:3.12.10-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/tools/warehouse
+
+WORKDIR /app
+
+COPY requirements.parent-activation.txt /app/requirements.parent-activation.txt
+RUN pip install --no-cache-dir -r /app/requirements.parent-activation.txt
+
+COPY parent_activation /app/tools/warehouse/parent_activation
+COPY run_parent_greenrope_lifecycle.py /app/tools/warehouse/run_parent_greenrope_lifecycle.py
+COPY dispatch_parent_offline_conversions.py /app/tools/warehouse/dispatch_parent_offline_conversions.py
+COPY refresh_parent_google_diagnostics.py /app/tools/warehouse/refresh_parent_google_diagnostics.py
+COPY run_parent_activation_job.sh /app/tools/warehouse/run_parent_activation_job.sh
+
+RUN chmod 0555 /app/tools/warehouse/run_parent_activation_job.sh \
+  /app/tools/warehouse/run_parent_greenrope_lifecycle.py \
+  /app/tools/warehouse/dispatch_parent_offline_conversions.py \
+  /app/tools/warehouse/refresh_parent_google_diagnostics.py
+
+ENTRYPOINT ["/app/tools/warehouse/run_parent_activation_job.sh"]

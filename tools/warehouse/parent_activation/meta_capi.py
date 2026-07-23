@@ -15,7 +15,7 @@ from .normalization import sha256_normalized_email, sha256_normalized_phone
 
 
 META_DATASET_ID = "918227085392601"
-DEFAULT_GRAPH_API_VERSION = "v22.0"
+DEFAULT_GRAPH_API_VERSION = "v25.0"
 MAX_EVENT_AGE = timedelta(days=7)
 CRM_STAGE_EVENT_NAMES = {
     "tour_scheduled": "CEFA_CRM_TourScheduled",

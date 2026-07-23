@@ -52,6 +52,7 @@ class QuarantineReason(StrEnum):
     UNMAPPED_STAGE = "unmapped_stage"
     FIRST_POSITIVE_OCCURRENCE_ALREADY_SENT = "first_positive_occurrence_already_sent"
     MULTI_SCHOOL_FANOUT_COLLAPSED = "multi_school_fanout_collapsed"
+    TEST_RECORD = "test_record"
 
 
 @dataclass(frozen=True, slots=True)
