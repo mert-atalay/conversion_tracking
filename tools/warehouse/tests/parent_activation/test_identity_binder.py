@@ -108,6 +108,27 @@ def opportunity(
 
 
 class IdentityBinderTests(unittest.TestCase):
+    def test_missing_new_greenrope_candidate_remains_retryable(self) -> None:
+        store = FakeStore(identity())
+        client = FakeClient([], opportunity())
+        client._opportunity = {
+            **opportunity(),
+            "assignedtoemail": "different@example.com",
+        }
+        result = run_identity_binder(
+            store=store,
+            client=client,
+            hmac_secret=SECRET,
+            write_enabled=False,
+        )
+
+        self.assertEqual(1, result.retryable_failures)
+        self.assertEqual("retryable_failure", store.states[0]["bridge_status"])
+        self.assertEqual(
+            "greenrope_candidate_not_yet_available",
+            store.states[0]["quarantine_reason"],
+        )
+
     def test_matching_runs_but_write_waits_for_greenrope_fields(self) -> None:
         store = FakeStore(identity())
         result = run_identity_binder(

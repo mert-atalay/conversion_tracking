@@ -131,15 +131,26 @@ def run_identity_binder(
             continue
         decision = select_identity_match(identity, by_group[group_id])
         if decision.candidate is None:
+            is_not_yet_available = decision.reason == "no_candidate"
             store.record_match_state(
                 form4_event_id=str(identity["form4_event_id"]),
-                bridge_status="quarantined",
+                bridge_status=(
+                    "retryable_failure"
+                    if is_not_yet_available
+                    else "quarantined"
+                ),
                 candidate_count=decision.candidate_count,
                 match_score=decision.match_score,
                 opportunity_id_hmac=None,
-                quarantine_reason=decision.reason,
+                quarantine_reason=(
+                    "greenrope_candidate_not_yet_available"
+                    if is_not_yet_available
+                    else decision.reason
+                ),
             )
-            counts["quarantined"] += 1
+            counts[
+                "retryable_failures" if is_not_yet_available else "quarantined"
+            ] += 1
             continue
         candidate = decision.candidate
         if _identity_conflicts(candidate, identity):
