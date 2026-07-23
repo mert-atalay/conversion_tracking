@@ -6,7 +6,7 @@ steps:
     args:
       - build
       - -f
-      - Dockerfile.parent-activation
+      - tools/warehouse/Dockerfile.parent-activation
       - -t
       - ${_IMAGE}
       - .

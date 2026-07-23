@@ -6,20 +6,23 @@ ENV PYTHONPATH=/app/tools/warehouse
 
 WORKDIR /app
 
-COPY requirements.parent-activation.txt /app/requirements.parent-activation.txt
+COPY tools/warehouse/requirements.parent-activation.txt /app/requirements.parent-activation.txt
 RUN pip install --no-cache-dir -r /app/requirements.parent-activation.txt
 
-COPY parent_activation /app/tools/warehouse/parent_activation
-COPY run_parent_greenrope_lifecycle.py /app/tools/warehouse/run_parent_greenrope_lifecycle.py
-COPY dispatch_parent_offline_conversions.py /app/tools/warehouse/dispatch_parent_offline_conversions.py
-COPY refresh_parent_google_diagnostics.py /app/tools/warehouse/refresh_parent_google_diagnostics.py
-COPY run_parent_greenrope_identity_binder.py /app/tools/warehouse/run_parent_greenrope_identity_binder.py
-COPY run_parent_activation_job.sh /app/tools/warehouse/run_parent_activation_job.sh
+COPY tools/warehouse/parent_activation /app/tools/warehouse/parent_activation
+COPY tools/warehouse/run_parent_greenrope_lifecycle.py /app/tools/warehouse/run_parent_greenrope_lifecycle.py
+COPY tools/warehouse/dispatch_parent_offline_conversions.py /app/tools/warehouse/dispatch_parent_offline_conversions.py
+COPY tools/warehouse/refresh_parent_google_diagnostics.py /app/tools/warehouse/refresh_parent_google_diagnostics.py
+COPY tools/warehouse/run_parent_greenrope_identity_binder.py /app/tools/warehouse/run_parent_greenrope_identity_binder.py
+COPY tools/warehouse/run_parent_form4_identity_capture.py /app/tools/warehouse/run_parent_form4_identity_capture.py
+COPY data/reference/cefa-parent-greenrope-school-map-v1.csv /app/data/reference/cefa-parent-greenrope-school-map-v1.csv
+COPY tools/warehouse/run_parent_activation_job.sh /app/tools/warehouse/run_parent_activation_job.sh
 
 RUN chmod 0555 /app/tools/warehouse/run_parent_activation_job.sh \
   /app/tools/warehouse/run_parent_greenrope_lifecycle.py \
   /app/tools/warehouse/dispatch_parent_offline_conversions.py \
   /app/tools/warehouse/refresh_parent_google_diagnostics.py \
-  /app/tools/warehouse/run_parent_greenrope_identity_binder.py
+  /app/tools/warehouse/run_parent_greenrope_identity_binder.py \
+  /app/tools/warehouse/run_parent_form4_identity_capture.py
 
 ENTRYPOINT ["/app/tools/warehouse/run_parent_activation_job.sh"]

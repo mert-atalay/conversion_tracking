@@ -160,6 +160,22 @@ class ParentIdentityBigQueryStore:
         rows = self.client.query(query, job_config=job_config).result()
         return [dict(row.items()) if hasattr(row, "items") else dict(row) for row in rows]
 
+    def latest_submitted_at(self) -> datetime | None:
+        query = f"""
+        SELECT MAX(submitted_at) AS latest_submitted_at
+        FROM `{IDENTITY_INBOX_TABLE}`
+        """
+        rows = list(self.client.query(query).result())
+        if not rows:
+            return None
+        row = rows[0]
+        value = (
+            row.get("latest_submitted_at")
+            if isinstance(row, Mapping)
+            else row["latest_submitted_at"]
+        )
+        return value
+
     def record_match_state(
         self,
         *,
