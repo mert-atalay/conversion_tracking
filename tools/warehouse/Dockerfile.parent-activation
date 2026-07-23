@@ -15,6 +15,7 @@ COPY tools/warehouse/dispatch_parent_offline_conversions.py /app/tools/warehouse
 COPY tools/warehouse/refresh_parent_google_diagnostics.py /app/tools/warehouse/refresh_parent_google_diagnostics.py
 COPY tools/warehouse/run_parent_greenrope_identity_binder.py /app/tools/warehouse/run_parent_greenrope_identity_binder.py
 COPY tools/warehouse/run_parent_form4_identity_capture.py /app/tools/warehouse/run_parent_form4_identity_capture.py
+COPY tools/warehouse/validate_parent_google_data_manager.py /app/tools/warehouse/validate_parent_google_data_manager.py
 COPY data/reference/cefa-parent-greenrope-school-map-v1.csv /app/data/reference/cefa-parent-greenrope-school-map-v1.csv
 COPY tools/warehouse/run_parent_activation_job.sh /app/tools/warehouse/run_parent_activation_job.sh
 
@@ -23,6 +24,7 @@ RUN chmod 0555 /app/tools/warehouse/run_parent_activation_job.sh \
   /app/tools/warehouse/dispatch_parent_offline_conversions.py \
   /app/tools/warehouse/refresh_parent_google_diagnostics.py \
   /app/tools/warehouse/run_parent_greenrope_identity_binder.py \
-  /app/tools/warehouse/run_parent_form4_identity_capture.py
+  /app/tools/warehouse/run_parent_form4_identity_capture.py \
+  /app/tools/warehouse/validate_parent_google_data_manager.py
 
 ENTRYPOINT ["/app/tools/warehouse/run_parent_activation_job.sh"]

@@ -17,6 +17,9 @@ case "${PARENT_ACTIVATION_JOB:-poll}" in
   identity_capture)
     exec python /app/tools/warehouse/run_parent_form4_identity_capture.py "$@"
     ;;
+  google_validate)
+    exec python /app/tools/warehouse/validate_parent_google_data_manager.py "$@"
+    ;;
   *)
     echo "Unsupported PARENT_ACTIVATION_JOB" >&2
     exit 2
