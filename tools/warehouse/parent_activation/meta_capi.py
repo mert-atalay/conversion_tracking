@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Mapping, Sequence
 from urllib.request import Request, urlopen
+
+from .config import ConsentState
+from .models import require_granted_consent, require_sha256_hex
+from .normalization import sha256_normalized_email, sha256_normalized_phone
 
 
 META_DATASET_ID = "918227085392601"
@@ -19,20 +23,23 @@ CRM_STAGE_EVENT_NAMES = {
     "crm_closed_won": "CEFA_CRM_ClosedWon",
 }
 FORBIDDEN_EVENT_NAMES = frozenset({"Inquiry Submit"})
+_META_COOKIE_RE = re.compile(r"^fb\.[12]\.[0-9]{1,20}\.[A-Za-z0-9_-]{1,512}$")
 
 HttpTransport = Callable[[str, str, Mapping[str, str], Mapping[str, Any] | None], Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
 class MetaMatchKeys:
-    """Restricted raw match inputs; values are never returned in an event payload."""
+    """Restricted match inputs at the dispatcher-to-adapter boundary."""
 
-    email: str | None = None
-    phone: str | None = None
+    email_sha256: str | None = None
+    phone_sha256: str | None = None
+    email_transient: str | None = None
+    phone_transient: str | None = None
     external_id: str | None = None
     fbc: str | None = None
     fbp: str | None = None
-    user_data_allowed: bool = False
+    consent_state: ConsentState = ConsentState.UNKNOWN
 
 
 @dataclass(frozen=True)
@@ -73,18 +80,6 @@ def _parse_timestamp(value: object) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def normalize_email(value: str) -> str:
-    return value.strip().lower()
-
-
-def normalize_phone(value: str) -> str:
-    return "".join(character for character in value if character.isdigit())
-
-
-def sha256_hex(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
 def build_meta_event(
     outbox: Mapping[str, Any],
     keys: MetaMatchKeys,
@@ -93,6 +88,7 @@ def build_meta_event(
 ) -> dict[str, Any]:
     """Build one approved CRM event and enforce Meta's seven-day event window."""
 
+    require_granted_consent(keys.consent_state)
     canonical_stage = _required(outbox, "canonical_stage")
     if canonical_stage not in CRM_STAGE_EVENT_NAMES:
         raise ValueError(f"Unsupported Meta CRM stage: {canonical_stage}")
@@ -102,24 +98,42 @@ def build_meta_event(
         raise ValueError("Meta event timestamp cannot be in the future")
     if comparison_time - event_timestamp > MAX_EVENT_AGE:
         raise ValueError("Meta event is older than the seven-day dispatch window")
-    external_id = _required({"external_id": keys.external_id}, "external_id")
+    external_id = require_sha256_hex(
+        _required({"external_id": keys.external_id}, "external_id"),
+        "external_id",
+    )
     user_data: dict[str, Any] = {"external_id": [external_id]}
-    if keys.user_data_allowed:
-        email = _nonempty(keys.email)
-        if email:
-            user_data["em"] = [sha256_hex(normalize_email(email))]
-        phone = _nonempty(keys.phone)
-        if phone:
-            normalized_phone = normalize_phone(phone)
-            if normalized_phone:
-                user_data["ph"] = [sha256_hex(normalized_phone)]
+    if keys.email_sha256 and keys.email_transient:
+        raise ValueError("provide either email_sha256 or email_transient, never both")
+    if keys.phone_sha256 and keys.phone_transient:
+        raise ValueError("provide either phone_sha256 or phone_transient, never both")
+    email_hash = (
+        require_sha256_hex(keys.email_sha256, "email_sha256")
+        if keys.email_sha256
+        else sha256_normalized_email(keys.email_transient)
+    )
+    phone_hash = (
+        require_sha256_hex(keys.phone_sha256, "phone_sha256")
+        if keys.phone_sha256
+        else sha256_normalized_phone(keys.phone_transient)
+    )
+    if email_hash:
+        user_data["em"] = [email_hash]
+    if phone_hash:
+        user_data["ph"] = [phone_hash]
     # fbc/fbp are passed through only when their values were captured upstream.
     fbc = _nonempty(keys.fbc)
     fbp = _nonempty(keys.fbp)
     if fbc:
+        if not _META_COOKIE_RE.fullmatch(fbc):
+            raise ValueError("fbc has an invalid captured-cookie format")
         user_data["fbc"] = fbc
     if fbp:
+        if not _META_COOKIE_RE.fullmatch(fbp):
+            raise ValueError("fbp has an invalid captured-cookie format")
         user_data["fbp"] = fbp
+    if not any(key in user_data for key in ("em", "ph", "fbc", "fbp")):
+        raise ValueError("Meta event needs a real match key beyond CEFA external_id")
     return {
         "event_name": CRM_STAGE_EVENT_NAMES[canonical_stage],
         "event_time": int(event_timestamp.timestamp()),

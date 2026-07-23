@@ -6,15 +6,31 @@ covered by tests rather than silently treating a new CRM phase as uploadable.
 
 from __future__ import annotations
 
+import sys
 from datetime import timedelta
-from enum import StrEnum
 from types import MappingProxyType
+
+MINIMUM_PYTHON_VERSION = (3, 11)
+if sys.version_info < MINIMUM_PYTHON_VERSION:  # pragma: no cover - import guard.
+    raise RuntimeError("parent_activation requires Python 3.11 or newer")
+
+from enum import StrEnum
 
 
 class CanonicalStage(StrEnum):
     TOUR_SCHEDULED = "tour_scheduled"
     TOUR_COMPLETED_CANDIDATE = "tour_completed_candidate"
     CRM_CLOSED_WON = "crm_closed_won"
+
+
+class ConsentState(StrEnum):
+    GRANTED = "granted"
+    DENIED = "denied"
+    UNKNOWN = "unknown"
+
+
+class GoogleConversionActionType(StrEnum):
+    UPLOAD_CLICKS = "UPLOAD_CLICKS"
 
 
 TIMESTAMP_QUALITY_POLL_OBSERVED = "poll_observed"

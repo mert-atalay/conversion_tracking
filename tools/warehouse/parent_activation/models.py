@@ -7,11 +7,40 @@ objects and out of the durable lifecycle ledger.
 
 from __future__ import annotations
 
+import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+if sys.version_info < (3, 11):  # pragma: no cover - import guard.
+    raise RuntimeError("parent_activation requires Python 3.11 or newer")
+
 from enum import StrEnum
 
-from .config import CanonicalStage, TIMESTAMP_QUALITY_POLL_OBSERVED
+from .config import CanonicalStage, ConsentState, TIMESTAMP_QUALITY_POLL_OBSERVED
+
+
+_SAFE_OPAQUE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,255}$")
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def require_safe_opaque_id(value: str, field: str) -> str:
+    normalized = str(value).strip()
+    if not _SAFE_OPAQUE_ID_RE.fullmatch(normalized):
+        raise ValueError(f"{field} must be a constrained opaque identifier")
+    return normalized
+
+
+def require_sha256_hex(value: str, field: str) -> str:
+    normalized = str(value).strip().lower()
+    if not _SHA256_RE.fullmatch(normalized):
+        raise ValueError(f"{field} must be a 64-character SHA-256 hex digest")
+    return normalized
+
+
+def require_granted_consent(consent_state: ConsentState) -> None:
+    if consent_state is not ConsentState.GRANTED:
+        raise ValueError("consent must be explicitly granted before platform matching")
 
 
 class QuarantineReason(StrEnum):

@@ -1,16 +1,17 @@
 -- CEFA parent CRM offline-conversion restricted warehouse contract.
 --
 -- Scope: cefa.ca parent Form 4 -> GreenRope prospective lifecycle activation.
--- This contract is additive. It does not update existing dashboard KPIs and it
--- never stores raw contact details, CRM payloads, or unrestricted click IDs.
+-- Dataset IAM must be restricted to the activation runtime and designated
+-- administrators before this contract is applied. No dashboard objects are
+-- created here.
 
-CREATE SCHEMA IF NOT EXISTS `marketing-api-488017.cefa_restricted`
+CREATE SCHEMA IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted`
 OPTIONS (
   location = 'US',
-  description = 'Restricted CEFA parent CRM activation data. Access is limited to activation runtime identities and designated administrators.'
+  description = 'Restricted CEFA parent CRM activation data. Not a reporting or dashboard dataset.'
 );
 
-CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_crm_lifecycle_state_snapshot` (
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_crm_lifecycle_state_snapshot` (
   snapshot_at TIMESTAMP NOT NULL,
   snapshot_date DATE NOT NULL,
   poll_run_id STRING NOT NULL,
@@ -45,10 +46,7 @@ OPTIONS (
   description = 'Restricted observed GreenRope state. Initial snapshot records are permanently baseline_non_uploadable.'
 );
 
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_crm_lifecycle_state_snapshot`
-ADD COLUMN IF NOT EXISTS baseline_status STRING;
-
-CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_crm_lifecycle_event` (
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_crm_lifecycle_event` (
   lifecycle_event_id STRING NOT NULL,
   opportunity_id_hmac STRING NOT NULL,
   stage_sequence INT64 NOT NULL,
@@ -75,15 +73,12 @@ CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_crm_life
 PARTITION BY DATE(stage_occurred_at)
 CLUSTER BY opportunity_id_hmac, canonical_stage, eligibility_status
 OPTIONS (
-  description = 'Restricted prospective parent CRM lifecycle events. Rows without exact Form 4 identity remain quarantined.'
+  description = 'Restricted prospective lifecycle events. Baseline and unresolved Form 4 identities remain quarantined.'
 );
 
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_crm_lifecycle_event`
-ADD COLUMN IF NOT EXISTS quarantine_reason STRING;
-
--- Click identifiers and platform-ready hashes are intentionally restricted and
--- expire 100 days after their captured-date partition.
-CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_crm_match_key` (
+-- Raw click identifiers are restricted, partition-expiring evidence. Contact
+-- identifiers are already normalized SHA-256 values before this boundary.
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_crm_match_key` (
   captured_date DATE NOT NULL,
   form4_event_id STRING NOT NULL,
   opportunity_id_hmac STRING,
@@ -95,6 +90,8 @@ CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_crm_matc
   wbraid STRING,
   fbc STRING,
   fbp STRING,
+  click_id_captured_at TIMESTAMP,
+  user_data_captured_at TIMESTAMP,
   match_key_source STRING NOT NULL,
   consent_status STRING NOT NULL,
   expires_at TIMESTAMP NOT NULL,
@@ -104,13 +101,10 @@ PARTITION BY captured_date
 CLUSTER BY form4_event_id, opportunity_id_hmac
 OPTIONS (
   partition_expiration_days = 100,
-  description = 'Restricted parent activation match keys. Actual click identifiers and hashed contact identifiers expire after 100 days.'
+  description = 'Restricted, expiring parent activation match keys. Access is denied to reporting identities.'
 );
 
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_crm_match_key`
-ADD COLUMN IF NOT EXISTS consent_status STRING;
-
-CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_conversion_outbox` (
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_conversion_outbox` (
   outbox_id STRING NOT NULL,
   selected_lifecycle_event_id STRING NOT NULL,
   form4_event_id STRING NOT NULL,
@@ -118,12 +112,14 @@ CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_conversi
   activation_identity_scope STRING NOT NULL,
   canonical_stage STRING NOT NULL,
   source_lifecycle_event_count INT64 NOT NULL,
+  source_is_initial_baseline BOOL NOT NULL,
+  school_uuid STRING NOT NULL,
   platform STRING NOT NULL,
   destination_account_id STRING NOT NULL,
   destination_action_key STRING NOT NULL,
   platform_event_name STRING NOT NULL,
   transaction_id STRING NOT NULL,
-  event_time TIMESTAMP NOT NULL,
+  event_timestamp TIMESTAMP NOT NULL,
   event_value NUMERIC,
   currency STRING,
   match_key_ref STRING,
@@ -145,16 +141,10 @@ CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_conversi
 PARTITION BY DATE(created_at)
 CLUSTER BY platform, destination_action_key, delivery_status, transaction_id
 OPTIONS (
-  description = 'Restricted parent offline-conversion outbox. Deduplicate with form4_event_id, canonical_stage, platform, and destination_action_key; accepted rows are immutable delivery locks.'
+  description = 'Restricted idempotent outbox. Baseline rows are permanently blocked; accepted rows are immutable.'
 );
 
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_conversion_outbox`
-ADD COLUMN IF NOT EXISTS accepted_lock_id STRING;
-
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_conversion_outbox`
-ADD COLUMN IF NOT EXISTS quarantine_reason STRING;
-
-CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_conversion_delivery_attempt` (
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_conversion_delivery_attempt` (
   delivery_attempt_id STRING NOT NULL,
   outbox_id STRING NOT NULL,
   transaction_id STRING NOT NULL,
@@ -177,71 +167,5 @@ CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_restricted.parent_conversi
 PARTITION BY DATE(attempt_started_at)
 CLUSTER BY outbox_id, platform, delivery_status
 OPTIONS (
-  description = 'Restricted delivery audit. It retains only request references and outcome diagnostics, never raw match identifiers or contact data.'
+  description = 'Restricted redacted delivery audit. Raw platform payloads and match identifiers are prohibited.'
 );
-
-ALTER TABLE `marketing-api-488017.cefa_restricted.parent_conversion_delivery_attempt`
-ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMP;
-
--- These redacted monitoring views intentionally expose only aggregate counts,
--- statuses, and non-identifying operational metadata. They expose no click IDs,
--- hashes, contact data, Form 4 entry IDs, or platform request payloads.
-CREATE OR REPLACE VIEW `marketing-api-488017.mart_cefa_growth_intelligence.v_parent_crm_offline_activation_monitoring_daily`
-OPTIONS (
-  description = 'Redacted aggregate monitoring for parent CRM offline activation. Not a dashboard KPI contract.'
-) AS
-SELECT
-  DATE(created_at, 'America/Vancouver') AS activity_date,
-  platform,
-  destination_action_key,
-  canonical_stage,
-  activation_mode,
-  delivery_status,
-  quarantine_status,
-  COUNT(*) AS outbox_rows,
-  COUNTIF(quarantine_status = 'quarantined') AS quarantined_rows,
-  COUNTIF(delivery_status = 'accepted') AS accepted_rows,
-  COUNTIF(delivery_status = 'permanent_failure') AS permanent_failure_rows,
-  COUNTIF(delivery_status = 'retryable_failure') AS retryable_failure_rows,
-  COUNTIF(lease_expires_at > CURRENT_TIMESTAMP()) AS active_lease_rows,
-  MAX(updated_at) AS last_updated_at,
-  TRUE AS intelligence_safe,
-  FALSE AS dashboard_safe,
-  FALSE AS activation_safe
-FROM `marketing-api-488017.cefa_restricted.parent_conversion_outbox`
-GROUP BY
-  activity_date,
-  platform,
-  destination_action_key,
-  canonical_stage,
-  activation_mode,
-  delivery_status,
-  quarantine_status;
-
-CREATE OR REPLACE VIEW `marketing-api-488017.mart_cefa_growth_dashboard.dashboard_parent_crm_offline_activation_readiness_latest`
-OPTIONS (
-  description = 'Redacted parent CRM offline activation readiness. Advisory only; it does not replace existing dashboard KPIs.'
-) AS
-SELECT
-  activity_date,
-  platform,
-  destination_action_key,
-  canonical_stage,
-  activation_mode,
-  SUM(outbox_rows) AS outbox_rows,
-  SUM(quarantined_rows) AS quarantined_rows,
-  SUM(accepted_rows) AS accepted_rows,
-  SUM(permanent_failure_rows) AS permanent_failure_rows,
-  SUM(retryable_failure_rows) AS retryable_failure_rows,
-  SUM(active_lease_rows) AS active_lease_rows,
-  MAX(last_updated_at) AS last_updated_at,
-  TRUE AS intelligence_safe,
-  FALSE AS dashboard_safe,
-  FALSE AS activation_safe
-FROM `marketing-api-488017.mart_cefa_growth_intelligence.v_parent_crm_offline_activation_monitoring_daily`
-GROUP BY
-  activity_date,
-  platform,
-  destination_action_key,
-  canonical_stage,
-  activation_mode;

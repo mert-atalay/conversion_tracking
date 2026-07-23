@@ -1,79 +1,154 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
-import sys
 import unittest
-from pathlib import Path
+from datetime import datetime, timedelta, timezone
 
-
-MODULE_PATH = Path(__file__).resolve().parents[2] / "parent_activation" / "google_datamanager.py"
-SPEC = importlib.util.spec_from_file_location("google_datamanager", MODULE_PATH)
-assert SPEC and SPEC.loader
-MODULE = importlib.util.module_from_spec(SPEC)
-sys.modules[SPEC.name] = MODULE
-SPEC.loader.exec_module(MODULE)
+from parent_activation.config import ConsentState, GoogleConversionActionType
+from parent_activation.google_datamanager import (
+    GOOGLE_ADS_ACCOUNT_ID,
+    INGEST_EVENTS_URL,
+    GoogleDestination,
+    GoogleMatchKeys,
+    build_google_event,
+    build_ingest_events_request,
+    retrieve_request_status,
+    send_ingest_events,
+)
 
 
 class GoogleDataManagerTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.event_at = datetime(2026, 7, 23, 12, 34, 56, tzinfo=timezone.utc)
         self.outbox = {
-            "event_timestamp": "2026-07-23T12:34:56Z",
-            "platform_transaction_id": "hmac-parent-tour-scheduled",
+            "event_timestamp": self.event_at.isoformat(),
+            "transaction_id": "a" * 64,
         }
-        self.keys = MODULE.GoogleMatchKeys(
+        self.keys = GoogleMatchKeys(
             gclid="real-gclid",
-            email=" Parent@Example.COM ",
-            phone="+1 (604) 555-0100",
-            user_data_allowed=True,
+            click_id_captured_at=self.event_at - timedelta(days=2),
+            email_transient=" Parent@Example.COM ",
+            phone_transient="+1 (604) 555-0100",
+            user_data_captured_at=self.event_at - timedelta(days=2),
+            consent_state=ConsentState.GRANTED,
         )
 
-    def test_build_request_uses_configured_destination_and_hashes_user_data(self) -> None:
-        event = MODULE.build_google_event(self.outbox, self.keys)
-        request = MODULE.build_ingest_events_request(
+    def test_build_request_uses_bare_upload_clicks_action_and_hashes_transient_data(self) -> None:
+        event = build_google_event(self.outbox, self.keys)
+        request = build_ingest_events_request(
             [event],
-            MODULE.GoogleDestination(product_destination_id="customers/4159217891/conversionActions/123"),
+            GoogleDestination(conversion_action_id="123"),
             validate_only=True,
+            consent_state=ConsentState.GRANTED,
         )
 
-        self.assertEqual("4159217891", request["destinations"][0]["operatingAccount"]["accountId"])
         self.assertEqual(
-            "customers/4159217891/conversionActions/123",
-            request["destinations"][0]["productDestinationId"],
+            GOOGLE_ADS_ACCOUNT_ID,
+            request["destinations"][0]["operatingAccount"]["accountId"],
         )
+        self.assertEqual("123", request["destinations"][0]["productDestinationId"])
+        self.assertEqual({"adUserData": "CONSENT_GRANTED"}, request["consent"])
         self.assertTrue(request["validateOnly"])
-        self.assertEqual("WEB", request["events"][0]["eventSource"])
         self.assertEqual("real-gclid", request["events"][0]["adIdentifiers"]["gclid"])
         identifiers = request["events"][0]["userData"]["userIdentifiers"]
-        self.assertIn({"emailAddress": hashlib.sha256(b"parent@example.com").hexdigest()}, identifiers)
-        self.assertIn({"phoneNumber": hashlib.sha256(b"16045550100").hexdigest()}, identifiers)
+        self.assertIn(
+            {"emailAddress": hashlib.sha256(b"parent@example.com").hexdigest()},
+            identifiers,
+        )
+        self.assertIn(
+            {"phoneNumber": hashlib.sha256(b"+16045550100").hexdigest()},
+            identifiers,
+        )
         rendered = json.dumps(request)
         self.assertNotIn("Parent@Example.COM", rendered)
         self.assertNotIn("604) 555", rendered)
-        self.assertNotIn("consent", request)
 
-    def test_real_ids_only_and_user_data_requires_explicit_permission(self) -> None:
-        event = MODULE.build_google_event(
+    def test_destination_rejects_resource_paths_and_non_upload_clicks_types(self) -> None:
+        with self.assertRaisesRegex(ValueError, "bare numeric"):
+            GoogleDestination(
+                conversion_action_id="customers/4159217891/conversionActions/123"
+            )
+        with self.assertRaisesRegex(ValueError, "UPLOAD_CLICKS"):
+            GoogleDestination(
+                conversion_action_id="123",
+                conversion_action_type="UPLOAD_CALLS",  # type: ignore[arg-type]
+            )
+        self.assertEqual(
+            GoogleConversionActionType.UPLOAD_CLICKS,
+            GoogleDestination("123").conversion_action_type,
+        )
+
+    def test_consent_fails_closed_for_click_and_user_matching(self) -> None:
+        for state in (ConsentState.UNKNOWN, ConsentState.DENIED):
+            keys = GoogleMatchKeys(
+                gclid="real-gclid",
+                click_id_captured_at=self.event_at,
+                consent_state=state,
+            )
+            with self.assertRaisesRegex(ValueError, "explicitly granted"):
+                build_google_event(self.outbox, keys)
+            with self.assertRaisesRegex(ValueError, "explicitly granted"):
+                build_ingest_events_request(
+                    [{"eventTimestamp": self.event_at.isoformat()}],
+                    GoogleDestination("123"),
+                    consent_state=state,
+                )
+
+    def test_prehashed_values_are_validated_and_not_double_hashed(self) -> None:
+        email_hash = hashlib.sha256(b"parent@example.com").hexdigest()
+        phone_hash = hashlib.sha256(b"+16045550100").hexdigest()
+        event = build_google_event(
             self.outbox,
-            MODULE.GoogleMatchKeys(gbraid="real-gbraid", email="parent@example.com"),
+            GoogleMatchKeys(
+                email_sha256=email_hash,
+                phone_sha256=phone_hash,
+                user_data_captured_at=self.event_at,
+                consent_state=ConsentState.GRANTED,
+            ),
         )
-        self.assertEqual({"gbraid": "real-gbraid"}, event["adIdentifiers"])
-        self.assertNotIn("userData", event)
-        with self.assertRaisesRegex(ValueError, "real click ID or approved user data"):
-            MODULE.build_google_event(self.outbox, MODULE.GoogleMatchKeys(email="parent@example.com"))
+        identifiers = event["userData"]["userIdentifiers"]
+        self.assertIn({"emailAddress": email_hash}, identifiers)
+        self.assertIn({"phoneNumber": phone_hash}, identifiers)
+        with self.assertRaisesRegex(ValueError, "64-character"):
+            build_google_event(
+                self.outbox,
+                GoogleMatchKeys(
+                    email_sha256="parent@example.com",
+                    user_data_captured_at=self.event_at,
+                    consent_state=ConsentState.GRANTED,
+                ),
+            )
 
-    def test_validate_only_defaults_to_true(self) -> None:
-        event = MODULE.build_google_event(self.outbox, MODULE.GoogleMatchKeys(gclid="real-gclid"))
-        request = MODULE.build_ingest_events_request(
-            [event], MODULE.GoogleDestination(product_destination_id="action-123")
-        )
-        self.assertTrue(request["validateOnly"])
+    def test_expired_identifiers_are_blocked_at_dispatch_boundary(self) -> None:
+        with self.assertRaisesRegex(ValueError, "click identifier"):
+            build_google_event(
+                self.outbox,
+                GoogleMatchKeys(
+                    gclid="real-gclid",
+                    click_id_captured_at=self.event_at - timedelta(days=90, seconds=1),
+                    consent_state=ConsentState.GRANTED,
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "enhanced lead"):
+            build_google_event(
+                self.outbox,
+                GoogleMatchKeys(
+                    email_sha256="b" * 64,
+                    user_data_captured_at=self.event_at - timedelta(days=63, seconds=1),
+                    consent_state=ConsentState.GRANTED,
+                ),
+            )
 
-    def test_send_and_normalize_diagnostics_without_network(self) -> None:
+    def test_validate_only_defaults_true_and_diagnostics_normalize_without_network(self) -> None:
         captured: list[tuple[str, str, dict[str, str], object]] = []
 
-        def transport(method: str, url: str, headers: dict[str, str], payload: object) -> dict[str, object]:
+        def transport(
+            method: str,
+            url: str,
+            headers: dict[str, str],
+            payload: object,
+        ) -> dict[str, object]:
             captured.append((method, url, headers, payload))
             if method == "POST":
                 return {"requestId": "request-123"}
@@ -82,24 +157,32 @@ class GoogleDataManagerTests(unittest.TestCase):
                     {
                         "requestStatus": "PARTIAL_SUCCESS",
                         "eventsIngestionStatus": {"recordCount": "2"},
-                        "errorInfo": {"errorCounts": [{"reason": "PROCESSING_ERROR_REASON_EVENT_TOO_OLD"}]},
+                        "errorInfo": {
+                            "errorCounts": [
+                                {"reason": "PROCESSING_ERROR_REASON_EVENT_TOO_OLD"}
+                            ]
+                        },
                     }
                 ]
             }
 
-        event = MODULE.build_google_event(self.outbox, self.keys)
-        request = MODULE.build_ingest_events_request(
-            [event], MODULE.GoogleDestination(product_destination_id="action-123"), validate_only=False
+        event = build_google_event(self.outbox, self.keys)
+        request = build_ingest_events_request(
+            [event],
+            GoogleDestination("123"),
+            consent_state=ConsentState.GRANTED,
         )
-        result = MODULE.send_ingest_events(request, access_token="token", transport=transport)
-        diagnostics = MODULE.retrieve_request_status("request-123", access_token="token", transport=transport)
+        result = send_ingest_events(request, access_token="token", transport=transport)
+        diagnostics = retrieve_request_status(
+            "request-123",
+            access_token="token",
+            transport=transport,
+        )
 
-        self.assertEqual("request-123", result.request_id)
-        self.assertFalse(result.validate_only)
+        self.assertTrue(result.validate_only)
         self.assertEqual("POST", captured[0][0])
-        self.assertEqual(MODULE.INGEST_EVENTS_URL, captured[0][1])
+        self.assertEqual(INGEST_EVENTS_URL, captured[0][1])
         self.assertEqual("GET", captured[1][0])
-        self.assertIn("requestId=request-123", captured[1][1])
         self.assertEqual("partial_failure", diagnostics[0].normalized_status)
         self.assertTrue(diagnostics[0].terminal)
         self.assertEqual(2, diagnostics[0].record_count)

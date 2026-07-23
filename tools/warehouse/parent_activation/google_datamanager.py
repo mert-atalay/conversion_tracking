@@ -7,13 +7,22 @@ and a destination registry entry for the canonical stage.
 
 from __future__ import annotations
 
-import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+from .config import ConsentState, GoogleConversionActionType
+from .models import require_granted_consent, require_sha256_hex
+from .normalization import (
+    google_click_id_is_eligible,
+    google_user_data_is_eligible,
+    sha256_normalized_email,
+    sha256_normalized_phone,
+)
 
 
 GOOGLE_ADS_ACCOUNT_ID = "4159217891"
@@ -21,6 +30,8 @@ INGEST_EVENTS_URL = "https://datamanager.googleapis.com/v1/events:ingest"
 REQUEST_STATUS_URL = "https://datamanager.googleapis.com/v1/requestStatus:retrieve"
 GOOGLE_DESTINATION_TYPE = "GOOGLE_ADS"
 DIAGNOSTIC_TERMINAL_STATUSES = frozenset({"SUCCESS", "FAILED", "PARTIAL_SUCCESS"})
+_NUMERIC_ID_RE = re.compile(r"^[1-9][0-9]{0,30}$")
+_CLICK_ID_RE = re.compile(r"^[A-Za-z0-9_-]{5,512}$")
 
 HttpTransport = Callable[[str, str, Mapping[str, str], Mapping[str, Any] | None], Mapping[str, Any]]
 
@@ -29,21 +40,39 @@ HttpTransport = Callable[[str, str, Mapping[str, str], Mapping[str, Any] | None]
 class GoogleDestination:
     """Registry-owned destination configuration for one approved CRM stage."""
 
-    product_destination_id: str
+    conversion_action_id: str
+    conversion_action_type: GoogleConversionActionType = GoogleConversionActionType.UPLOAD_CLICKS
     login_account_id: str | None = None
     login_account_type: str = GOOGLE_DESTINATION_TYPE
+
+    def __post_init__(self) -> None:
+        if not _NUMERIC_ID_RE.fullmatch(str(self.conversion_action_id).strip()):
+            raise ValueError("Google conversion_action_id must be a bare numeric action ID")
+        if self.conversion_action_type is not GoogleConversionActionType.UPLOAD_CLICKS:
+            raise ValueError("Google destination must reference an UPLOAD_CLICKS conversion action")
+        if self.login_account_id and not _NUMERIC_ID_RE.fullmatch(str(self.login_account_id).strip()):
+            raise ValueError("Google login_account_id must be numeric")
 
 
 @dataclass(frozen=True)
 class GoogleMatchKeys:
-    """Restricted raw keys used only while building one upload request."""
+    """Restricted keys consumed at the dispatcher-to-adapter boundary.
+
+    SHA-256 values are the durable representation. Raw contact values are
+    accepted only through explicitly transient fields and are normalized and
+    hashed in memory. Capture timestamps are mandatory for any supplied key.
+    """
 
     gclid: str | None = None
     gbraid: str | None = None
     wbraid: str | None = None
-    email: str | None = None
-    phone: str | None = None
-    user_data_allowed: bool = False
+    click_id_captured_at: datetime | None = None
+    email_sha256: str | None = None
+    phone_sha256: str | None = None
+    email_transient: str | None = None
+    phone_transient: str | None = None
+    user_data_captured_at: datetime | None = None
+    consent_state: ConsentState = ConsentState.UNKNOWN
 
 
 @dataclass(frozen=True)
@@ -79,7 +108,7 @@ def _required(mapping: Mapping[str, Any], *names: str) -> str:
     raise ValueError(f"Missing required value; expected one of {', '.join(names)}")
 
 
-def _rfc3339(value: object) -> str:
+def _parse_timestamp(value: object) -> datetime:
     if isinstance(value, datetime):
         parsed = value
     elif isinstance(value, str):
@@ -91,41 +120,43 @@ def _rfc3339(value: object) -> str:
         raise ValueError("event timestamp must be ISO-8601/RFC3339")
     if parsed.tzinfo is None:
         raise ValueError("event timestamp must include a timezone")
-    return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    return parsed.astimezone(timezone.utc)
 
 
-def normalize_email(value: str) -> str:
-    return value.strip().lower()
-
-
-def normalize_phone(value: str) -> str:
-    return "".join(character for character in value if character.isdigit())
-
-
-def sha256_hex(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+def _rfc3339(value: object) -> str:
+    return _parse_timestamp(value).isoformat().replace("+00:00", "Z")
 
 
 def _user_identifiers(keys: GoogleMatchKeys) -> list[dict[str, str]]:
-    if not keys.user_data_allowed:
-        return []
     identifiers: list[dict[str, str]] = []
-    email = _nonempty(keys.email)
-    if email:
-        identifiers.append({"emailAddress": sha256_hex(normalize_email(email))})
-    phone = _nonempty(keys.phone)
-    if phone:
-        normalized_phone = normalize_phone(phone)
-        if normalized_phone:
-            identifiers.append({"phoneNumber": sha256_hex(normalized_phone)})
+    if keys.email_sha256 and keys.email_transient:
+        raise ValueError("provide either email_sha256 or email_transient, never both")
+    if keys.phone_sha256 and keys.phone_transient:
+        raise ValueError("provide either phone_sha256 or phone_transient, never both")
+    email_hash = (
+        require_sha256_hex(keys.email_sha256, "email_sha256")
+        if keys.email_sha256
+        else sha256_normalized_email(keys.email_transient)
+    )
+    phone_hash = (
+        require_sha256_hex(keys.phone_sha256, "phone_sha256")
+        if keys.phone_sha256
+        else sha256_normalized_phone(keys.phone_transient)
+    )
+    if email_hash:
+        identifiers.append({"emailAddress": email_hash})
+    if phone_hash:
+        identifiers.append({"phoneNumber": phone_hash})
     return identifiers
 
 
 def build_google_event(outbox: Mapping[str, Any], keys: GoogleMatchKeys) -> dict[str, Any]:
-    """Build one CEFA parent CRM event without adding consent or fabricated IDs."""
+    """Build one eligible event after fail-closed consent and age checks."""
 
+    require_granted_consent(keys.consent_state)
+    event_timestamp = _parse_timestamp(_required(outbox, "event_timestamp"))
     event: dict[str, Any] = {
-        "eventTimestamp": _rfc3339(_required(outbox, "event_timestamp", "stage_timestamp", "occurred_at")),
+        "eventTimestamp": _rfc3339(event_timestamp),
         "transactionId": _required(outbox, "platform_transaction_id", "transaction_id"),
         "eventSource": "WEB",
     }
@@ -139,12 +170,23 @@ def build_google_event(outbox: Mapping[str, Any], keys: GoogleMatchKeys) -> dict
         if value
     }
     if ad_identifiers:
+        if keys.click_id_captured_at is None:
+            raise ValueError("click_id_captured_at is required for Google click identifiers")
+        if not google_click_id_is_eligible(keys.click_id_captured_at, event_timestamp):
+            raise ValueError("Google click identifier is outside the permitted age window")
+        for name, value in ad_identifiers.items():
+            if not _CLICK_ID_RE.fullmatch(value):
+                raise ValueError(f"{name} has an invalid identifier format")
         event["adIdentifiers"] = ad_identifiers
     identifiers = _user_identifiers(keys)
     if identifiers:
+        if keys.user_data_captured_at is None:
+            raise ValueError("user_data_captured_at is required for Google enhanced lead matching")
+        if not google_user_data_is_eligible(keys.user_data_captured_at, event_timestamp):
+            raise ValueError("Google enhanced lead identifier is outside the permitted age window")
         event["userData"] = {"userIdentifiers": identifiers}
     if not ad_identifiers and not identifiers:
-        raise ValueError("Google event needs a real click ID or approved user data")
+        raise ValueError("Google event needs an eligible real click ID or consented user data")
     return event
 
 
@@ -153,22 +195,20 @@ def build_ingest_events_request(
     destination: GoogleDestination,
     *,
     validate_only: bool = True,
-    consent: Mapping[str, Any] | None = None,
+    consent_state: ConsentState = ConsentState.UNKNOWN,
 ) -> dict[str, Any]:
     """Build an IngestEvents request for one configured Google Ads destination."""
 
     if not events:
         raise ValueError("IngestEvents requests require at least one event")
-    product_destination_id = _nonempty(destination.product_destination_id)
-    if not product_destination_id:
-        raise ValueError("product_destination_id is required")
+    require_granted_consent(consent_state)
     account: dict[str, str] = {
         "accountType": GOOGLE_DESTINATION_TYPE,
         "accountId": GOOGLE_ADS_ACCOUNT_ID,
     }
     google_destination: dict[str, Any] = {
         "operatingAccount": account,
-        "productDestinationId": product_destination_id,
+        "productDestinationId": destination.conversion_action_id,
     }
     login_account_id = _nonempty(destination.login_account_id)
     if login_account_id:
@@ -180,12 +220,10 @@ def build_ingest_events_request(
         "destinations": [google_destination],
         "events": [dict(event) for event in events],
         "validateOnly": validate_only,
+        "consent": {"adUserData": "CONSENT_GRANTED"},
     }
     if any("userData" in event for event in events):
         request["encoding"] = "HEX"
-    # Consent is only forwarded when the caller has an approved interpretation.
-    if consent is not None:
-        request["consent"] = dict(consent)
     return request
 
 
@@ -232,7 +270,7 @@ def ingest_google_events(
     *,
     access_token: str,
     validate_only: bool = True,
-    consent: Mapping[str, Any] | None = None,
+    consent_state: ConsentState = ConsentState.UNKNOWN,
     transport: HttpTransport = _urllib_transport,
 ) -> GoogleSendResult:
     """Build and submit one configured Google destination batch.
@@ -245,7 +283,7 @@ def ingest_google_events(
         events,
         destination,
         validate_only=validate_only,
-        consent=consent,
+        consent_state=consent_state,
     )
     return send_ingest_events(request, access_token=access_token, transport=transport)
 
