@@ -1,0 +1,8 @@
+contract_version,greenrope_outcome,canonical_stage,activation_policy,google_conversion_action,meta_event_name,authority_label,notes
+parent_crm_v1,tour scheduled,tour_scheduled,send_when_record_eligible,CEFA | Parent | CRM Tour Scheduled | GOOGLE,CEFA_CRM_TourScheduled,crm_outcome,"Secondary/reporting only"
+parent_crm_v1,post tour,tour_completed_candidate,send_when_record_eligible,CEFA | Parent | CRM Tour Completed Candidate | GOOGLE,CEFA_CRM_TourCompletedCandidate,crm_candidate,"Keep candidate label until operational meaning is confirmed"
+parent_crm_v1,enrollment (closed won),crm_closed_won,send_when_record_eligible,CEFA | Parent | CRM Closed Won | GOOGLE,CEFA_CRM_ClosedWon,crm_outcome,"CRM reporting evidence; not final KinderTales enrollment truth"
+parent_crm_v1,nurturing,,non_send,,,analysis_only,"Do not classify as qualified"
+parent_crm_v1,closed lost,,non_send,,,analysis_only,"Lost outcome; never activate"
+parent_crm_v1,tour missed,,non_send,,,analysis_only,"Missed outcome; never activate"
+parent_crm_v1,__unmapped__,,quarantine,,,unknown,"Default for every unapproved or renamed phase"
