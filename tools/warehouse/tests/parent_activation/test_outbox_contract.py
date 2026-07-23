@@ -208,6 +208,16 @@ class OutboxContractTests(unittest.TestCase):
             store_module.assert_no_prohibited_raw_pii(
                 {"diagnostic": "parent@example.com"}
             )
+        store_module.assert_no_prohibited_raw_pii(
+            {
+                "poll_run_id": "29661474-3a63-4878-9698-7a1912bffb7f",
+                "school_uuid": "65d378e6-8f10-41f6-8335-8282c07e44b1",
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "PII-like"):
+            store_module.assert_no_prohibited_raw_pii(
+                {"diagnostic": "29661474-3a63-4878-9698-7a1912bffb7f"}
+            )
         self.store.record_delivery_attempt(
             {
                 "delivery_attempt_id": "attempt-1",

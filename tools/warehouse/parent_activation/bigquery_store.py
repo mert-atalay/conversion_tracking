@@ -85,6 +85,21 @@ _PROHIBITED_NORMALIZED_KEYS = frozenset(
     for key in PROHIBITED_RAW_PII_COLUMNS | PROHIBITED_RUNTIME_MATCH_KEYS
 )
 _HASH_KEYS = frozenset({"emailsha256", "phonesha256"})
+_OPAQUE_ID_KEYS = frozenset(
+    {
+        "activationsubjectidhmac",
+        "deliveryattemptid",
+        "formentryid",
+        "form4eventid",
+        "governedleadidhmac",
+        "lifecycleeventid",
+        "opportunityidhmac",
+        "outboxid",
+        "pollrunid",
+        "schooluuid",
+        "transactionid",
+    }
+)
 _EMAIL_VALUE_RE = re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b")
 _PHONE_VALUE_RE = re.compile(r"(?<!\w)\+?\d[\d\s().-]{6,}\d(?!\w)")
 _ISO_TIMESTAMP_RE = re.compile(
@@ -170,6 +185,10 @@ def assert_no_prohibited_raw_pii(record: Mapping[str, Any]) -> None:
                     raise ValueError(f"prohibited raw PII field: {child_path}")
                 if key in _HASH_KEYS and nested is not None:
                     require_sha256_hex(str(nested), str(raw_key))
+                    continue
+                if key in _OPAQUE_ID_KEYS and nested is not None:
+                    require_safe_opaque_id(str(nested), str(raw_key))
+                    continue
                 walk(nested, child_path)
             return
         if isinstance(value, (list, tuple, set)):
