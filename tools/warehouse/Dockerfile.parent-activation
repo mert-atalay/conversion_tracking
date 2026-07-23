@@ -13,11 +13,13 @@ COPY parent_activation /app/tools/warehouse/parent_activation
 COPY run_parent_greenrope_lifecycle.py /app/tools/warehouse/run_parent_greenrope_lifecycle.py
 COPY dispatch_parent_offline_conversions.py /app/tools/warehouse/dispatch_parent_offline_conversions.py
 COPY refresh_parent_google_diagnostics.py /app/tools/warehouse/refresh_parent_google_diagnostics.py
+COPY run_parent_greenrope_identity_binder.py /app/tools/warehouse/run_parent_greenrope_identity_binder.py
 COPY run_parent_activation_job.sh /app/tools/warehouse/run_parent_activation_job.sh
 
 RUN chmod 0555 /app/tools/warehouse/run_parent_activation_job.sh \
   /app/tools/warehouse/run_parent_greenrope_lifecycle.py \
   /app/tools/warehouse/dispatch_parent_offline_conversions.py \
-  /app/tools/warehouse/refresh_parent_google_diagnostics.py
+  /app/tools/warehouse/refresh_parent_google_diagnostics.py \
+  /app/tools/warehouse/run_parent_greenrope_identity_binder.py
 
 ENTRYPOINT ["/app/tools/warehouse/run_parent_activation_job.sh"]

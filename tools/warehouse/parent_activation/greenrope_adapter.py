@@ -122,6 +122,12 @@ def _hmac_identifier(secret: bytes | str, namespace: str, raw_value: str) -> str
     return hmac.new(key, message, hashlib.sha256).hexdigest()
 
 
+def greenrope_opportunity_hmac(secret: bytes | str, raw_opportunity_id: str) -> str:
+    """Return the canonical lifecycle HMAC for a native GreenRope ID."""
+
+    return _hmac_identifier(secret, "greenrope_opportunity", raw_opportunity_id)
+
+
 @dataclass(frozen=True, slots=True)
 class FieldDefinition:
     field_id: str | None
@@ -324,7 +330,10 @@ def parse_opportunity(
         fbp=_field_value(fields, "fbp"),
     )
     return ParsedOpportunity(
-        opportunity_id_hmac=_hmac_identifier(hmac_secret, "greenrope_opportunity", raw_opportunity_id),
+        opportunity_id_hmac=greenrope_opportunity_hmac(
+            hmac_secret,
+            raw_opportunity_id,
+        ),
         group_id=group_id,
         raw_phase=_opportunity_phase(opportunity, fields),
         form4_event_id=_field_value(fields, "cefa_event_id", "cefaeventid"),

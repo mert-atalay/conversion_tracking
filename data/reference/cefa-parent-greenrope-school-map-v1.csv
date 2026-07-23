@@ -1,0 +1,53 @@
+contract_version,school_uuid,school_slug,school_name,greenrope_group_id,status
+parent_crm_v1,81236954-bcad-11ef-8bcb-028d36469a89,abbotsford-highstreet,Abbotsford - Highstreet,47,enabled
+parent_crm_v1,812376b1-bcad-11ef-8bcb-028d36469a89,burlington-south-service-road,Burlington - South Service Road,7,enabled
+parent_crm_v1,81236ff4-bcad-11ef-8bcb-028d36469a89,burnaby-brentwood,Burnaby - Brentwood,36,enabled
+parent_crm_v1,81237055-bcad-11ef-8bcb-028d36469a89,burnaby-canada-way,Burnaby - Canada Way,37,enabled
+parent_crm_v1,812370b7-bcad-11ef-8bcb-028d36469a89,burnaby-kingsway,Burnaby - Kingsway,38,enabled
+parent_crm_v1,812368e9-bcad-11ef-8bcb-028d36469a89,calgary-south,Calgary South,40,enabled
+parent_crm_v1,8123764f-bcad-11ef-8bcb-028d36469a89,calgary-beacon-hill,Calgary - Beacon Hill,49,enabled
+parent_crm_v1,d39b7b92-5af3-41fe-bdea-700d9578b955,calgary-beltline,Calgary - Beltline,39,enabled
+parent_crm_v1,81237836-bcad-11ef-8bcb-028d36469a89,calgary-cornerstone,Calgary - Cornerstone,8,enabled
+parent_crm_v1,6217b777-8b97-484a-8699-c7f8c248b78a,calgary-northland,Calgary - Northland,12,enabled
+parent_crm_v1,812377d6-bcad-11ef-8bcb-028d36469a89,calgary-south-trail-crossing,Calgary - South Trail Crossing,41,enabled
+parent_crm_v1,81237b65-bcad-11ef-8bcb-028d36469a89,chilliwack-cottonwood,Chilliwack - Cottonwood,15,enabled
+parent_crm_v1,81236dfb-bcad-11ef-8bcb-028d36469a89,coquitlam,Coquitlam,25,enabled
+parent_crm_v1,81237582-bcad-11ef-8bcb-028d36469a89,delta-captains-cove,Delta - Captain's Cove,26,enabled
+parent_crm_v1,81236cdd-bcad-11ef-8bcb-028d36469a89,kelowna-mckay,Kelowna - McKay,27,enabled
+parent_crm_v1,81236d3d-bcad-11ef-8bcb-028d36469a89,kelowna-spall,Kelowna - Spall,28,enabled
+parent_crm_v1,81236f94-bcad-11ef-8bcb-028d36469a89,langley-city-centre,Langley - City Centre,16,enabled
+parent_crm_v1,81237114-bcad-11ef-8bcb-028d36469a89,langley-walnut-grove,Langley - Walnut Grove,17,enabled
+parent_crm_v1,81236d9e-bcad-11ef-8bcb-028d36469a89,langley-willowbrook,Langley - Willowbrook,42,enabled
+parent_crm_v1,812379b4-bcad-11ef-8bcb-028d36469a89,markham-esna-park,Markham - Esna Park,9,enabled
+parent_crm_v1,81236c7d-bcad-11ef-8bcb-028d36469a89,meadowtown,Meadowtown,18,enabled
+parent_crm_v1,81237b00-bcad-11ef-8bcb-028d36469a89,mississauga-meadowvale,Mississauga - Meadowvale,11,enabled
+parent_crm_v1,812369ba-bcad-11ef-8bcb-028d36469a89,nanaimo,Nanaimo,48,enabled
+parent_crm_v1,8123677c-bcad-11ef-8bcb-028d36469a89,new-westminster-downtown,New Westminster - Downtown,43,enabled
+parent_crm_v1,8123680a-bcad-11ef-8bcb-028d36469a89,new-westminster-uptown,New Westminster - Uptown,44,enabled
+parent_crm_v1,81236e59-bcad-11ef-8bcb-028d36469a89,north-vancouver-capilano-mall,North Vancouver - Capilano Mall,34,enabled
+parent_crm_v1,81236f34-bcad-11ef-8bcb-028d36469a89,north-vancouver-lions-gate,North Vancouver - Lions Gate,35,enabled
+parent_crm_v1,81237525-bcad-11ef-8bcb-028d36469a89,oakville-eighth-line,Oakville - Eighth Line,5,enabled
+parent_crm_v1,81237a11-bcad-11ef-8bcb-028d36469a89,okotoks-darcy-crossing,Okotoks - D'Arcy Crossing,10,enabled
+parent_crm_v1,81237350-bcad-11ef-8bcb-028d36469a89,richmond-crestwood,Richmond - Crestwood,23,enabled
+parent_crm_v1,812373ae-bcad-11ef-8bcb-028d36469a89,richmond-jacombs,Richmond - Jacombs,19,enabled
+parent_crm_v1,812371ce-bcad-11ef-8bcb-028d36469a89,richmond-south,Richmond - South,20,enabled
+parent_crm_v1,81237712-bcad-11ef-8bcb-028d36469a89,south-surrey-morgan-crossing-east-campus,South Surrey - Morgan Crossing East Campus,50,enabled
+parent_crm_v1,8123687f-bcad-11ef-8bcb-028d36469a89,south-surrey-morgan-crossing-west-campus,South Surrey - Morgan Crossing West Campus,50,enabled
+parent_crm_v1,c77db124-f089-4d39-932a-343c1508fd75,south-surrey-panorama-north,South Surrey - Panorama North,56,enabled
+parent_crm_v1,81236a85-bcad-11ef-8bcb-028d36469a89,south-surrey-panorama-south,South Surrey - Panorama South,51,enabled
+parent_crm_v1,81237895-bcad-11ef-8bcb-028d36469a89,surrey-campbell-heights,Surrey - Campbell Heights,58,enabled
+parent_crm_v1,81237777-bcad-11ef-8bcb-028d36469a89,surrey-cloverdale,Surrey - Cloverdale,52,enabled
+parent_crm_v1,81236bbe-bcad-11ef-8bcb-028d36469a89,surrey-fleetwood,Surrey - Fleetwood,53,enabled
+parent_crm_v1,8123722e-bcad-11ef-8bcb-028d36469a89,surrey-guildford,Surrey - Guildford,54,enabled
+parent_crm_v1,81236a20-bcad-11ef-8bcb-028d36469a89,surrey-nordel,Surrey - Nordel,55,enabled
+parent_crm_v1,81237465-bcad-11ef-8bcb-028d36469a89,surrey-sullivan-ridge,Surrey - Sullivan Ridge,57,enabled
+parent_crm_v1,59258c9a-c5eb-42b7-9059-aea9a326f479,surrey-sunnyside,Surrey - Sunnyside,59,enabled
+parent_crm_v1,81237290-bcad-11ef-8bcb-028d36469a89,vancouver-cambie,Vancouver - Cambie,45,enabled
+parent_crm_v1,812372f3-bcad-11ef-8bcb-028d36469a89,vancouver-commercial-drive,Vancouver - Commercial Drive,46,enabled
+parent_crm_v1,81237172-bcad-11ef-8bcb-028d36469a89,vancouver-kitsilano,Vancouver - Kitsilano,21,enabled
+parent_crm_v1,81237956-bcad-11ef-8bcb-028d36469a89,vancouver-ubc,Vancouver - UBC,22,enabled
+parent_crm_v1,812374c6-bcad-11ef-8bcb-028d36469a89,victoria-douglas,Victoria - Douglas,30,enabled
+parent_crm_v1,e5a64523-1163-4b24-9b00-4cd79eabdc7e,victoria-university-heights,Victoria - University Heights,31,enabled
+parent_crm_v1,81236b5e-bcad-11ef-8bcb-028d36469a89,victoria-westshore,Victoria - Westshore,32,enabled
+parent_crm_v1,812375f3-bcad-11ef-8bcb-028d36469a89,west-vancouver-park-royal,West Vancouver - Park Royal,33,enabled
+parent_crm_v1,812378f2-bcad-11ef-8bcb-028d36469a89,white-rock,White Rock,24,enabled

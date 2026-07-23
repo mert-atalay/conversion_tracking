@@ -1,0 +1,18 @@
+FROM python:3.12.10-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/tools/warehouse
+
+WORKDIR /app
+
+COPY tools/warehouse/requirements.parent-activation.txt /app/requirements.parent-activation.txt
+RUN pip install --no-cache-dir -r /app/requirements.parent-activation.txt
+
+COPY tools/warehouse/parent_activation /app/tools/warehouse/parent_activation
+COPY tools/warehouse/run_parent_form4_identity_bridge.py /app/tools/warehouse/run_parent_form4_identity_bridge.py
+COPY data/reference/cefa-parent-greenrope-school-map-v1.csv /app/data/reference/cefa-parent-greenrope-school-map-v1.csv
+
+RUN chmod 0555 /app/tools/warehouse/run_parent_form4_identity_bridge.py
+
+ENTRYPOINT ["python", "/app/tools/warehouse/run_parent_form4_identity_bridge.py"]

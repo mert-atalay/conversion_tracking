@@ -1,0 +1,15 @@
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/marketing-api-488017/cefa-warehouse/parent-form4-identity-bridge:manual
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - tools/warehouse/Dockerfile.parent-identity-bridge
+      - -t
+      - ${_IMAGE}
+      - .
+
+images:
+  - ${_IMAGE}

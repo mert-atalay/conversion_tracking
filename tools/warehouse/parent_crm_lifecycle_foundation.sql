@@ -11,6 +11,41 @@ OPTIONS (
   description = 'Restricted CEFA parent CRM activation data. Not a reporting or dashboard dataset.'
 );
 
+-- Raw Form 4 identity values are HMACed in Cloud Run memory before this
+-- boundary. The native GreenRope opportunity ID is never persisted here.
+CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_form4_identity_inbox` (
+  form4_event_id STRING NOT NULL,
+  form_entry_id STRING NOT NULL,
+  school_uuid STRING NOT NULL,
+  greenrope_group_id STRING,
+  submitted_at TIMESTAMP NOT NULL,
+  assigned_email_hmac STRING,
+  assigned_phone_hmac STRING,
+  parent_first_hmac STRING,
+  parent_last_hmac STRING,
+  child_dob_hmac STRING,
+  program_hmac STRING,
+  requested_start_hmac STRING,
+  consent_signal_status STRING NOT NULL,
+  bridge_status STRING NOT NULL,
+  candidate_count INT64 NOT NULL,
+  match_score INT64,
+  opportunity_id_hmac STRING,
+  quarantine_reason STRING,
+  greenrope_readback_confirmed BOOL NOT NULL,
+  attempt_count INT64 NOT NULL,
+  last_attempt_at TIMESTAMP,
+  matched_at TIMESTAMP,
+  greenrope_written_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+)
+PARTITION BY DATE(submitted_at)
+CLUSTER BY bridge_status, greenrope_group_id, form4_event_id
+OPTIONS (
+  description = 'Restricted Form 4 identity bridge. Contains governed IDs and HMAC fingerprints only; no raw contact or child data.'
+);
+
 CREATE TABLE IF NOT EXISTS `marketing-api-488017.cefa_parent_activation_restricted.parent_crm_lifecycle_state_snapshot` (
   snapshot_at TIMESTAMP NOT NULL,
   snapshot_date DATE NOT NULL,
