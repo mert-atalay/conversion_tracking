@@ -116,6 +116,26 @@ def _google_destinations(value: str | None) -> dict[str, str]:
     return destinations
 
 
+def select_controlled_groups(
+    groups: Iterable[Mapping[str, Any]],
+    group_ids: set[str] | None,
+) -> list[dict[str, str]]:
+    if not group_ids:
+        raise ValueError("parent GreenRope group allowlist is required")
+    normalized = [
+        {"id": str(group["id"]), "name": str(group.get("name") or "")}
+        for group in groups
+    ]
+    available = {group["id"] for group in normalized}
+    missing = sorted(group_ids - available)
+    if missing:
+        raise ValueError(
+            "parent GreenRope group allowlist contains unknown IDs: "
+            + ", ".join(missing)
+        )
+    return [group for group in normalized if group["id"] in group_ids]
+
+
 def _attribution_platform(opportunity: ParsedOpportunity) -> str | None:
     values = opportunity.match_values
     if any((values.gclid, values.gbraid, values.wbraid)):
@@ -504,9 +524,7 @@ def run_poll(
     )
     fields = client.opportunity_fields()
     readiness = evaluate_required_fields(item.normalized_label for item in fields)
-    groups = client.groups()
-    if group_ids:
-        groups = [group for group in groups if group["id"] in group_ids]
+    groups = select_controlled_groups(client.groups(), group_ids)
     fetched, group_errors = fetch_group_opportunities(
         client,
         groups,

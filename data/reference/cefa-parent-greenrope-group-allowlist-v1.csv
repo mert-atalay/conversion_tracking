@@ -1,0 +1,53 @@
+contract_version,greenrope_group_id,greenrope_group_name,scope,status
+parent_crm_v1,5,Oakville - Eighth Line,parent,enabled
+parent_crm_v1,7,Burlington - South Service Road,parent,enabled
+parent_crm_v1,8,Calgary - Cornerstone,parent,enabled
+parent_crm_v1,9,Markham - Esna Park,parent,enabled
+parent_crm_v1,10,Okotoks - Darcy Crossing,parent,enabled
+parent_crm_v1,11,Mississauga - Meadowvale,parent,enabled
+parent_crm_v1,12,Calgary - Northland,parent,enabled
+parent_crm_v1,15,Chilliwack - Cottonwood,parent,enabled
+parent_crm_v1,16,Langley - City Center,parent,enabled
+parent_crm_v1,17,Langley - Walnut Grove,parent,enabled
+parent_crm_v1,18,Meadowtown,parent,enabled
+parent_crm_v1,19,Richmond - Jacombs,parent,enabled
+parent_crm_v1,20,Richmond - South,parent,enabled
+parent_crm_v1,21,Vancouver - Kitsilano,parent,enabled
+parent_crm_v1,22,UBC,parent,enabled
+parent_crm_v1,23,Richmond - Crestwood,parent,enabled
+parent_crm_v1,24,White Rock,parent,enabled
+parent_crm_v1,25,Coquitlam,parent,enabled
+parent_crm_v1,26,Delta - Captains Cove,parent,enabled
+parent_crm_v1,27,Kelowna - McKay,parent,enabled
+parent_crm_v1,28,Kelowna - Spall,parent,enabled
+parent_crm_v1,29,South Delta,parent,enabled
+parent_crm_v1,30,Victoria - Douglas,parent,enabled
+parent_crm_v1,31,Victoria - University Heights,parent,enabled
+parent_crm_v1,32,Victoria - Westshore,parent,enabled
+parent_crm_v1,33,West Vancouver - Park Royal,parent,enabled
+parent_crm_v1,34,North Vancouver - Capilano Mall,parent,enabled
+parent_crm_v1,35,North Vancouver - Lions Gate,parent,enabled
+parent_crm_v1,36,Burnaby - Brentwood,parent,enabled
+parent_crm_v1,37,Burnaby - Canada Way,parent,enabled
+parent_crm_v1,38,Burnaby - Kingsway,parent,enabled
+parent_crm_v1,39,Calgary - Beltline,parent,enabled
+parent_crm_v1,40,Calgary - South,parent,enabled
+parent_crm_v1,41,Calgary - South Trail Crossing,parent,enabled
+parent_crm_v1,42,Langley - Willowbrook,parent,enabled
+parent_crm_v1,43,New Westminster Downtown,parent,enabled
+parent_crm_v1,44,New Westminster Uptown,parent,enabled
+parent_crm_v1,45,Vancouver - Cambie,parent,enabled
+parent_crm_v1,46,Vancouver - Commercial Drive,parent,enabled
+parent_crm_v1,47,Abbotsford - Highstreet,parent,enabled
+parent_crm_v1,48,Nanaimo,parent,enabled
+parent_crm_v1,49,Calgary - Beacon Hill,parent,enabled
+parent_crm_v1,50,South Surrey - Morgan Crossing,parent,enabled
+parent_crm_v1,51,Surrey - Panorama,parent,enabled
+parent_crm_v1,52,Surrey - Cloverdale,parent,enabled
+parent_crm_v1,53,Surrey - Fleetwood,parent,enabled
+parent_crm_v1,54,Surrey - Guildford,parent,enabled
+parent_crm_v1,55,Surrey - Nordel,parent,enabled
+parent_crm_v1,56,Surrey - Panorama North,parent,enabled
+parent_crm_v1,57,Surrey - Sullivan Ridge,parent,enabled
+parent_crm_v1,58,Surrey - Campbell Heights,parent,enabled
+parent_crm_v1,59,Surrey - Sunnyside,parent,enabled

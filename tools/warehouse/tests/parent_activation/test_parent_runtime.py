@@ -16,6 +16,7 @@ from parent_activation.poller_runtime import (
     build_and_enqueue_outbox,
     build_lifecycle_decisions,
     build_snapshot_rows,
+    select_controlled_groups,
 )
 from parent_activation.repository import (
     LIFECYCLE_TABLE,
@@ -133,6 +134,20 @@ class ParentRepositoryRetryTest(TestCase):
 
 
 class ParentPollRuntimeTest(TestCase):
+    def test_greenrope_group_allowlist_is_required_and_exact(self) -> None:
+        groups = [
+            {"id": "14", "name": "TEST - Systems"},
+            {"id": "58", "name": "Surrey - Campbell Heights"},
+        ]
+        with self.assertRaisesRegex(ValueError, "allowlist is required"):
+            select_controlled_groups(groups, None)
+        with self.assertRaisesRegex(ValueError, "unknown IDs: 999"):
+            select_controlled_groups(groups, {"999"})
+        self.assertEqual(
+            [{"id": "58", "name": "Surrey - Campbell Heights"}],
+            select_controlled_groups(groups, {"58"}),
+        )
+
     def test_first_seen_post_activation_state_is_still_non_uploadable(self) -> None:
         rows = build_snapshot_rows(
             [opportunity()],

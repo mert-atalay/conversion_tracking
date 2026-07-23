@@ -30,6 +30,19 @@ def main() -> None:
     parser.add_argument("--group-ids", help="Optional comma-separated controlled group list")
     parser.add_argument("--max-workers", type=int, default=4)
     args = parser.parse_args()
+    configured_group_ids = (
+        args.group_ids or os.environ.get("PARENT_GREENROPE_GROUP_IDS", "")
+    )
+    controlled_group_ids = {
+        value.strip()
+        for value in configured_group_ids.split(",")
+        if value.strip()
+    }
+    if not controlled_group_ids:
+        raise SystemExit(
+            "Missing required parent GreenRope group allowlist: "
+            "--group-ids or PARENT_GREENROPE_GROUP_IDS"
+        )
 
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "marketing-api-488017")
     secret = _required("PARENT_ACTIVATION_HMAC_SECRET").encode("utf-8")
@@ -50,11 +63,7 @@ def main() -> None:
             transaction_secret=secret,
         ),
         secret=secret,
-        group_ids=(
-            {value.strip() for value in args.group_ids.split(",") if value.strip()}
-            if args.group_ids
-            else None
-        ),
+        group_ids=controlled_group_ids,
         max_workers=args.max_workers,
     )
     print(json.dumps(result.to_dict(), sort_keys=True))
