@@ -116,16 +116,8 @@ class ParentIdentityBigQueryStore:
           program_hmac = source.program_hmac,
           requested_start_hmac = source.requested_start_hmac,
           consent_signal_status = source.consent_signal_status,
-          bridge_status = IF(
-            target.bridge_status IN ('greenrope_confirmed', 'greenrope_identity_conflict'),
-            target.bridge_status,
-            source.bridge_status
-          ),
-          quarantine_reason = IF(
-            target.bridge_status IN ('greenrope_confirmed', 'greenrope_identity_conflict'),
-            target.quarantine_reason,
-            source.quarantine_reason
-          ),
+          bridge_status = target.bridge_status,
+          quarantine_reason = target.quarantine_reason,
           updated_at = source.updated_at
         """
         self._query(query, self._record_parameters(record))
