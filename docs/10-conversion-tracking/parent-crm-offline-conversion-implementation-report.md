@@ -6,6 +6,7 @@
 **Current production state:** Infrastructure and non-uploadable baseline deployed;
 production dispatch disabled on deterministic blockers
 **Blueprint:** `docs/superpowers/plans/2026-07-23-parent-crm-offline-conversion-activation-blueprint.md`
+**Program register:** `docs/00-governance/measurement-and-activation-program-register-2026-07-23.md`
 
 ## Executive Status
 
@@ -34,6 +35,13 @@ The approved rollout does not wait for aggregate identity coverage or a fixed
 number of days. Once the exact identity handoff passes one controlled inquiry
 and the Google/Meta tests pass, every eligible prospective record can be sent
 immediately. Unsafe records remain quarantined individually.
+
+Stape Business and the broader BigQuery/Dataform/Cloud development scope were
+approved on 2026-07-23 as adjacent program work. They do not remove the
+GreenRope identity prerequisite, authorize production dispatch, replace the
+existing website inquiry conversion, or place KinderTales in the activation
+path. Their detailed scope and acceptance gates are maintained in the program
+register.
 
 ## Current Safety State
 
@@ -347,3 +355,4 @@ selection. Preserve the ledger and delivery history for diagnosis.
 | 2026-07-23 | Provisioned lifecycle, dispatcher, and diagnostics schedules, then paused them until the GreenRope identity read-back gate; no platform sending enabled |
 | 2026-07-23 | Reconfirmed restricted warehouse safety after two disabled-mode poller smoke runs: 22,346 non-uploadable initial/current-state rows, 44,674 prospective observation rows, and zero lifecycle events, outbox rows, or delivery attempts |
 | 2026-07-23 | Fixed overlapping Form 4 capture so retry/match/quarantine state is preserved; deployed activation v11 |
+| 2026-07-23 | Linked the rollout to the cross-workstream measurement program register and recorded Stape Business plus BigQuery/Dataform/Cloud hardening as approved adjacent work |

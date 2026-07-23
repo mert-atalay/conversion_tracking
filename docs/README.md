@@ -1,11 +1,12 @@
 # CEFA Marketing Measurement Docs
 
-Last updated: 2026-06-03
+Last updated: 2026-07-23
 
 This directory is the governed documentation layer for the CEFA marketing measurement repo. It supports parallel work by conversion tracking, BigQuery, SEO, naming convention, and paid-media agents without forcing every topic into one document.
 
 ## Start Here
 
+- [Measurement and activation program register](./00-governance/measurement-and-activation-program-register-2026-07-23.md): current live state, approved Stape and Google Cloud scope, external dependencies, build sequence, and production gates.
 - [Governance](./00-governance/README.md): repo rules, source-of-truth order, agent responsibilities, contribution workflow.
 - [Repository map](./00-governance/repo-map.md): where each type of update belongs.
 - [Source-of-truth rules](./00-governance/source-of-truth-rules.md): how to resolve conflicts between live systems, repo docs, local CEFA sources, and external best practices.

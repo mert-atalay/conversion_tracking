@@ -10,6 +10,16 @@
 
 **Status:** Locked roadmap as of 2026-06-12. Future BQ, marketing intelligence, prediction, semantic layer, Hightouch, and Supabase bridge work should use this as the strategic roadmap unless Mert explicitly approves a replacement.
 
+**Approved implementation addendum, 2026-07-23:** CEFA approved further
+development of the existing BigQuery/Dataform/Cloud Run/Scheduler/Secret
+Manager foundation and Stape Business as the managed sGTM layer. The
+cross-workstream status, commercial references, ownership boundaries,
+acceptance gates, and ordered build board are registered in
+[CEFA Measurement And Activation Program Register](../../00-governance/measurement-and-activation-program-register-2026-07-23.md).
+This is an extension of the roadmap, not permission to create a second
+warehouse, replace current conversions without parity, or place KinderTales or
+Synuma delivery behind sGTM.
+
 ---
 
 ## Final Position
@@ -77,12 +87,41 @@ Progress note, 2026-06-12: Day 0 governance/source dictionary implemented in `ma
 
 **Outcome:** Parent inquiry tracking becomes event-based, deduped, and platform-reconcilable without changing the parent-facing submission flow.
 
-- [ ] Add `event_id` generation before Form 4 submit.
-- [ ] Capture hidden fields for UTM values, click IDs, landing URL, referrer, landing school slug, selected school slug, campaign target school slug, and consent state.
+- [x] Add `event_id` generation before Form 4 submit.
+- [x] Capture hidden fields for UTM values, click IDs, landing URL, referrer, landing school slug, selected school slug, campaign target school slug, and consent state.
 - [ ] Send Form 4 webhook to a Cloud Run collector while preserving the existing KinderTales delivery path.
 - [ ] Write raw and normalized no-PII event audit rows to BigQuery.
 - [ ] Add reconciliation tables for browser event, webhook event, GA4 generate_lead, Meta Pixel, and future Meta CAPI.
-- [ ] Preserve cross-school inquiry flags instead of hiding them.
+- [x] Preserve cross-school inquiry flags instead of hiding them.
+
+Progress note, 2026-07-23: parent canonical attribution writeback is live,
+Form `4` event identity is available, and the restricted offline-activation
+identity capture/binder is deployed. School Manager and KinderTales remain
+unchanged. GreenRope still requires the two exact opportunity identity fields
+and a controlled read-back before CRM-stage dispatch.
+
+## Phase 2B - Managed Server-Side Tagging
+
+**Outcome:** Stape Business strengthens first-party website collection and
+server delivery without creating duplicate conversions or replacing CRM
+business truth.
+
+- [ ] Provision Stape Business under CEFA administrative and billing
+  ownership.
+- [ ] Inventory current web GTM, GA4, Google Ads, Meta, event IDs, custom
+  scripts, consent inputs, and hostname/destination boundaries.
+- [ ] Design first-party endpoints and strict Parent, Franchise Canada, and
+  Franchise USA routing isolation.
+- [ ] Keep browser interaction capture and route approved events through sGTM
+  in shadow before destination promotion.
+- [ ] Preserve neutral event names and use the same `cefa_event_id` for
+  browser/server deduplication.
+- [ ] Prove GA4 parity, Google once-only conversion receipt, Meta Pixel/CAPI
+  deduplication, and no KinderTales or Synuma regression.
+- [ ] Enable Business power-ups only when an approved requirement and QA
+  record exist.
+- [ ] Export container configuration, access inventory, monitoring, cost
+  guardrails, and rollback runbook before production promotion.
 
 ## Phase 3 - Native Source Gap Closure
 
@@ -156,6 +195,13 @@ Progress note, 2026-06-12: Day 0 governance/source dictionary implemented in `ma
 - [ ] Add Dataform assertions for freshness, uniqueness, row count, spend reconciliation, lead reconciliation, and null safety.
 - [ ] Add Dataplex/Knowledge Catalog descriptions after stable contracts are defined.
 
+Progress note, 2026-07-23: an additive Dataform QA foundation exists, while
+Cloud Run remains the production orchestrator. The approved Google Cloud
+development scope must reuse `marketing-api-488017`, keep API extraction and
+activation in Cloud Run, migrate only stable SQL, and supply Git-linked
+releases, assertions, monitoring, least-privilege IAM, cost controls, and
+rollback documentation.
+
 ## Phase 10 - MMM And Incrementality Readiness
 
 **Outcome:** Annual and quarterly budget planning becomes evidence-based rather than platform-report based.
@@ -187,16 +233,24 @@ Progress note, 2026-06-12: Day 0 governance/source dictionary implemented in `ma
 
 ## Immediate Priority Order
 
-1. Finish governance and metric registry so every next build has a contract.
-2. Implement Form 4 `event_id` and Cloud Run collector as an additive audit path.
-3. Add Supabase safe lifecycle export planning and schema agreement.
-4. Add native GBP and GSC ingestion.
-5. Load budget targets and campaign ops calendar.
-6. Certify Google ad group/keyword and Meta ad set/creative detail.
-7. Build capacity-aware school growth and lead-quality marts.
-8. Move stable SQL into Dataform.
-9. Upgrade predictive tables from heuristics to BQML where labels are mature.
-10. Add Hightouch/activation only after recommendation records are approved and audited.
+1. Maintain the measurement program register and protect current
+   KinderTales, Synuma, website conversion, and dashboard contracts.
+2. Complete the GreenRope identity fields and controlled parent
+   offline-conversion test.
+3. Provision Stape Business under CEFA ownership and complete the
+   multi-property routing and destination inventory.
+4. Build Stape in shadow with exact event-ID deduplication before promoting
+   any website conversion route.
+5. Productionize the existing Dataform QA foundation and Cloud monitoring
+   without replacing Cloud Run API and activation workloads.
+6. Finish governance and metric registry so every next build has a contract.
+7. Add Supabase safe lifecycle export planning and schema agreement.
+8. Add native GBP and GSC ingestion.
+9. Certify Google ad group/keyword and Meta ad set/creative detail.
+10. Build capacity-aware school growth and lead-quality marts.
+11. Upgrade predictive tables from heuristics to BQML where labels are mature.
+12. Add Hightouch/activation only after recommendation records are approved
+    and audited.
 
 ## Dashboard Agent Handoff
 
@@ -206,6 +260,9 @@ The dashboard agent can safely continue consuming current `mart_cefa_growth_dash
 
 ## Cost And Safety Guardrails
 
+- Register approved vendor/license costs and renewal terms in the measurement
+  program register; reconcile the Stape Business license with any separate
+  sGTM implementation charge.
 - Prefer daily aggregates and bounded feature tables over unlimited raw expansion.
 - Keep raw event retention and partitioning rules explicit before high-volume sources are added.
 - Run BQ usage guardrails after every major source addition.

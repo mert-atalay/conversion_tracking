@@ -48,7 +48,7 @@ This repo now has two separate responsibilities:
 - Runtime code for the `CEFA Conversion Tracking` WordPress plugin.
 - Governed documentation for CEFA marketing measurement workstreams.
 
-Start with [docs/README.md](docs/README.md) or [docs/00-governance/README.md](docs/00-governance/README.md) before adding new docs. New work should be routed to the narrowest correct folder:
+Start with the [measurement and activation program register](docs/00-governance/measurement-and-activation-program-register-2026-07-23.md), [docs/README.md](docs/README.md), or [docs/00-governance/README.md](docs/00-governance/README.md) before adding new docs. New work should be routed to the narrowest correct folder:
 
 - [Conversion tracking](docs/10-conversion-tracking/README.md): parent, franchise Canada, franchise USA, GTM, GA4, Ads/Meta, CAPI, sGTM, Measurement Protocol.
 - [BigQuery](docs/20-bigquery/README.md): warehouse schemas, marts, QA checks, offline conversion exports, and reporting contracts.
