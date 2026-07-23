@@ -19,6 +19,7 @@ from parent_activation.poller_runtime import (
     select_controlled_groups,
 )
 from parent_activation.repository import (
+    INSERT_BATCH_SIZE,
     LIFECYCLE_TABLE,
     SNAPSHOT_TABLE,
     Form4Match,
@@ -107,6 +108,27 @@ class RetryInsertClient:
 
 
 class ParentRepositoryRetryTest(TestCase):
+    def test_snapshot_insert_is_bounded_and_preserves_row_ids(self) -> None:
+        client = RetryInsertClient(failures=0)
+        repository = ParentActivationRepository(client=client)
+        rows = [
+            {
+                "poll_run_id": "run-1",
+                "opportunity_id_hmac": f"{index:064x}",
+            }
+            for index in range(INSERT_BATCH_SIZE + 1)
+        ]
+
+        repository.insert_state_snapshots(rows)
+
+        self.assertEqual(2, len(client.calls))
+        self.assertEqual(INSERT_BATCH_SIZE, len(client.calls[0][1]))
+        self.assertEqual(1, len(client.calls[1][1]))
+        self.assertEqual(
+            f"run-1:{rows[-1]['opportunity_id_hmac']}",
+            client.calls[1][1][0],
+        )
+
     @mock.patch("parent_activation.repository.time.sleep")
     def test_snapshot_insert_retries_with_stable_row_ids(self, sleep) -> None:
         client = RetryInsertClient(failures=1)

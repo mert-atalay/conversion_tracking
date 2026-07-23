@@ -13,6 +13,11 @@ from datetime import datetime, timezone
 import time
 from typing import Any, Iterable, Mapping, Sequence
 
+try:  # Production image dependency; tests keep this boundary optional.
+    import requests
+except ImportError:  # pragma: no cover - exercised by dependency-light tests.
+    requests = None
+
 from .bigquery_store import (
     LIFECYCLE_TABLE,
     OUTBOX_TABLE,
@@ -32,8 +37,14 @@ DELIVERY_ATTEMPT_TABLE = (
 FORM4_EVENT_TABLE = f"{PROJECT_ID}.raw_website_forms.website_form_submission_events"
 FORM4_COLLECTOR_TABLE = f"{PROJECT_ID}.raw_website_forms.form4_event_audit"
 INSERT_ATTEMPTS = 4
-RETRYABLE_INSERT_ERRORS = (
-    OSError,
+INSERT_BATCH_SIZE = 500
+RETRYABLE_INSERT_ERRORS = tuple(
+    error
+    for error in (
+        OSError,
+        requests.exceptions.RequestException if requests is not None else None,
+    )
+    if error is not None
 )
 
 
@@ -121,7 +132,7 @@ class ParentActivationRepository:
             f"{row['poll_run_id']}:{row['opportunity_id_hmac']}"
             for row in prepared
         ]
-        errors = self._insert_rows_json(SNAPSHOT_TABLE, prepared, row_ids)
+        errors = self._insert_prepared_rows(SNAPSHOT_TABLE, prepared, row_ids)
         if errors:
             raise RuntimeError(
                 f"BigQuery insert failed for lifecycle snapshots: {len(errors)} redacted error(s)"
@@ -135,11 +146,29 @@ class ParentActivationRepository:
         if not prepared:
             return
         row_ids = [str(row["lifecycle_event_id"]) for row in prepared]
-        errors = self._insert_rows_json(LIFECYCLE_TABLE, prepared, row_ids)
+        errors = self._insert_prepared_rows(LIFECYCLE_TABLE, prepared, row_ids)
         if errors:
             raise RuntimeError(
                 f"BigQuery insert failed for lifecycle events: {len(errors)} redacted error(s)"
             )
+
+    def _insert_prepared_rows(
+        self,
+        table: str,
+        rows: Sequence[Mapping[str, Any]],
+        row_ids: Sequence[str],
+    ) -> list[dict[str, Any]]:
+        errors: list[dict[str, Any]] = []
+        for start in range(0, len(rows), INSERT_BATCH_SIZE):
+            end = start + INSERT_BATCH_SIZE
+            errors.extend(
+                self._insert_rows_json(
+                    table,
+                    rows[start:end],
+                    row_ids[start:end],
+                )
+            )
+        return errors
 
     def _insert_rows_json(
         self,
