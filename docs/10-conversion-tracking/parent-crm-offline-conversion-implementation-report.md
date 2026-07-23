@@ -77,6 +77,7 @@ changed.
 | Baseline execution | `cefa-parent-crm-lifecycle-refresh-hvh5p` |
 | Baseline result | `baseline_established=true`; 39,087 source observations; 22,328 unique stored snapshots; zero group errors |
 | Baseline activation result | Zero lifecycle events, outbox rows, and delivery attempts |
+| Post-schedule smoke state | 22,346 non-uploadable initial/current-state rows and 44,674 prospective observation rows; zero lifecycle events, outbox rows, or delivery attempts |
 | Dispatcher safety execution | `cefa-parent-offline-conversion-dispatch-gfmdh` |
 | Dispatcher safety result | Disabled mode; zero inspected, tested, validated, accepted, retried, or failed |
 
@@ -344,5 +345,5 @@ selection. Preserve the ledger and delivery history for diagnosis.
 | 2026-07-23 | Reconfirmed all Google CRM actions are secondary, non-biddable, and absent from campaign/custom goals |
 | 2026-07-23 | Passed all three Meta Test Events under the production runtime using synthetic identity only |
 | 2026-07-23 | Provisioned lifecycle, dispatcher, and diagnostics schedules, then paused them until the GreenRope identity read-back gate; no platform sending enabled |
-| 2026-07-23 | Reconfirmed restricted warehouse safety after scheduling: 22,328 baseline snapshots; zero lifecycle events, outbox rows, or delivery attempts |
+| 2026-07-23 | Reconfirmed restricted warehouse safety after two disabled-mode poller smoke runs: 22,346 non-uploadable initial/current-state rows, 44,674 prospective observation rows, and zero lifecycle events, outbox rows, or delivery attempts |
 | 2026-07-23 | Fixed overlapping Form 4 capture so retry/match/quarantine state is preserved; deployed activation v11 |
